@@ -810,35 +810,58 @@
 
 
 
-        <div class="navigation">
-  <span style="--i:0;--x:-1;--y:0;" title="Курсор">
-    <ion-icon name="navigate-outline"></ion-icon>
-  </span>
-  <span style="--i:1;--x:1;--y:0;" title="Профиль">
-    <ion-icon name="analytics-outline"></ion-icon>
-  </span>
-  <span style="--i:2;--x:0;--y:-1;" title="Выбор">
-    <ion-icon name="crop-outline"></ion-icon>
-  </span>
-  <span style="--i:3;--x:0;--y:1;" title="Лассо">
-    <ion-icon name="path-outline"></ion-icon>
-  </span>
-  <span style="--i:4;--x:1;--y:1;" title="Подсказка по файлу">
-    <ion-icon name="help-circle-outline"></ion-icon>
-  </span>
-  <span style="--i:5;--x:-1;--y:-1;" title="Подсказка по проекту">
-    <ion-icon name="help-buoy-outline"></ion-icon>
-  </span>
-  <span style="--i:6;--x:0;--y:0;" title="Настройки">
-    <ion-icon name="settings-outline"></ion-icon>
-  </span>
-  <span style="--i:7;--x:-1;--y:1;" title="Помощь">
-    <ion-icon name="book-outline"></ion-icon>
-  </span>
-  <span style="--i:8;--x:1;--y:-1;" title="Сохранить">
-    <ion-icon name="save-outline"></ion-icon>
-  </span>
-</div>
+        <!-- Альтернативная навигация - боковая выдвижная панель -->
+        <div class="navigation" id="sideNavigation">
+          <button class="navigation-toggle" id="navToggle" aria-label="Переключить навигацию">
+            <div class="hamburger-icon">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </button>
+          <ul class="nav-list">
+            <li class="nav-item active" data-action="cursor" title="Курсор">
+              <div class="nav-icon"><ion-icon name="navigate-outline"></ion-icon></div>
+              <span class="nav-text">Курсор</span>
+            </li>
+            <li class="nav-item" data-action="analytics" title="Аналитика">
+              <div class="nav-icon"><ion-icon name="analytics-outline"></ion-icon></div>
+              <span class="nav-text">Аналитика</span>
+            </li>
+            <li class="nav-item" data-action="crop" title="Обрезка">
+              <div class="nav-icon"><ion-icon name="crop-outline"></ion-icon></div>
+              <span class="nav-text">Обрезка</span>
+            </li>
+            <li class="nav-item" data-action="lasso" title="Лассо">
+              <div class="nav-icon"><ion-icon name="path-outline"></ion-icon></div>
+              <span class="nav-text">Лассо</span>
+            </li>
+            <li class="nav-divider"></li>
+            <li class="nav-item" data-action="help-file" title="Подсказка по файлу">
+              <div class="nav-icon"><ion-icon name="help-circle-outline"></ion-icon></div>
+              <span class="nav-text">Помощь (файл)</span>
+            </li>
+            <li class="nav-item" data-action="help-project" title="Подсказка по проекту">
+              <div class="nav-icon"><ion-icon name="help-buoy-outline"></ion-icon></div>
+              <span class="nav-text">Помощь (проект)</span>
+            </li>
+            <li class="nav-item" data-action="settings" title="Настройки">
+              <div class="nav-icon"><ion-icon name="settings-outline"></ion-icon></div>
+              <span class="nav-text">Настройки</span>
+            </li>
+            <li class="nav-item" data-action="help" title="Помощь">
+              <div class="nav-icon"><ion-icon name="book-outline"></ion-icon></div>
+              <span class="nav-text">Документация</span>
+            </li>
+            <li class="nav-item" data-action="save" title="Сохранить">
+              <div class="nav-icon"><ion-icon name="save-outline"></ion-icon></div>
+              <span class="nav-text">Сохранить</span>
+            </li>
+          </ul>
+        </div>
+        
+        <!-- Оверлей для закрытия навигации -->
+        <div class="nav-overlay" id="navOverlay"></div>
         
         <!-- Цветовая панель (Color Bar) -->
 
