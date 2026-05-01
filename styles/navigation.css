@@ -7,66 +7,6 @@
 .navigation {
   position: fixed;
   left: 20px;
-  bottom: 48px; /* Над футером (высота футера ~28px + отступ) */
-  z-index: 1000;
-  width: 48px;
-  height: 48px;
-  background: #171b21;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: 0.5s;
-  transition-delay: 0.8s;
-  box-shadow: var(--shadow-sm);
-}
-
-.navigation.active {
-  width: 200px;
-  height: 200px;
-  transition-delay: 0s;
-}
-
-.navigation span {
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: var(--text-primary);
-  border-radius: 50%;
-  transform: translate(calc(12px * var(--x)), calc(12px * var(--y)));
-  transition: transform 0.5s, width 0.5s, height 0.5s, background 0.5s;
-  transition-delay: calc(0.1s * var(--i));
-}
-
-.navigation.active span {
-  width: 45px;
-  height: 45px;
-  background: var(--primary-light);
-  transform: translate(calc(60px * var(--x)), calc(60px * var(--y)));
-}
-
-.navigation span ion-icon {
-  transition: 0.5s;
-  font-size: 0em;
-}
-
-.navigation.active span ion-icon {
-  font-size: 1.35em;
-  color: var(--text-primary);
-}
-
-.navigation.active span:hover ion-icon {
-  color: var(--primary-hover);
-  filter: drop-shadow(0 0 2px var(--primary-hover)) drop-shadow(0 0 5px var(--primary-hover))
-    drop-shadow(0 0 15px var(--primary-hover));
-}
-.navigation {
-  position: fixed;
-  left: 20px;
   bottom: 48px;
   z-index: 1000;
   width: 48px;
@@ -77,17 +17,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  /* Ускоренная анимация и убрана задержка */
-  transition: width 0.3s, height 0.3s;
-  transition-delay: 0s;
+  transition: width 0.2s ease, height 0.2s ease;
   box-shadow: var(--shadow-sm);
 }
 
 .navigation.active {
   width: 200px;
   height: 200px;
-  /* Убрана задержка при открытии */
-  transition-delay: 0s;
 }
 
 .navigation span {
@@ -99,10 +35,9 @@
   align-items: center;
   background: var(--text-primary);
   border-radius: 50%;
-  /* В свернутом состоянии - маленькие точки на своих позициях */
-  transform: translate(calc(12px * var(--x)), calc(12px * var(--y)));
-  transition: transform 0.3s, width 0.3s, height 0.3s, background 0.3s, opacity 0.3s;
-  transition-delay: 0s;
+  /* Всегда на своих позициях - нет перемещения */
+  transform: translate(calc(60px * var(--x)), calc(60px * var(--y)));
+  transition: width 0.2s ease, height 0.2s ease, background 0.2s ease;
   opacity: 1;
 }
 
@@ -110,11 +45,6 @@
   width: 45px;
   height: 45px;
   background: var(--primary-light);
-  transform: translate(calc(60px * var(--x)), calc(60px * var(--y)));
-  /* Плавное появление без моргания */
-  transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease, background 0.3s ease, opacity 0.3s ease;
-  transition-delay: calc(0.03s * var(--i));
-  opacity: 1;
 }
 
 /* Стили для центральной кнопки закрытия */
@@ -125,19 +55,19 @@
   height: 0;
   opacity: 0;
   pointer-events: none;
+  transform: translate(0, 0) !important;
 }
 
 .navigation.active span.close-btn {
   width: 45px;
   height: 45px;
-  background: #ff4757; /* Красный цвет для кнопки закрытия */
+  background: #ff4757;
   opacity: 1;
   pointer-events: auto;
-  transform: translate(0, 0) !important; /* Центрирование независимо от переменных --x/--y */
 }
 
 .navigation span ion-icon {
-  transition: 0.3s;
+  transition: font-size 0.2s ease, color 0.2s ease;
   font-size: 0em;
   color: var(--text-primary);
 }

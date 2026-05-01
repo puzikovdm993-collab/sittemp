@@ -1,34 +1,63 @@
-# Examples with artifacts:
+# Examples 1:
+(empty)
+
+# Example 2 (Project with artifacts):
+# Compiled and build artifacts
 *.pyc
 __pycache__/
-*.class
 *.o
-*.exe
-*.dll
-*.so
-*.a
 *.obj
-*.out
-node_modules/
-venv/
-.venv/
-.mypy_cache/
-.pytest_cache/
+dist/
+build/
 target/
-.gradle/
-.vscode/
-.idea/
-*.swp
-*.swo
+# Dependencies
+.venv/
+venv/
+node_modules/
+.julia/
+zig*/
+# Logs and temp files
+*.log
 *.tmp
-.DS_Store
-Thumbs.db
+*.swp
+# Environment
 .env
 .env.local
-*.env.*
-*.log
+.env.*
+# Editors
+.vscode/
+.idea/
+# OS
+.DS_Store
+Thumbs.db
+# Coverage
 coverage/
 htmlcov/
+.coverage
+# Python specific
+*.pyc
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+# Node specific
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# Java specific
+*.class
+*.jar
+*.war
+.gradle/
+# C/C++ specific
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.exe
+*.out
+# Compressed files
 *.zip
 *.gz
 *.tar
@@ -51,7 +80,3 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-dist/
-build/
-.julia/
-zig*/
