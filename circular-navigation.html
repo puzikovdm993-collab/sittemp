@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Круговая навигация</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            overflow: hidden;
+            position: relative;
+            background: slategray;
+            font-family: 'Verdana', sans-serif;
+        }
+
+        /* Общие стили для кнопки и кругового меню */
+        .ctrl {
+            position: absolute;
+            top: 50%; left: 50%;
+            transition: .5s;
+        }
+
+        /* Стили для центральной кнопки и ссылок меню */
+        a.ctrl, .ctrl a {
+            display: block;
+            opacity: .8;
+            background: #3498db;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.3s, background 0.3s;
+        }
+        a.ctrl:hover, .ctrl a:hover, a.ctrl:focus { 
+            opacity: 1; 
+            background: #2980b9;
+        }
+        a.ctrl:focus { outline: 2px solid white; outline-offset: 2px; }
+
+        /* Центральная кнопка */
+        .button {
+            z-index: 2;
+            margin: -.75em;
+            width: 1.5em; height: 1.5em;
+            border-radius: 50%;
+            box-shadow: 0 0 5px 2px rgba(255,255,255,0.5);
+            font-size: 1.2rem;
+            line-height: 1.5em;
+            font-weight: bold;
+        }
+
+        /* Круговое меню */
+        .tip {
+            z-index: 1;
+            margin: -6em;
+            width: 12em; height: 12em;
+            transform: scale(.001);
+            list-style: none;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Декоративные элементы (опционально) */
+        .tip:before, .tip:after {
+            position: absolute;
+            top: 34.3%;
+            width: .6em; height: 14%;
+            opacity: .8;
+            background: #3498db;
+            content: '';
+            border-radius: 4px;
+        }
+        .tip:before {
+            left: 5.4%;
+            transform: rotate(-75deg);
+        }
+        .tip:after {
+            right: 5.4%;
+            transform: rotate(75deg);
+        }
+
+        /* Показываем меню при фокусе на кнопке */
+        .button:focus + .tip {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Сектора меню */
+        .slice {
+            overflow: hidden;
+            position: absolute;
+            width: 50%; height: 50%;
+            transform-origin: 100% 100%;
+        }
+
+        /* Поворот каждого сектора */
+        .slice:nth-child(1) { transform: rotate(-45deg) skewY(60deg); }
+        .slice:nth-child(2) { transform: rotate(-15deg) skewY(60deg); }
+        .slice:nth-child(3) { transform: rotate(15deg) skewY(60deg); }
+        .slice:nth-child(4) { transform: rotate(45deg) skewY(60deg); }
+        .slice:nth-child(5) { transform: rotate(75deg) skewY(60deg); }
+
+        /* Внутренняя маска для предотвращения ховера между секторами */
+        .slice:after {
+            position: absolute;
+            top: 32%; left: 32%;
+            width: 136%; height: 136%;
+            border-radius: 50%;
+            transform: skewY(-60deg);
+            content: '';
+            background: transparent;
+        }
+
+        /* Ссылки внутри секторов */
+        .slice a {
+            width: 200%; height: 200%;
+            border-radius: 50%;
+            box-shadow: 0 0 3px rgba(0,0,0,0.3), inset 0 0 4px rgba(255,255,255,0.3);
+            transform: skewY(-60deg) rotate(-15deg);
+            background: 
+                linear-gradient(75deg, transparent 50%, rgba(255,255,255,0.2) 50%, transparent 54%) no-repeat 36.5% 0,
+                linear-gradient(-75deg, transparent 50%, rgba(255,255,255,0.2) 50%, transparent 54%) no-repeat 63.5% 0,
+                radial-gradient(transparent 49%, rgba(255,255,255,0.5) 51%, #3498db 52%);
+            background-size: 15% 15%, 15% 15%, cover;
+            line-height: 4.5em;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding-top: 1.2em;
+        }
+
+        /* Адаптация текста для разных позиций */
+        .slice:nth-child(1) a { transform: skewY(-60deg) rotate(-15deg) translate(10%, 10%); }
+        .slice:nth-child(2) a { transform: skewY(-60deg) rotate(-15deg) translate(5%, 15%); }
+        .slice:nth-child(3) a { transform: skewY(-60deg) rotate(-15deg) translate(0%, 18%); }
+        .slice:nth-child(4) a { transform: skewY(-60deg) rotate(-15deg) translate(-5%, 15%); }
+        .slice:nth-child(5) a { transform: skewY(-60deg) rotate(-15deg) translate(-10%, 10%); }
+
+        /* Стрелка для центрального элемента (опционально) */
+        .slice:nth-child(3) a:after {
+            content: '↓';
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Центральная кнопка -->
+    <a class="button ctrl" href="#" tabindex="1" aria-label="Открыть меню" role="button">☰</a>
+
+    <!-- Круговое меню навигации -->
+    <ul class="tip ctrl">
+        <li class="slice"><a href="#home">Главная</a></li>
+        <li class="slice"><a href="#about">О нас</a></li>
+        <li class="slice"><a href="#services">Услуги</a></li>
+        <li class="slice"><a href="#portfolio">Портфолио</a></li>
+        <li class="slice"><a href="#contact">Контакты</a></li>
+    </ul>
+
+    <script>
+        // Закрытие меню при клике вне его области
+        document.addEventListener('click', function(e) {
+            const button = document.querySelector('.button');
+            const menu = document.querySelector('.tip');
+            
+            if (!button.contains(e.target) && !menu.contains(e.target)) {
+                button.blur();
+            }
+        });
+
+        // Закрытие меню после выбора пункта
+        document.querySelectorAll('.slice a').forEach(link => {
+            link.addEventListener('click', function() {
+                document.querySelector('.button').blur();
+            });
+        });
+    </script>
+
+</body>
+</html>
