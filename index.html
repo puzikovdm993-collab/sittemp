@@ -1973,5 +1973,69 @@
         }
     </style>
     <script src="scripts/navigation.js"></script>
+  
+  <script>
+    // Функция для активации перетаскивания элемента
+    function makeDraggable(element) {
+      let isDragging = false;
+      let startX, startY, initialLeft, initialTop;
+      const handle = element.querySelector('.floating-btn');
+
+      // При нажатии кнопки мыши
+      handle.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        
+        // Получаем текущие координаты мыши
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        // Если элемент еще не имеет absolute позиционирования, вычисляем его текущее положение
+        const rect = element.getBoundingClientRect();
+        const parentRect = element.parentElement.getBoundingClientRect();
+        
+        // Переключаем на absolute, если это fixed, чтобы позиционировать относительно родителя
+        if (getComputedStyle(element).position === 'fixed') {
+          element.style.position = 'absolute';
+          element.style.right = 'auto';
+          element.style.bottom = 'auto';
+          element.style.left = (rect.left - parentRect.left) + 'px';
+          element.style.top = (rect.top - parentRect.top) + 'px';
+        }
+
+        // Запоминаем начальные координаты элемента
+        initialLeft = element.offsetLeft;
+        initialTop = element.offsetTop;
+        
+        // Убираем transition во время перетаскивания для мгновенной реакции
+        element.style.transition = 'none';
+      });
+
+      // При движении мыши по документу
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        element.style.left = `${initialLeft + dx}px`;
+        element.style.top = `${initialTop + dy}px`;
+      });
+
+      // При отпускании кнопки мыши
+      document.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          // Возвращаем плавность анимации (если нужно для других эффектов)
+          element.style.transition = ''; 
+        }
+      });
+    }
+
+    // Инициализация перетаскивания для всех меню после загрузки страницы
+    document.addEventListener('DOMContentLoaded', () => {
+      const menus = document.querySelectorAll('.circular-menu');
+      menus.forEach(menu => makeDraggable(menu));
+    });
+  </script>
 </body>
 </html>
