@@ -8,7 +8,7 @@
   position: relative;
   width: 48px;
   height: 48px;
-  background: var(--background-secondary);
+  background: #171b21;
   border-radius: 10px;
   cursor: pointer;
   display: flex;
