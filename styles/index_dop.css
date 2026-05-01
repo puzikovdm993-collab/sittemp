@@ -1,0 +1,176 @@
+/* Стили для панели вкладок файлов */
+.tab-bar {
+    background: var(--background-secondary);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    padding: 4px 8px;
+    gap: 4px;
+    height: 36px;
+    box-shadow: var(--shadow-sm);
+}
+.tab {
+    background: var(--background-tertiary);
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    padding: 0 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    user-select: none;
+    transition: all var(--transition-fast);
+    color: var(--text-secondary);
+}
+
+.tab:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.tab.active {
+    background: var(--background-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.tab-close {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0.6;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.tab-close:hover {
+    opacity: 1;
+    background: var(--danger-color);
+    color: white;
+}
+
+
+
+
+
+
+
+.paint-canvas {
+    display: block;
+    cursor: crosshair;
+}
+
+
+/* Выпадающие меню */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    min-width: 200px;
+    border-radius: var(--radius-md);
+    padding: 4px;
+    overflow: visible;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+    position: relative;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    color: var(--text-primary);
+}
+
+.dropdown-item:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.dropdown-separator {
+    height: 1px;
+    background: var(--border-color);
+    margin: 6px 0;
+}
+
+.dropdown-item img {
+    max-width: 16px;
+    max-height: 16px;
+    object-fit: contain;
+}
+
+/* Убираем стили для старых img иконок в dropdown */
+.dropdown-item .icon {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+/* Подменю (выпадающие меню второго уровня) */
+.dropdown-submenu {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-submenu-content {
+    display: none;
+    position: absolute;
+    top: -4px;
+    left: 100%;
+    margin-left: 0;
+    background: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    z-index: 10001;
+    min-width: 180px;
+    border-radius: var(--radius-md);
+    padding: 4px;
+}
+
+.dropdown-submenu:hover .dropdown-submenu-content {
+    display: block;
+}
+
+.dropdown-submenu .dropdown-item::after {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-secondary);
+    content: '›';
+    font-weight: bold;
+}
+
+
+.btn-link {
+    text-decoration: none;
+    color: inherit;
+    padding: 0;
+}
+
+#button-link {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+}

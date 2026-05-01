@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WTIS</title>
+
+    <script src="static/css/browser@4"></script>
+    <script src="static/js/plotly-2.27.1.min.js"></script>
+    <script>
+
+        function loadProject(projectId) {
+            const API_BASE_URL = window.location.origin;
+            
+            return fetch(`${API_BASE_URL}/load_project/${projectId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Ошибка HTTP: ${response.status}`);
+                    }
+                    return response.json(); // Парсинг JSON
+                })
+                .then(projects => {
+                    return projects.data;
+                }) // Возвращаем данные проекта
+                .catch(error => {
+                    console.error("Ошибка загрузки проекта:", error);
+                    throw error; // Пробрасываем ошибку для обработки вызывающим кодом
+                });
+        }  
+        function applySettingsTheme(project) {
+            const html = document.documentElement;
+            if (project.settings.theme === 'dark') {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('project-theme', 'dark');
+            }else {
+                html.removeAttribute('data-theme');
+                localStorage.setItem('project-theme', 'light');
+            }
+        } 
+        const savedTheme = localStorage.getItem('project-theme');
+        if (savedTheme !== null) {
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        }
+        else{
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('projectId');
+            
+            loadProject(projectId)
+            .then(projectData => {
+                //console.log("projectData:",projectData);
+                setTimeout(() => {
+                    project = Project.fromProjectData(projectData);
+                    console.log("Проект загружен:", project);
+                    applySettingsTheme(project);
+                }, 500); // 500 миллисекунд (0.5 секунды) — можно изменить по необходимости
+            })
+            .catch(error => {
+                console.error("Не удалось загрузить проект:", error);
+            });
+        }
+
+    </script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles/indexnew.css">
+    <!-- <link rel="stylesheet" href="styles/index.css"> -->
+    <link rel="stylesheet" href="styles/modals.css">
+    <link rel="stylesheet" href="styles/onboarding.css">
+
+    <!--
+    <style>
+        /* --- CSS Variables & Reset - VS Code Style --- */
+        :root {
+            /* VS Code Dark Theme Colors */
+            --color-bg: #1e1e1e;
+            --color-surface: #252526;
+            --color-surface-hover: #2a2d2e;
+            --color-text: #cccccc;
+            --color-text-secondary: #858585;
+            --color-primary: #0e639c;
+            --color-primary-hover: #1177bb;
+            --color-danger: #f44336;
+            --color-danger-hover: #d32f2f;
+            --color-border: #3c3c3c;
+            --color-focus: #007fd4;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+            --radius: 2px;
+            --transition: 0.15s ease;
+            --font-family: 'Consolas', 'Courier New', monospace;
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: inherit;
+        }
+
+
+
+        /* --- Main Container & Toolbar - VS Code Style --- */
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            height: calc(100vh - 35px - 28px); /* header - footer */
+            overflow: hidden;
+        }
+
+        /* Left Sidebar (Activity Bar + Panels) */
+        .left-sidebar {
+            width: 48px;
+            background: var(--color-surface);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 8px;
+        }
+
+        .sidebar-tool-btn {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            border-left: 2px solid transparent;
+            cursor: pointer;
+            transition: all var(--transition);
+            color: var(--color-text-secondary);
+            font-size: 20px;
+        }
+
+        .sidebar-tool-btn:hover {
+            color: var(--color-text);
+        }
+
+        .sidebar-tool-btn.active {
+            color: var(--color-text);
+            border-left-color: var(--color-primary);
+            background: rgba(14, 99, 156, 0.1);
+        }
+
+
+
+
+        /* Color Bar - Vertical Left Panel */
+        .color-bar-container {
+            width: 200px;
+            background: var(--color-surface);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            gap: 12px;
+        }
+
+        .color-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        #colorBarGradient {
+            width: 100%;
+            height: 24px;
+            background: linear-gradient(to right, black, white);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+        }
+
+        .color-bar-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--color-text-secondary);
+            font-family: var(--font-family);
+        }
+
+        .color-bar-label {
+            font-size: 10px;
+            color: var(--color-text-secondary);
+            font-family: var(--font-family);
+        }
+
+
+
+
+
+
+
+        /* --- Scrollbars --- */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-text-secondary);
+        }
+
+        /* --- Utility Classes --- */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+    </style>
+    -->
+</head>
+<body>
+
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none" >
+        <!-- Основные иконки -->
+        <symbol id="icon-folder"    viewBox="0 0 24 24" fill="#007acc"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></symbol>
+        <symbol id="icon-save"      viewBox="0 0 24 24" fill="#007acc"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></symbol>
+        <symbol id="icon-undo"      viewBox="0 0 24 24" fill="#007acc"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></symbol>
+        <symbol id="icon-redo"      viewBox="0 0 24 24" fill="#007acc"><path d="M18.4 10.6C16.55 9 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></symbol>
+        <symbol id="icon-copy"      viewBox="0 0 24 24" fill="#007acc"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></symbol>
+        <symbol id="icon-paste"     viewBox="0 0 24 24" fill="#007acc"><path d="M19 2h-4.18C14.4.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z"/></symbol>
+        <symbol id="icon-cut"       viewBox="0 0 24 24" fill="#007acc"><path d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6-7.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM19 3l-6 6 2 2 7-7V3h-3z"/></symbol>
+        <symbol id="icon-zoom-in"   viewBox="0 0 24 24" fill="#007acc"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/></symbol>
+        <symbol id="icon-zoom-out"  viewBox="0 0 24 24" fill="#007acc"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"/></symbol>
+        <symbol id="icon-rotate-right" viewBox="0 0 24 24" fill="#007acc"><path d="M15.55 5.55L11 1v3.07C7.06 4.56 4 7.99 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l5.55-5.55L15.55 5.55z"/></symbol>
+        <symbol id="icon-flip-h"    viewBox="0 0 24 24" fill="#007acc"><path d="M15 21h2v-2h-2v2zm4-12h2V7h-2v2zM3 5v14c0 1.1.9 2 2 2h4v-2H5V5h4V3H5c-1.1 0-2 .9-2 2zm16-2v2h2c0-1.1-.9-2-2-2zm-8 20h2V1h-2v22zm8-6h2v-2h-2v2zM15 5h2V3h-2v2zm4 8h2v-2h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2z"/></symbol>
+        <symbol id="icon-flip-v"    viewBox="0 0 24 24" fill="#007acc"><path d="M3 21h2v-2H3v2zm4-4h2v-2H7v2zm0 4h2v-2H7v2zm8-8h2v-2h-2v2zm-4 4h2v-2h-2v2zm8-8v2h2c0-1.1-.9-2-2-2zm0 4h2v-2h-2v2zm-4 8h2v-2h-2v2zm4-4h2v-2h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zM1 17h22v-2H1v2zm6-4h2v-2H7v2zm0-4h2V7H7v2zm0-4h2V3H7v2zm8 0h2V3h-2v2zm-4 0h2V3h-2v2z"/></symbol>
+        <symbol id="icon-server"    viewBox="0 0 24 24" fill="#007acc"><path d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zM7 19c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM20 3H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zM7 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></symbol>
+        <symbol id="icon-history"   viewBox="0 0 24 24" fill="#007acc"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></symbol>
+        <symbol id="icon-shapes"    viewBox="0 0 24 24" fill="#007acc"><path d="M12 2L2 22h20L12 2zm0 3.5L18.5 20H5.5L12 5.5z"/></symbol>
+        <symbol id="icon-workflow"  viewBox="0 0 24 24" fill="#007acc"><rect width="8" height="8" x="3" y="3" rx="2" /><path d="M7 11v4a2 2 0 0 0 2 2h4" /><rect width="8" height="8" x="13" y="13" rx="2" /></symbol>
+        <symbol id="icon-eye"       viewBox="0 0 24 24" fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /><circle cx="12" cy="12" r="3" /></symbol>
+        <symbol id="icon-code"      viewBox="0 0 24 24" fill="#007acc"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></symbol>
+        <symbol id="icon-filter"    viewBox="0 0 24 24" fill="#007acc"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></symbol>
+        <symbol id="icon-crop"      viewBox="0 0 24 24" fill="#007acc"><path d="M17 15h2V7c0-1.1-.9-2-2-2H9v2h8v8zM7 17V1H5v4H1v2h4v10c0 1.1.9 2 2 2h10v4h2v-4h4v-2H7z"/></symbol>
+        <symbol id="icon-adjust"    viewBox="0 0 24 24" fill="#007acc"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></symbol>
+        <symbol id="icon-close"     viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+        <symbol id="icon-trash"     viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></symbol>
+        <symbol id="icon-image"     viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></symbol>
+        <symbol id="mouse-pointer"  viewBox="0 0 24 24" fill="#007acc00" stroke="#007acc" stroke-width="2" ><path d="M12.586 12.586 19 19" /><path d="M3.688 3.037a.497.497 0 0 0-.651.651l6.5 15.999a.501.501 0 0 0 .947-.062l1.569-6.083a2 2 0 0 1 1.448-1.479l6.124-1.579a.5.5 0 0 0 .063-.947z" /></symbol>
+        <symbol id="rotate-ccw"  viewBox="0 0 24 24" fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></symbol>
+        <symbol id="rotate-cw"  viewBox="0 0 24 24" fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /></symbol>
+
+        <symbol id="rectangle-horizontal"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2"><rect width="20" height="12" x="2" y="6" rx="2" /></symbol>
+        <symbol id="circle-question-mark"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></symbol>
+        <symbol id="folder-clock.svg"  viewBox="0 0 24 24"      fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M16 14v2.2l1.6 1" /><path d="M7 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2" /><circle cx="16" cy="16" r="6" /></symbol>
+        <symbol id="scan"  viewBox="0 0 24 24"                  fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /></symbol>
+        <symbol id="refresh-ccw"  viewBox="0 0 24 24"           fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" /><path d="M16 16h5v5" /></symbol>
+        <symbol id="flip-horizontal"  viewBox="0 0 24 24"       fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3" /><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3" /><path d="M12 20v2" /><path d="M12 14v2" /><path d="M12 8v2" /><path d="M12 2v2" /></symbol>
+        <symbol id="flip-vertical"  viewBox="0 0 24 24"         fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3" /><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3" /><path d="M4 12H2" /><path d="M10 12H8" /><path d="M16 12h-2" /><path d="M22 12h-2" /></symbol>
+      
+
+        <symbol id="folder-down"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /><path d="M12 10v6" /><path d="m15 13-3 3-3-3" /></symbol>
+        <!-- <symbol id="folder"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol> -->
+        <symbol id="save"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /><path d="M7 3v4a1 1 0 0 0 1 1h7" /></symbol>
+        <symbol id="file" viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2" ><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /></symbol>
+        <symbol id="file-clock"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2" ><path d="M16 22h2a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v2.85" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="M8 14v2.2l1.6 1" /><circle cx="8" cy="16" r="6" /></symbol>
+        <symbol id="lasso"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M3.704 14.467A10 8 0 0 1 2 10a10 8 0 0 1 20 0 10 8 0 0 1-10 8 10 8 0 0 1-5.181-1.158" /><path d="M7 22a5 5 0 0 1-2-3.994" /><circle cx="5" cy="16" r="2" /></symbol>
+
+
+    </svg>
+    
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <symbol id="brain" viewBox="0 0 615 615">
+          <g transform="translate(0.000000,615.000000) scale(0.100000,-0.100000)" fill ="#007acc" stroke="none">
+            <path d="M2835 6050 c-360 -54 -647 -159 -958 -351 -189 -116 -403 -308 -561 -503 -128 -158 -289 -447 -350 -627 -98 -288 -127 -596 -90 -949 24 -236 28 -343 15 -442 -31 -241 -97 -426 -234 -655 -128 -215 -139 -239 -145 -313 -6 -83 18 -142 73 -179 50 -33 154 -60 263 -68 50 -3 96 -11 101 -17 5 -6 14 -164 20 -350 6 -186 16 -368 22 -405 39 -229 216 -394 452 -421 45 -6 260 -10 478 -10 460 0 524 -7 655 -69 89 -42 101 -51 186 -131 76 -70 130 -151 168 -253 l32 -82 405 0 405 0 -6 28 c-6 28 -34 103 -84 227 -41 100 -135 233 -203 289 -33 27 -109 75 -167 107 -127 70 -208 145 -270 251 -47 80 -110 263 -331 963 -29 91 -56 176 -61 190 -8 22 -58 181 -161 510 -16 52 -37 114 -45 138 l-16 42 -61 0 c-149 0 -380 58 -522 131 -260 133 -468 372 -553 639 -38 118 -43 144 -52 265 -42 556 271 1111 829 1470 191 123 496 238 741 279 200 34 491 37 667 7 32 -6 76 -13 98 -17 62 -10 241 -62 322 -95 342 -135 590 -348 669 -573 91 -256 -40 -526 -254 -526 -76 0 -103 11 -209 83 -98 67 -130 78 -250 84 -75 4 -104 1 -160 -15 -122 -38 -215 -113 -278 -226 -59 -105 -76 -217 -54 -340 17 -91 -5 -160 -67 -215 -64 -56 -107 -67 -200 -54 -117 17 -233 -17 -301 -87 l-33 -34 -107 0 c-115 -1 -518 21 -568 30 -22 4 -38 19 -60 53 -21 31 -47 55 -85 76 -115 62 -245 28 -319 -84 -33 -50 -36 -60 -36 -126 0 -103 39 -172 124 -218 89 -49 236 -29 290 39 l18 24 279 -55 c375 -74 388 -79 456 -162 38 -48 71 -76 118 -102 62 -34 70 -36 160 -36 85 0 101 3 153 30 71 35 139 108 162 173 10 26 21 88 25 139 9 109 35 163 100 208 64 45 128 57 198 39 153 -41 246 -36 367 21 122 56 198 139 249 270 60 151 124 221 234 255 266 82 563 -108 662 -425 27 -89 38 -301 21 -428 -48 -362 -232 -718 -498 -967 -104 -98 -174 -131 -300 -141 -77 -7 -107 -14 -166 -43 -93 -45 -179 -129 -218 -213 -125 -271 13 -564 306 -649 33 -9 85 -34 115 -54 104 -71 128 -108 255 -390 26 -58 55 -123 65 -145 10 -22 29 -65 43 -95 13 -30 36 -81 51 -112 l26 -57 -20 -38 c-61 -119 -37 -253 62 -337 96 -83 249 -84 349 -4 37 30 79 103 90 156 32 155 -87 322 -229 322 -25 0 -18 -12 -150 300 -123 291 -180 456 -188 546 -6 67 -5 71 34 144 50 94 62 154 61 300 -1 63 4 136 10 162 16 67 89 212 132 262 158 180 316 472 397 731 138 441 137 932 -3 1353 -119 354 -290 626 -561 893 -374 368 -844 594 -1377 664 -165 21 -494 19 -652 -5z"/>
+            <path d="M2543 5496 c-224 -73 -332 -319 -232 -530 34 -73 102 -141 177 -178 61 -30 74 -33 162 -33 83 0 103 4 153 27 33 16 88 55 125 91 125 118 84 108 614 148 l158 12 43 -46 c52 -57 105 -80 177 -79 138 0 239 100 240 235 0 69 -19 120 -63 165 -100 105 -247 105 -349 0 l-49 -51 -97 7 c-53 3 -169 11 -257 16 -271 17 -337 36 -435 123 -71 63 -159 100 -249 104 -46 2 -93 -3 -118 -11z"/>
+            <path d="M1725 4766 c-200 -93 -185 -367 24 -441 54 -19 74 -19 139 0 66 20 119 66 148 130 42 90 23 184 -52 259 -75 75 -169 94 -259 52z"/>
+            <path d="M2526 4525 c-97 -34 -156 -118 -156 -222 0 -217 250 -320 400 -165 126 130 72 335 -101 386 -64 19 -92 19 -143 1z"/>
+            <path d="M4639 3957 c-46 -30 -82 -101 -74 -147 28 -157 233 -187 296 -44 15 33 19 56 14 85 -18 106 -148 165 -236 106z"/>
+            <path d="M4312 3511 c-70 -24 -118 -65 -156 -131 -28 -50 -31 -63 -31 -145 0 -105 16 -144 87 -212 79 -76 197 -102 301 -67 62 21 144 96 173 159 33 69 33 165 1 237 -63 142 -226 211 -375 159z"/>
+            <path d="M2940 2949 c-65 -29 -136 -103 -160 -167 -64 -169 41 -361 213 -390 l41 -7 52 -160 c29 -88 69 -216 89 -285 43 -147 42 -197 -5 -288 -59 -111 -72 -202 -44 -300 55 -190 219 -301 427 -289 156 8 192 -9 350 -171 l107 -111 0 -68 c0 -87 31 -154 100 -216 54 -48 103 -67 177 -67 229 0 356 274 207 448 -65 76 -164 108 -275 88 l-45 -8 -136 134 c-156 153 -158 157 -157 324 1 68 -4 113 -15 144 -47 129 -139 218 -268 259 -57 19 -124 84 -157 154 -26 54 -156 392 -175 454 -5 16 2 35 27 70 40 56 46 71 56 136 21 130 -51 262 -173 318 -58 26 -176 25 -236 -2z"/>
+            <path d="M3788 2920 c-96 -29 -168 -128 -168 -229 1 -212 254 -315 402 -165 50 51 66 89 67 162 1 68 -19 116 -72 170 -59 60 -151 86 -229 62z"/>
+          </g>
+        </symbol>
+
+        <symbol id="SobelEffectPluginIcon" viewBox="0 0 235 273" fill="#007acc"   transform="rotate(15,157.1,135.92)" pointer-events="all" >
+            <path d="M 170.54 10.92 C 143.72 37.72 131.43 109.4 143.1 171.04 C 154.76 232.67 185.95 260.91 212.77 234.11 C 191.74 225.78 173.95 193.68 165.44 148.71 C 156.94 103.74 158.85 51.94 170.54 10.92 Z" transform="rotate(23,172.1,135.92)"/>
+            <path d="M 89.2 10.92 C 62.38 37.72 50.09 109.4 61.76 171.04 C 73.42 232.67 104.61 260.91 131.43 234.11 C 110.4 225.78 92.61 193.68 84.1 148.71 C 75.6 103.74 77.51 51.94 89.2 10.92 Z" transform="rotate(23,90.76,135.92)"/>    
+        </symbol>
+
+        <symbol id="CurvesEffectIcon" viewBox=" 0 0 250 250" >
+            <path fill="none" stroke="#000000" stroke-width="10" stroke-miterlimit="18" transform="rotate(90,9,124)" pointer-events="all" d="M -111 124 L 129 124"/>
+            <path fill="none" stroke="#000000" stroke-width="10" stroke-miterlimit="18" transform="rotate(180,126,240.5)" pointer-events="all"  d="M 5.5 240.5 L 246.5 240.5"/>
+            <path fill="none" stroke="#2563eb" stroke-width="10" stroke-miterlimit="10" pointer-events="stroke" d="M 235 64 Q 205 44 185 89 Q 165 134 115 169 Q 65 204 35 24"/>
+            <path fill="none" stroke="#00ff00" stroke-width="10" stroke-miterlimit="10" pointer-events="stroke" d="M 235 200 Q 215 114 185 149 Q 155 184 115 202 Q 75 220 25 190"/>
+            <path fill="none" stroke="#ff0000" stroke-width="10" stroke-miterlimit="10" pointer-events="stroke" d="M 235 144 Q 185 44 160 39 Q 135 34 115 69 Q 95 104 35 164"/>
+
+        </symbol>
+
+        <symbol id="ApproximationEffectPluginIcon" viewBox="0 0 322 322" >
+            <path fill="#8F8F8F" stroke="#000000" stroke-width="0" stroke-miterlimit="10" pointer-events="stroke" d="M 176 3 Q 286 3 311 53 Q 336 103 258 118 Q 180 133 230 178 Q 280 223 278 243 Q 276 263 248 283 Q 220 303 165 283 Q 110 263 60 243 Q 10 223 5 173 Q 0 123 15 93 Q 30 63 55 33 Q 80 3 176 3"/>
+            <path fill="#EBEBEB" stroke="#000000" stroke-width="0" stroke-miterlimit="10" pointer-events="stroke" d="M 126 83 Q 166 13 201 58 Q 236 103 161 128 Q 86 153 126 83"/>
+            <path fill="#EBEBEB" stroke="#000000" stroke-width="0" stroke-miterlimit="10" pointer-events="stroke" d="M 186 203 Q 226 243 186 248 Q 146 253 121 208 Q 96 163 126 168 Q 156 173 186 203"/>
+        </symbol>
+
+        <symbol id="MedianEffectPluginIcon" viewBox="0 0 229 145" >
+            <rect fill="#8dade3" stroke="#4a4a4a" stroke-width="10" pointer-events="all" x="106" y="62" width="120" height="80" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" stroke-width="5" pointer-events="all"/>
+            <rect fill="#8dade3" stroke="#4a4a4a" stroke-width="10" pointer-events="all" x="2" y="2" width="120" height="80"/>
+            <rect fill="#8dade3" stroke="#cd1000" stroke-width="10" pointer-events="all" x="52" y="32" width="120" height="80"/>
+        </symbol>
+
+        <symbol id="KONTUREffectPluginIcon" viewBox="0 0 229 145" >
+            <rect fill="#ffffff" stroke="#000000" stroke-width="10" pointer-events="all" x="106" y="62" width="120" height="80" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" stroke-width="5" pointer-events="all"/>
+            <rect fill="#ffffff" stroke="#000000" stroke-width="10" pointer-events="all" x="2" y="2" width="120" height="80"/>
+            <rect fill="#8dade3" stroke="#8dade3" stroke-width="10" pointer-events="all" x="52" y="32" width="120" height="80"/>
+        </symbol>
+
+        <symbol id="NormalizEffectPluginIcon" viewBox="0 0 166 125" fill="none"  stroke="#007acc" stroke-width="10">
+            <path d="M 2 42 Q 2 42 162 42"/>
+            <path d="M 2 82 Q 2 82 2 2"/>
+            <path d="M 162 82 Q 162 82 162 2"/>
+            <path d="M 82 42 Q 82 42 82 2"/>
+            <path d="M 122 42 Q 122 42 122 12"/>
+            <path d="M 42 42 Q 42 42 42 12"/>
+            <path d="M 102 42 Q 102 42 102 22"/>
+            <path d="M 22 42 Q 22 42 22 22"/>
+            <path d="M 62 42 Q 62 42 62 22"/>
+            <path d="M 142 42 Q 142 42 142 22"/>
+            <path d="M 52 122 Q 52 122 72 62"/>
+            <path d="M 92 122 Q 92 122 72 63"/>
+            <path d="M 92 121 Q 92 121 112 62"/>
+    
+        </symbol>
+
+
+        <symbol id="PrelimProcessIcon" viewBox="-12 0 69 69" fill="none" stroke="#2563eb" >
+            <path stroke-width="6" stroke-miterlimit="10" pointer-events="stroke" d="M 13 64 Q 13 64 13 2" />
+            <path stroke-width="3" stroke-miterlimit="10" pointer-events="stroke" d="M 13 44 Q 43 44 43 34 Q 43 24 43 14 Q 43 4 13 3.5" />
+            <path stroke-width="6" stroke-miterlimit="10" pointer-events="stroke" d="M 3 64 Q 3 64 23 64" />    
+        </symbol>
+
+        <symbol id="RoundSearchingIcon" viewBox="0 0 282 282"  stroke="#007acc" fill="#25252600">
+            <ellipse cx="141" cy="141" rx="130" ry="130"   stroke-width="20" pointer-events="all"/>
+            <circle cx="141" cy="141" r="22" stroke-width="40"/>
+        </symbol>
+
+        <symbol id="EdgeDetectEffectIcon" viewBox="0 0 247 247" stroke="#007acc">
+            <path stroke-width="6" stroke-miterlimit="10" pointer-events="stroke" d="M 63 243 Q 63 243 63 3" />
+            <path stroke-width="6" stroke-miterlimit="10" pointer-events="stroke" d="M 183 243 Q 183 243 183 3"/>
+            <path stroke-width="6" stroke-miterlimit="10" pointer-events="stroke" d="M 243 63 Q 243 63 3 63"/>
+            <path stroke-width="6" stroke-miterlimit="10" pointer-events="stroke" d="M 243 183 Q 243 183 3 183"/>
+            <path fill="#25252600" stroke-width="6" stroke-miterlimit="10" pointer-events="all" d="M 7 91 L 32 103.5 L 7 116 Z"/>
+            <path fill="#25252600" stroke-width="6" stroke-miterlimit="10" transform="rotate(90,102.5,19.5)" pointer-events="all" d="M 90 7 L 115 19.5 L 90 32 Z"/>
+            <rect fill="#007acc" stroke-width="6" pointer-events="all" x="73" y="73" width="60" height="60" />
+        </symbol>
+
+       
+        <symbol id="EmbossEffectIcon" viewBox="0 0 247 247" stroke="#007acc">
+        </symbol>
+
+        <symbol id="RotateZoomIcon" viewBox="0 0 179 183"  fill="#25252600" stroke="#007acc" stroke-width="10">
+            <path  stroke-miterlimit="10" pointer-events="stroke" d="M 11.09 161.59 Q 171 171 161.59 11.09"/>
+            <path  stroke-miterlimit="10" pointer-events="all" d="M 4.35 161.2 L 13.6 157.23 L 11.09 161.59 L 13.07 166.22 Z"/>
+            <path  stroke-miterlimit="10" pointer-events="all" d="M 161.2 4.35 L 166.22 13.07 L 161.59 11.09 L 157.23 13.6 Z"/>
+            <ellipse  pointer-events="all" cx="61" cy="61" rx="60" ry="60"/>
+            <path  stroke-miterlimit="10" pointer-events="stroke" d="M 85.36 116.08 Q 151 181 161 181 Q 171 181 176 166 Q 181 151 115.36 85"/>
+    
+        </symbol>
+
+        <symbol id="BrightnessAndContrastAdjustmentIcon" viewBox="0 0 118 118" stroke="#007acc">
+            <path fill="#007acc"  stroke-width="10" stroke-miterlimit="10" transform="rotate(45,72,72)" pointer-events="all" d="M 52 32 Q 92 32 92 72 Q 92 112 52 112 Z"/>
+            <path fill="#25252600" stroke-width="10" stroke-miterlimit="10" transform="rotate(585,44,44)" pointer-events="all" d="M 24 4 Q 64 4 64 44 Q 64 84 24 84 Z"/>    
+        </symbol>
+
+
+        <symbol id="OffsetCalculatorIcon" viewBox="0 0 103 103" stroke="#007acc">
+            <rect fill="#ff0000" stroke="none" pointer-events="all" x="1" y="1" width="20" height="20"/>
+            <rect fill="#ff0000" stroke="none" pointer-events="all" x="81" y="81" width="20" height="20"/>
+            <path fill="#007acc" stroke="#007acc" stroke-width="3" stroke-linejoin="round" stroke-miterlimit="10" pointer-events="all" d="M 79.33 70.85 L 87.46 62.72 L 89.94 89.94 L 62.72 87.46 L 70.85 79.33 L 22.67 31.15 L 14.54 39.28 L 12.06 12.06 L 39.28 14.54 L 31.15 22.67 Z"/>
+        </symbol>
+
+               
+        <symbol id="ellipeEffectIcon" viewBox="0 0 123 123" stroke="#007acc">
+            <!-- <ellipse fill="#007acc" stroke-width="3" pointer-events="all" cx="61" cy="61" rx="60.00000000000001" ry="40"/> -->
+            <ellipse fill="none"  stroke-width="20" pointer-events="all" cx="61" cy="61" rx="45" ry="30"/>
+            <path    fill="none" stroke="#ff0000" stroke-width="8" stroke-miterlimit="10" pointer-events="stroke" d="M 21 121 Q 21 121 101 1"/>
+        </symbol>
+
+        
+        <symbol id="notImagesIcon" viewBox="0 0 125 125" fill="#ffffff">
+            <rect stroke-width="6" pointer-events="all" x="0" y="0" width="125" height="125" />
+        </symbol>
+    </svg>
+
+
+
+    
+    <!-- Панель вкладок (Tabs) -->
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <a href="wtis-projects.html" class="back-to-projects-btn" title="Вернуться к проектам">
+                <svg width="36px" height="36px" style="padding: 0px 4px 0px 4px;"> <use href="#brain"/> </svg>
+            </a>
+            <button class="tab-btn active" data-tab="file">Файл</button>
+            <button class="tab-btn" data-tab="edit">Правка</button>
+            <button class="tab-btn" data-tab="view">Вид</button>
+            <button class="tab-btn" data-tab="image">Изображение</button>
+            <button class="tab-btn" data-tab="filters">Фильтры</button>
+            <button class="tab-btn" data-tab="adjustments">Регулировка</button>
+            <button class="tab-btn" data-tab="tools">Инструменты</button>
+            <button class="tab-btn" data-tab="matrix">matrix</button>
+            <button class="tab-btn" data-tab="options">Настройки</button>
+
+        </div>
+        <div class="tabs-content">
+            <!-- Контент вкладки "Файл" -->
+            <div class="tab-pane active" id="tab-file" >
+                <!-- Группа открытых файлов (перемещена из верхнего ribbon) -->
+                <div class="ribbon-group" id="ribbonFilesGroup"style="display: none;">
+                    <div class="ribbon-buttons" style="position: relative;">
+                        <button class="ribbon-btn ribbon-btn-large" id="openFilesDropdownBtn" title="Открытые файлы" onclick="toggleOpenFilesDropdown()">
+                            <!-- Превью активного файла (если есть) -->
+                            <canvas id="activeFileThumbCanvas" width="32" height="32" class="ribbon-btn-thumb" style="display: none;"></canvas>
+                            <img id="activeFileThumbImg" class="ribbon-btn-thumb" width="32" height="32" style="display: none;">
+                            <span class="ribbon-btn-label" id="currentFileLabel" style="display: none;">Безымянный</span>
+                            <div class="file-count-badge" id="fileCountBadge" style="display: none;">1</div>
+                        </button>
+                        <div class="open-files-dropdown" id="openFilesDropdown">
+                            <div class="open-files-header">
+                                <span>Открытые изображения</span>
+                                <button class="close-dropdown-btn" onclick="toggleOpenFilesDropdown()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="open-files-list" id="openFilesList">
+                                <div class="open-file-item active" data-file-id="1" onclick="switchToFile(1)">
+                                    <div class="open-file-thumbnail">
+                                        <div class="fas fa-image open-file-thumbnail-placeholder"></div>
+                                    </div>
+                                    <div class="open-file-info">
+                                        <div class="open-file-name">Безымянный.png</div>
+                                        <div class="open-file-details">
+                                            <span class="open-file-resolution">800×600</span>
+                                            <span class="open-file-format">PNG</span>
+                                        </div>
+                                    </div>
+                                    <div class="open-file-actions">
+                                        <button class="close-file-btn" onclick="closeFile(1, event)" title="Закрыть">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="open-files-footer">
+                                <button class="footer-btn" onclick="openAllImages()">
+                                    <i class="fas fa-folder-open"></i> Открыть все
+                                </button>
+                                <button class="footer-btn" onclick="closeAllImages()">
+                                    <i class="fas fa-times-circle"></i> Закрыть все
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <span class="ribbon-group-title">Файлы</span> -->
+                </div>
+
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="showLoadMethodModal()" title="Открыть">
+                            <svg><use href="#file" /></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="showSaveMethodModal()" title="Сохранить">
+                            <svg><use href="#save" /></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="" title="Недавние">
+                            <svg><use href="#file-clock" /></svg>
+                        </button>
+                    </div>
+                    <h4>Управление файлами</h4>
+                </div>
+
+            </div>
+            <!-- Контент вкладки "Правка" -->
+            <div class="tab-pane" id="tab-edit">
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="undo()" title="Отменить (Ctrl+Z)">
+                            <svg><use href="#icon-undo" /></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="redo()" title="Повторить (Ctrl+Y)">
+                            <svg><use href="#icon-redo" /></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="showHistoryModal()" title="История (Ctrl+H)">
+                            <svg><use href="#icon-history" /></svg>
+                        </button>
+                    </div>
+                    <h4>История действий</h4>
+                </div>
+            </div>
+            <!-- Контент вкладки "Вид" -->
+            <div class="tab-pane" id="tab-view">
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="zoomIn()"title="Увеличить">
+                            <svg><use href="#icon-zoom-in" /></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="zoomOut()"title="Уменьшить">
+                            <svg><use href="#icon-zoom-out" /></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="zoomReset()"title="100%">
+                            <svg><use href="#icon-eye" /></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="fitImageToScreen()"title="По размеру окна">
+                            <svg><use href="#scan"/></svg>
+                        </button>
+                    </div>
+                    <h4>Масштаб</h4>
+                </div>
+            </div>
+
+
+            <!-- Контент вкладки "Изображение" -->
+            <div class="tab-pane" id="tab-image">
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="cropToSelection()" title="По выделению">
+                            <svg><use href="#icon-crop"/></svg>
+                        </button>
+                    </div>
+                    <h4>Обрезка</h4>
+                </div>
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="rotateCanvas(90)" title="↻ На 90° вправо">
+                            <svg><use href="#rotate-cw"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="rotateCanvas(270)" title="↺ На 90° влево">
+                            <svg><use href="#rotate-ccw"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="rotateCanvas(180)" title="↻ На 180°">
+                            <svg><use href="#refresh-ccw"/></svg>
+                        </button>
+                        <!-- <button class="tab-action-btn" onclick="rotateCanvasCustom()" title="Произвольный...">
+                            <img src="images/notimages.png" alt="">
+                        </button> -->
+                    </div>
+                    <h4>Поворот</h4>
+                </div>
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="flipCanvas('horizontal')" title="По горизонтали">
+                            <svg><use href="#flip-horizontal"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="flipCanvas('vertical')" title="По вертикали">
+                            <svg><use href="#flip-vertical"/></svg>
+                        </button>
+                    </div>
+                    <h4>Отражение</h4>
+                </div>
+            </div>
+
+            <!-- Контент вкладки "Фильтры" -->
+            <div class="tab-pane" id="tab-filters">
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="alert('Функция КОНТУР находится в разработке');" title="Контур">
+                            <svg><use href="#KONTUREffectPluginIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ОПРЕДЕЛЕНИЕ ГРАНИЦ находится в разработке');" title="Определение границ">
+                            <svg><use href="#EdgeDetectEffectIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция РЕЛЬЕФ находится в разработке');" title="Рельеф">
+                            <!-- <svg><use href="#EmbossEffectIcon"/></svg> -->
+                            <img src="images/EmbossEffect.png" alt="">
+                        </button>
+                        <button class="tab-action-btn" onclick="applySobelFilter()" title="Фильтр Edge">
+                            <svg><use href="#SobelEffectPluginIcon" /></svg>
+                        </button>
+                    </div>
+                    <h4>Выделение контуров</h4>
+                </div>
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="alert('Функция КАЛЬКУЛЯТОР СМЕЩЕНИЙ находится в разработке');" title="Калькулятор смещений">
+                            <svg> <use href="#OffsetCalculatorIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ОСЬ СИММЕТРИИ находится в разработке');"title="Ось симметрии">
+                            <svg> <use href="#ellipeEffectIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="showResultRoundSearchingModal()"title="Поиск окружности">
+                            <svg> <use href="#RoundSearchingIcon"/> </svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ЦЕНТРАЛЬНЫЙ ДЕТЕКТОР находится в разработке');" title="Центральный детектор">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ЦЕНТРОВКА РАКУРСОВ находится в разработке');" title="Центровка Ракурсов">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                    </div>
+                    <h4>Поиск объектов</h4>
+                </div>
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="showApproximationModal()" title="Аппроксимация поверхностью">
+                            <svg><use href="#ApproximationEffectPluginIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция АРИФМЕТИЧЕСКИЙ КАЛЬКУЛЯТОР находится в разработке');" title="Арифметический калькулятор">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ВЫЧИСЛЕНИЕ ПАРАБАЛОИДА находится в разработке');" title="Вычисление параболоида">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ВЫЧИСЛЕНИЕ ПЛОСКОСТИ находится в разработке');"title="Вычисление плоскости">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ВЫЧИСЛЕНИЕ ПОВЕРХНОСТИ КОЗЛОВСКОГО находится в разработке');" title="Вычисление поверхности Козловского">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ОБРАБОТКА ПО ЦИЛИНДРИЧЕСКОМУ КЛИНУ находится в разработке');" title="Обработка по цилиндрическому клину">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ОПТИЧЕСКАЯ ПЛОТНОСТЬ находится в разработке');" title="Оптическая плотность">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="applyLogorifmFilter()"title="Предобработка">
+                            <svg><use href="#PrelimProcessIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция УДАЛЕНИЕ ПОЛОС СКАНЕРА находится в разработке');" title="Удаление полос сканера">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция УСТРАНЕНИЕ ТОЧЕЧНЫХ ДЕФЕКТОВ находится в разработке');" title="Устранение точечных дефектов">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ХАРАКТЕРИСТИЧЕСКАЯ КРИВА находится в разработке');"title="Характеристическая кривая">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                    </div>
+                    <h4>Предварительная обработка</h4>
+                </div>
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="showMedianModal()" title="Медианный фильтра">                           
+                            <svg> <use href="#MedianEffectPluginIcon"/> </svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="showNormalisatioModal()" title="Нормализация">
+                            <svg> <use href="#NormalizEffectPluginIcon"/> </svg>
+                        </button>
+                    </div>
+                    <h4>Прочее</h4>
+                </div>
+            </div>
+
+            <!-- Контент вкладки "Регулировка" -->
+            <div class="tab-pane" id="tab-adjustments">
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="alert('Функция ПОВОРОТ/МАСШТАБИРОВАНИЕ находится в разработке');" title="Поворот/Масштабирование">
+                            <svg><use href="#RotateZoomIcon" /></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ФУНКЦИИ ОКНА находится в разработке');" title="Функции окна">
+                            <svg><use href="#CurvesEffectIcon" /></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ЯРКОСТЬ/КОНСТРАСТ находится в разработке');" title="Яркость/Контраст">
+                            <svg><use href="#BrightnessAndContrastAdjustmentIcon" /></svg>
+                        </button>
+                    </div>
+                    <h4> -- </h4>
+                </div>
+            </div>
+
+            <!-- Контент вкладки "Инструменты" -->
+            <div class="tab-pane" id="tab-tools">
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="alert('Функция CODE LAB находится в разработке');" title="Code Lab">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                    </div>
+                    <h4>Скрипты</h4>
+                </div>
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="alert('Функция ИСПРАВИТЬ находится в разработке');" title="Исправить">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="alert('Функция ФИЛЬТР СРТИ находится в разработке');" title="Фильтр СРТИ">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                    </div>
+                    <h4>СРТИ</h4>
+                </div>
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="alert('Функция ФИЛЬТР ФХМ находится в разработке');" title="Фильтр ФХМ">
+                            <svg><use href="#notImagesIcon"/></svg>
+                        </button>
+                    </div>
+                    <h4>Фотохронометрия</h4>
+                </div>
+            </div>
+
+
+            <!-- Контент вкладки "Матрица" -->
+            <div class="tab-pane" id="tab-matrix">
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="plotlyZoom()" title="Зум">
+                            <svg class="icon" width="24" height="24"><use href="#icon-zoom-in"></use></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="plotlyPan()" title="Перемещение">
+                            <svg class="icon" width="24" height="24"><use href="#icon-move"></use></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="plotlyRotate()" title="Вращение">
+                            <svg class="icon" width="24" height="24"><use href="#icon-rotate-3d"></use></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="plotlyReset()" title="Сбросить вид">
+                            <svg class="icon" width="24" height="24"><use href="#icon-refresh-cw"></use></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="showMatrix3DSurface()" title="Показать 3D поверхность">
+                            <svg class="icon" width="24" height="24"><use href="#icon-shapes"></use></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="refreshMatrixPlot()" title="Обновить">
+                            <svg class="icon" width="24" height="24"><use href="#icon-rotate-right"></use></svg>
+                        </button>
+                    </div>
+                    <h4>3D визуализация матрицы</h4>
+                </div>
+                <div class="tab-section">
+                    <div style="padding: 10px;">
+                        <label for="matrixColormap">Палитра:</label>
+                        <select id="matrixColormap" onchange="refreshMatrixPlot()">
+                            <option value="Viridis">Viridis</option>
+                            <option value="Plasma">Plasma</option>
+                            <option value="Inferno">Inferno</option>
+                            <option value="Magma">Magma</option>
+                            <option value="Cividis">Cividis</option>
+                            <option value="Rainbow">Rainbow</option>
+                            <option value="Portland">Portland</option>
+                            <option value="Jet">Jet</option>
+                            <option value="Hot">Hot</option>
+                            <option value="Coolwarm">Coolwarm</option>
+                            <option value="Greys">Greys</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="tab-section">
+                    <div style="padding: 10px;">
+                        <label>
+                            <input type="checkbox" id="matrixShowContours" onchange="refreshMatrixPlot()"> Показывать контуры
+                        </label>
+                    </div>
+                </div>
+                <!-- Контейнер для Plotly графика -->
+                <div id="matrixPlotContainer" style="width: 100%; height: 920px; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 10px;"></div>
+            </div>
+
+            <!-- Контент вкладки "Настройки" -->
+            <div class="tab-pane" id="tab-options">
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="toggleTheme()" title="Переключить тему">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-5.5-5.5c0-2.05 1.13-3.83 2.8-4.8A9.03 9.03 0 0 0 12 3z"/></svg>
+                            <span>Тема</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="tab-section">
+                    <div class="tab-buttons">
+                        <div class="tab-checkbox-container">
+                            <input type="checkbox" id="colorbarViewToggle" class="tab-checkbox" checked>
+                            <label for="colorbarViewToggle" class="tab-checkbox-label" >
+                            </label>
+                        </div>
+                        <!-- <label for="customSelect">Палитра:</label> -->
+                        <select id="customSelect" class="tab-checkbox-container">
+                            <option value="gray">Gray</option>
+                            <option value="plasma">Plasma</option>
+                            <option value="inferno">Inferno</option>
+                            <option value="magma">Magma</option>
+                            <option value="cividis">Cividis</option>
+                            <option value="rainbow">Rainbow</option>
+                            <option value="coolwarm">Сoolwarm</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- <input type="file" id="fileInput" accept=".tpt" onchange="loadImage(event)" multiple> -->
+    <input type="file" id="run" accept=".tpt"  multiple>
+    
+    <!-- Основной контейнер с панелью инструментов и холстом -->
+    <div class="main-container">
+        <!-- style="display: none;" -->
+        <div class="color-bar" id="colorBar">
+            <div class="color-bar-grey" id="colorBarGradient"></div>
+        </div> 
+        <div class="color-bar" id="color_bar_label" style="border-right: 1px solid var(--border-color);">
+            <span class="color-bar-label color-bar-label-max" id="color_bar_label_max">Max</span>
+            <span class="color-bar-label color-bar-label-median" id="color_bar_label_median">Median</span>
+            <span class="color-bar-label color-bar-label-min" id="color_bar_label_min">Min</span>
+        </div>
+
+
+
+
+
+        <div class="toolbar-left">
+            <button class="tool-btn active" data-tool="cursor" onclick="setTool('cursor')" title="Курсор">
+                <svg class="tool-icon"><use href="#mouse-pointer"></use></svg>
+            </button>
+            <button class="tool-btn" data-tool="profile" onclick="setTool('profile')" title="Профиль">
+                <svg class="tool-icon"> <use href="#CurvesEffectIcon"></use></svg>
+            </button>
+            <button class="tool-btn" data-tool="select" onclick="setTool('select')" title="Выбор прямоугольный">
+                <svg class="tool-icon"><use href="#rectangle-horizontal"></use></svg>
+            </button>
+            <button class="tool-btn" data-tool="lasso" onclick="setTool('lasso')" title="Лассо">
+                <svg class="tool-icon"><use href="#lasso"></use></svg>
+            </button>
+            <button class="tool-btn" data-tool="question" onclick="questionActiveFile()" title="Подсказка по активному файлу">
+                <svg class="tool-icon"><use href="#circle-question-mark"></use></svg>
+            </button>
+            <button class="tool-btn" data-tool="question" onclick="questionProject()" title="Подсказка по проекту">
+                <svg class="tool-icon"><use href="#circle-question-mark"></use></svg>
+            </button>
+            <button class="tool-btn" data-tool="question" onclick="saveProjectToMinIO_l()" title="отправка проекта в minio">
+                <svg class="tool-icon"><use href="#circle-question-mark"></use></svg>
+            </button>
+            <button class="tool-btn help-btn" onclick="showHelpModal()" title="Помощь - описание функционала приложения">
+                <i class="fas fa-question"></i> ?
+            </button>
+        </div>
+        
+        <!-- Цветовая панель (Color Bar) -->
+
+
+        <!-- Область холста -->
+        <div class="canvas-area" id="canvasArea">
+            <div class="canvas-wrapper" id="canvasWrapper">
+                <!-- Контейнер для canvas элементов -->
+                <div id="canvasHost"></div>
+                <!-- Overlay для ввода текста -->
+                <div class="text-input-overlay" id="textInputOverlay">
+                    <textarea id="textInput" placeholder="Введите текст..."></textarea>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <!-- Строка состояния -->
+    <footer class="status-bar" >
+        <div class="status-left">
+            <span id="cursorPos" style="min-width: 90px;">X: 0, Y: 0</span>
+            <span id="cursorMatrixData" style="min-width: 100px;">d = </span>
+            <span id="canvasSize">—</span>
+            <span id="zoomLevel">Масштаб: 100%</span>
+        </div>
+        
+        <div>
+            <span id="toolInfo">Инструмент: -</span>
+        </div>
+    </footer>
+
+
+<!-- Модальное окно выбора способа сохранения -->
+<div class="modal" id="saveMethodModal">
+    <div class="modal-content">
+        <div class="modal-title">
+            <span>Сохранить изображение</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <p>Выберите способ сохранения:</p>
+            </div>
+            <div class="modal-row" style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="modal-btn" style="width:100%; text-align:left;" onclick="saveToLocal()">
+                    <i class="fas fa-desktop"></i> Локально на компьютер
+                </button>
+                <button class="modal-btn" style="width:100%; text-align:left;" onclick="saveToServer()">
+                    <i class="fas fa-server"></i> На сервер
+                </button>
+                <div id="serverMessage" style="margin-top:10px; display:none; padding:8px; background:#e8f5e8; border:1px solid #4CAF50; border-radius:3px;">
+                    <span id="serverMessageText"></span>
+                </div>
+                <div id="serverProgress" style="margin-top:10px; display:none;">
+                    <div style="width:100%; height:20px; background:#f0f0f0; border-radius:3px; overflow:hidden;">
+                        <div id="progressBar" style="width:0%; height:100%; background:#4CAF50; transition:width 0.3s;"></div>
+                    </div>
+                    <div id="progressText" style="font-size:11px; text-align:center; margin-top:4px;">0%</div>
+                </div>
+            </div>
+            <div class="modal-row" id="serverImagesList" style="display:none; max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:8px; margin-top:10px;">
+                <h4 style="margin-bottom:8px;">Изображения на сервере:</h4>
+                <div id="imagesList"></div>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="closeSaveMethodModal()">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно выбора способа загрузки -->
+<div class="modal" id="loadMethodModal">
+    <div class="modal-content" style=" width: 300px; height: 200px">
+        <div class="modal-title">
+            <span>Загрузка изображение</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <p>Выберите способ загрузки:</p>
+            </div>
+            <div class="modal-row" style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="modal-btn" style="width:100%; text-align:left;" onclick="loadToLocal()">
+                    Локально с компьютера
+                </button>
+                <button class="modal-btn" style="width:100%; text-align:left;" onclick="loadToServer()">
+                    С сервера
+                </button>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="closeLoadMethodModal()">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно загрузки с сервера (каталоги) -->
+<div class="modal" id="loadFromServerModal">
+    <div class="modal-content" style="width: 800px; max-width: 90vw;">
+        <div class="modal-title">
+            <span>Загрузка изображений с сервера</span>
+            <button onclick="closeLoadFromServerModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <!-- Панель навигации -->
+            <div class="modal-row" style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
+                <button class="modal-btn" id="serverNavBack" onclick="navigateBack()" disabled title="Назад">←</button>
+                <span id="currentServerPath" style="flex:1; background:#f5f5f5; padding:4px 8px; border-radius:3px;">/</span>
+                <input type="text" id="imageSearch" class="modal-input" placeholder="Поиск..." style="width: 200px;">
+                <select id="sortImages" class="modal-input" style="width: 120px;">
+                    <option value="name">Имя (А-Я)</option>
+                    <option value="size_asc">Размер (↑)</option>
+                    <option value="size_desc">Размер (↓)</option>
+                </select>
+                <button class="modal-btn" onclick="refreshServerImages()">🔄 Обновить</button>
+                <button class="modal-btn" onclick="confirmClearAllImages()" style="background:#ffebee; color:#c62828;">🗑 Очистить все</button>
+            </div>
+
+            <!-- Контейнер для списка файлов/папок -->
+            <div id="serverFilesContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px;">
+                <table class="server-files-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f5f5f5;">
+                            <th style="padding: 8px; text-align: left;">Имя</th>
+                            <th style="padding: 8px; text-align: right;">Размер</th>
+                            <th style="padding: 8px; text-align: left;">Дата изменения</th>
+                            <th style="padding: 8px; text-align: center;">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="serverFilesList">
+                        <!-- Динамически заполняется -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="loadServerMessage" style="margin-top:10px; display:none; padding:8px; border-radius:3px;"></div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="closeLoadFromServerModal()">Закрыть</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно сохранения на сервер -->
+<div class="modal" id="filenameModal">
+    <div class="modal-content" style="width:450px;">
+        <div class="modal-title">
+            <span>Сохранение на сервер</span>
+            <button onclick="closeFilenameModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <label>Имя файла:</label>
+                <input type="text" id="serverFilename" class="modal-input" value="drawing">
+            </div>
+
+            <!-- Блок выбора папки -->
+            <!-- <div class="modal-row">
+                <label>Папка на сервере:</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="serverFolderPath" class="modal-input" 
+                           placeholder="например: папка/подпапка/" style="flex: 1;">
+                    <button class="modal-btn" onclick="openFolderBrowser()" title="Обзор">📁</button>
+                </div>
+                <select id="serverFolderSelect" class="modal-input" style="margin-top: 8px;" 
+                        onchange="document.getElementById('serverFolderPath').value = this.value">
+                    <option value="">-- Выберите существующую папку --</option>
+                </select>
+            </div> -->
+
+            <div class="modal-row">
+                <label>Формат:</label>
+                <select id="serverFormat" class="modal-input">
+                    <option value="tpt">TPT (Текстовая матрица)</option>
+                </select>
+            </div>
+            <div class="modal-row">
+                <label style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="addTimestamp" checked>
+                    <span>Добавить дату к имени файла</span>
+                </label>
+            </div>
+
+            <!-- Индикатор загрузки и сообщения -->
+            <div id="uploadStatus" style="display:none; margin-top:15px;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                    <div class="fas fa-spinner fa-spin"></div>
+                    <span id="uploadMessage">Загрузка на сервер...</span>
+                </div>
+                <div style="width:100%; height:4px; background:#eee; border-radius:2px; overflow:hidden;">
+                    <div id="uploadProgressBar" style="width:0%; height:100%; background:#0078d7;"></div>
+                </div>
+                <div style="font-size:11px; color:#666; margin-top:5px; text-align:center;">
+                    <span id="uploadProgressText">0%</span>
+                </div>
+            </div>
+
+            <div id="uploadResult" style="display:none; margin-top:15px; padding:10px; border-radius:4px; background:#e8f5e8; border:1px solid #4CAF50;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="fas fa-check-circle" style="color:#4CAF50;"></div>
+                    <span id="resultMessage">Изображение успешно сохранено!</span>
+                </div>
+                <div style="font-size:11px; color:#2e7d32; margin-top:5px;">
+                    <span id="resultDetails"></span>
+                </div>
+            </div>
+
+            <div id="uploadError" style="display:none; margin-top:15px; padding:10px; border-radius:4px; background:#ffebee; border:1px solid #f44336;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="fas fa-exclamation-triangle" style="color:#f44336;"></div>
+                    <span id="errorMessage">Ошибка загрузки</span>
+                </div>
+                <div style="font-size:11px; color:#c62828; margin-top:5px;">
+                    <span id="errorDetails"></span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" id="uploadButton" onclick="uploadToServer()">Загрузить</button>
+            <button class="modal-btn" onclick="closeFilenameModal()" id="cancelButton">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для выбора из недавних файлов -->
+<div class="modal" id="recentFilesModal">
+    <div class="modal-content" style="width: 500px;">
+        <div class="modal-title">
+            <span>Недавние файлы</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="recentFilesContainer">
+                <!-- Здесь будут отображаться недавние файлы -->
+            </div>
+            <div class="modal-row" style="margin-top: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <button onclick="clearRecentFiles()" class="modal-btn" style="padding: 4px 12px; background: #ffebee; color: #c62828;">
+                        <i class="fas fa-trash"></i> Очистить список
+                    </button>
+                    <span style="font-size: 11px; color: #666;" id="recentFilesCount">Загрузка...</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="closeRecentFilesModal()">Закрыть</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для изменения размера холста -->
+<div class="modal" id="resizeModal">
+    <div class="modal-content">
+        <div class="modal-title">
+            <span>Изменение размера</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <label>Ширина:</label>
+                <input type="number" id="newWidth" class="modal-input" value="800">
+            </div>
+            <div class="modal-row">
+                <label>Высота:</label>
+                <input type="number" id="newHeight" class="modal-input" value="600">
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="applyResize()">OK</button>
+            <button class="modal-btn" onclick="closeResizeModal()">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для медианного фильтра -->
+<div class="modal" id="medianModal">
+    <div class="modal-content">
+        <div class="modal-title">
+            <span>Медианный фильтр</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <label>Размер апертуры:</label>
+                <input type="number" id="newAperture" class="modal-input" value="3">
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="applyMedianFilter()">OK</button>
+            <button class="modal-btn" onclick="closeMedianModal()">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для сохранения -->
+<div class="modal" id="saveModal">
+    <div class="modal-content">
+        <div class="modal-title">
+            <span>Сохранение</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <label>Имя:</label>
+                <input type="string" id="saveName" class="modal-input" value="Result">
+            </div>
+            <div class="modal-row">
+                <label>Формат сохранения:</label>
+                <select id="saveFormat" class="modal-select">
+                    <option value="tpt">.tpt</option>
+                    <option value="png">.png</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="applySave()">OK</button>
+            <button class="modal-btn" onclick="closeSaveModal()">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для нормализации -->
+<div class="modal" id="normalizModal">
+    <div class="modal-content">
+        <div class="modal-title">
+            <span>Нормализация</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <label>min:</label>
+                <input type="number" id="normalizBegin" class="modal-input" value="0">
+            </div>
+            <div class="modal-row">
+                <label>max:</label>
+                <input type="number" id="normalizEnd" class="modal-input" value="1">
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="applyNormalisatioFilter()">OK</button>
+            <button class="modal-btn" onclick="closeNormalisatioModal()">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для аппроксимации -->
+<div class="modal" id="approximationModal">
+    <div class="modal-content">
+        <div class="modal-title">
+            <span>Аппроксимация</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <label>Порядок поверхности аппроксимации:</label>
+                <input type="number" id="node_order" class="modal-input" value="3">
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="applyApproximationFilter()">OK</button>
+            <button class="modal-btn" onclick="closeApproximationModal()">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для порога -->
+<div class="modal" id="thresholdModal">
+    <div class="modal-content">
+        <div class="modal-title">
+            <span>Порог</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <label>min:</label>
+                <input type="number" id="thresholdMin" class="modal-input" value="0">
+            </div>
+            <div class="modal-row">
+                <label>меньше min:</label>
+                <input type="number" id="thresholdLessMin" class="modal-input" value="0">
+            </div>
+            <div class="modal-row">
+                <label>max:</label>
+                <input type="number" id="thresholdMax" class="modal-input" value="1">
+            </div>
+            <div class="modal-row">
+                <label>>max:</label>
+                <input type="number" id="thresholdMoreMax" class="modal-input" value="1">
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="applyThresholdFilter()">OK</button>
+            <button class="modal-btn" onclick="closeThresholdModal()">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для просмотра canvas -->
+<div class="modal" id="canvasPreviewModal">
+    <div class="modal-content" style="width: 80%; max-width: 800px; height: 70%; max-height: 600px;">
+        <div class="modal-title">
+            <span>Предпросмотр изображения</span>
+            <button style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2em; line-height: 1;">✕</button>
+        </div>
+        <div class="modal-body" style="height: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <canvas id="previewCanvas" width="600" height="400" style="border: 1px solid #ccc; max-width: 100%; max-height: 80%;"></canvas>
+
+            <div style="margin-top: 10px; width: 100%; display: flex; align-items: center;">
+                <label style="margin-right: 10px;">Масштаб: </label>
+                <input type="range" id="scaleSlider" min="0.1" max="2.0" step="0.1" value="1.0" 
+                       oninput="updateCanvasScale()" style="flex: 1;">
+                <span id="scaleValue" style="margin-left: 10px; width: 40px; text-align: right;">100%</span>
+            </div>
+        </div>
+        <div class="modal-buttons" style="display: flex; justify-content: flex-end;">
+            <button class="modal-btn" onclick="closeCanvasPreview()">Закрыть</button>
+            <button class="modal-btn" style="background-color: #4CAF50; color: white;" 
+                    onclick="saveCanvasAsPng()">Сохранить как PNG</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+
+<!-- Модальное окно для графика -->
+<div class="modal" id="graphModal">
+    <div class="modal-content" style=" width: 400px; height: 300px">
+        <div class="modal-title">
+            <span>Профильные характеристики ...</span>
+            <button onclick="closeGraphModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="graph-panel">
+                <h3>График(профиль)</h3>
+                <div class="graph-container">
+                    <div id="graphCanvas"></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно перемещения файла -->
+<div class="modal" id="moveFileModal">
+    <div class="modal-content" style="width: 450px;">
+        <div class="modal-title">
+            <span>Переместить файл</span>
+            <button onclick="closeMoveModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p><strong>Файл:</strong> <span id="moveSourceFile"></span></p>
+            <label for="moveDestinationFolder">Выберите целевую папку:</label>
+            <select id="moveDestinationFolder" class="modal-input" style="width:100%; margin-bottom: 12px;">
+                <option value="/">/ (корень)</option>
+            </select>
+            <p style="text-align:center; margin:8px 0;">— или —</p>
+            <label for="moveCustomPath">Введите путь вручную:</label>
+            <input type="text" id="moveCustomPath" class="modal-input" 
+                   placeholder="например: папка/подпапка/" style="width:100%; margin-bottom: 12px;">
+            <p style="font-size:12px; color:#666;">* Имя файла сохранится, изменится только путь.</p>
+            <div id="moveMessage" style="margin-top:10px; display:none;"></div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="executeMove()">Переместить</button>
+            <button class="modal-btn" onclick="closeMoveModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно обзора сервера (универсальное) -->
+<div class="modal" id="serverBrowserModal">
+    <div class="modal-content" style="width: 800px; max-width: 90vw; height: 600px; max-height: 90vh; display: flex; flex-direction: column;">
+        <div class="modal-title">
+            <span id="serverBrowserTitle">Обзор сервера</span>
+            <button onclick="closeServerBrowser()">✕</button>
+        </div>
+        <div class="modal-body" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 12px;">
+            <!-- Панель навигации -->
+            <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
+                <button class="modal-btn" id="browserNavBack" onclick="browserNavigateBack()" disabled title="Назад">←</button>
+                <span id="browserCurrentPath" style="flex:1; background:#f5f5f5; padding:4px 8px; border-radius:3px; font-family: monospace;">/</span>
+                <input type="text" id="browserSearch" class="modal-input" placeholder="Поиск..." style="width: 200px;">
+                <select id="browserSort" class="modal-input" style="width: 120px;">
+                    <option value="name">Имя (А-Я)</option>
+                    <option value="size_asc">Размер (↑)</option>
+                    <option value="size_desc">Размер (↓)</option>
+                </select>
+                <button class="modal-btn" onclick="refreshBrowser()">🔄 Обновить</button>
+                <button class="modal-btn" onclick="promptNewFolder()" title="Создать новую папку">➕ Новая папка</button>
+            </div>
+
+            <!-- Таблица файлов -->
+            <div style="flex: 1; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px;">
+                <table class="server-files-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f5f5f5; position: sticky; top: 0;">
+                            <th style="padding: 8px; text-align: left;">Имя</th>
+                            <th style="padding: 8px; text-align: right;">Размер</th>
+                            <th style="padding: 8px; text-align: left;">Дата изменения</th>
+                            <th style="padding: 8px; text-align: center;">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="browserFilesList">
+                        <!-- динамическое содержимое -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Строка состояния -->
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #666;">
+                <span id="browserStats"></span>
+                <span id="browserSelectedInfo"></span>
+            </div>
+
+            <!-- Дополнительная панель для режима сохранения -->
+            <div id="browserSavePanel" style="display: none; margin-top: 12px; padding: 12px; background: #f9f9f9; border-radius: 4px; border: 1px solid #ddd;">
+                <label>Имя файла:</label>
+                <input type="text" id="browserSaveFilename" class="modal-input" style="width: 100%; margin-bottom: 8px;" placeholder="введите имя файла">
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="modal-btn" onclick="browserSaveHere()">Сохранить сюда</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-buttons" style="padding: 8px 16px;">
+            <button class="modal-btn" id="browserActionBtn" onclick="browserAction()">Выбрать</button>
+            <button class="modal-btn" onclick="closeServerBrowser()">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для истории действий (адаптивное по высоте) -->
+<div class="modal" id="historyModal" aria-modal="true" role="dialog" aria-labelledby="historyModalTitle">
+    <div class="modal-content" 
+         style="width: 580px; 
+                max-width: 95vw; 
+                min-height: 480px; 
+                max-height: 92vh; 
+                display: flex; 
+                flex-direction: column;">
+
+        <!-- Заголовок -->
+        <div class="modal-title" id="historyModalTitle" 
+             style="display: flex; justify-content: space-between; align-items: center; 
+                    padding: 12px 16px; background: #007bff; color: white; font-weight: bold;">
+            <span>История изменений</span>
+            <button onclick="closeHistoryModal()" 
+                    aria-label="Закрыть" 
+                    style="background: none; border: none; color: white; cursor: pointer; font-size: 1.4em; line-height: 1;">
+                ✕
+            </button>
+        </div>
+
+        <!-- Основное тело окна — полностью адаптивное -->
+        <div class="modal-body" 
+             style="flex: 1 1 auto; 
+                    display: flex; 
+                    flex-direction: column; 
+                    gap: 16px; 
+                    padding: 16px; 
+                    background: #f9f9f9; 
+                    overflow: hidden;">
+
+            <!-- 1. Статистика -->
+            <section class="history-stats" style="flex: 0 0 auto; padding: 12px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-around; text-align: center;">
+                    <div>
+                        <strong>Действий:</strong><br>
+                        <span id="totalActionsCount" style="font-size: 1.35em; color: #007bff;">0</span>
+                    </div>
+                    <div>
+                        <strong>Позиция:</strong><br>
+                        <span id="currentActionPosition" style="font-size: 1.35em; color: #007bff;">0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Таймлайн -->
+            <section class="history-timeline" style="flex: 0 0 auto; padding: 12px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-weight: bold; font-size: 14px;">Временная шкала</span>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="modal-btn" onclick="undo()" style="padding: 5px 10px;" title="Отменить (Ctrl+Z)">←</button>
+                        <button class="modal-btn" onclick="redo()" style="padding: 5px 10px;" title="Повторить (Ctrl+Y)">→</button>
+                    </div>
+                </div>
+                <div style="position: relative; height: 32px;">
+                    <input type="range" id="historySlider" min="0" max="0" value="0" step="1"
+                           style="width: 100%; position: absolute; top: 50%; transform: translateY(-50%);"
+                           oninput="debounceTemporaryRestore(this.value)"
+                           onchange="jumpToHistoryState(this.value)">
+                    <div class="history-markers" style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; pointer-events: none;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 12px; color: #666;">
+                    <span>Начало</span>
+                    <span>Текущее</span>
+                    <span>Конец</span>
+                </div>
+            </section>
+
+            <!-- 3. Список действий — АДАПТИВНЫЙ ПО ВЫСОТЕ -->
+            <section class="history-list-container" 
+                     style="flex: 1 1 auto; 
+                            min-height: 0; 
+                            display: flex; 
+                            flex-direction: column; 
+                            background: white; 
+                            border-radius: 8px; 
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+                            overflow: hidden;">
+
+                <ul id="historyListBody" 
+                    style="list-style: none; 
+                           padding: 0; 
+                           margin: 0; 
+                           flex: 1 1 auto; 
+                           overflow-y: auto; 
+                           overflow-x: hidden;">
+                    <!-- Динамически заполняется через JS -->
+                </ul>
+            </section>
+
+            <!-- 4. Опции внизу -->
+            <section class="history-options" style="flex: 0 0 auto; padding: 12px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="autoSaveHistory" checked> 
+                        Автосохранение истории
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        Макс. действий:
+                        <input type="number" id="maxHistorySize" value="50" min="10" max="200" step="10"
+                               style="width: 70px; padding: 4px; border: 1px solid #ddd; border-radius: 4px;">
+                    </label>
+                    <button class="modal-btn" onclick="clearHistory()" 
+                            style="background: #dc3545; color: white;">
+                        Очистить историю
+                    </button>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Кнопки внизу -->
+        <div class="modal-buttons" 
+             style="padding: 12px 16px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="modal-btn" onclick="closeHistoryModal()" 
+                    style="background: #6c757d; color: white;">Закрыть</button>
+            <button class="modal-btn" onclick="jumpToSelectedState()" 
+                    style="background: #28a745; color: white;">Перейти к выбранному</button>
+        </div>
+
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно прогресса -->
+<div class="modal" id="progressModal">
+    <div class="modal-content" style="width: 400px;">
+        <div class="modal-title">
+            <span id="progressModalTitle">Выполнение операции</span>
+            <button onclick="closeProgressModal()" style="background:none;border:none;color:white;cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <p id="progressMessage" class="progress-message">Идёт обработка...</p>
+            </div>
+            <div class="modal-row progress-container">
+                <div class="progress-bar">
+                    <div id="progressBarFill" class="progress-bar-fill"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progressPercent">0%</span>
+                </div>
+            </div>
+            <div class="modal-row" id="progressCancelRow" style="display:flex; justify-content:center;">
+                <button class="modal-btn" id="progressCancelBtn" style="background:#dc3545; color:white;">Отмена</button>
+            </div>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно управления сервером (две панели) -->
+<div class="modal" id="serverCommanderModal">
+    <div class="modal-content" style="width: 1200px; max-width: 95vw; height: 700px; max-height: 90vh; display: flex; flex-direction: column;">
+        <div class="modal-title">
+            <span>Управление файлами на сервере</span>
+            <button onclick="closeServerCommander()">✕</button>
+        </div>
+        <div class="modal-body" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 8px;">
+
+            <!-- Отображение текущих путей -->
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
+                    <span>Левая:</span>
+                    <input type="text" id="leftPath" class="modal-input" readonly style="flex: 1; background: #f5f5f5;">
+                </div>
+                <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
+                    <span>Правая:</span>
+                    <input type="text" id="rightPath" class="modal-input" readonly style="flex: 1; background: #f5f5f5;">
+                </div>
+            </div>
+
+            <!-- Две панели -->
+            <div style="display: flex; gap: 8px; flex: 1; overflow: hidden;">
+                <!-- Левая панель -->
+                <div class="server-panel" id="leftPanel">
+                    <div class="panel-header">Левая панель</div>
+                    <div class="panel-content">
+                        <table class="server-files-table" style="width: 100%;">
+                            <tbody id="leftPanelList">
+                                <!-- Заполняется динамически -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Правая панель -->
+                <div class="server-panel" id="rightPanel">
+                    <div class="panel-header">Правая панель</div>
+                    <div class="panel-content">
+                        <table class="server-files-table" style="width: 100%;">
+                            <tbody id="rightPanelList">
+                                <!-- Заполняется динамически -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Панель кнопок (внизу) -->
+            <div style="margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <button class="modal-btn" onclick="createFolderInActivePanel()">➕ Создать папку</button>
+                <button class="modal-btn" id="commanderSelectBtn" onclick="commanderSelect()">Выбрать</button>
+                <!-- <button class="modal-btn" onclick="deleteSelectedInActivePanel()">🗑 Удалить</button>
+                <button class="modal-btn" onclick="downloadSelectedInActivePanel()">⬇ Скачать</button>
+                <button class="modal-btn" onclick="moveSelectedToOtherPanel()">➡ Переместить</button> -->
+                <button class="modal-btn" onclick="refreshBothPanels()">🔄 Обновить</button>
+                <button class="modal-btn" onclick="closeServerCommander()">✖ Закрыть</button>
+            </div>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+
+
+<!-- Модальное окно для поиск окружности-->
+<div class="modal" id="roundSearchingModal">
+    <div class="modal-content" style="width:450px;">
+        <div class="modal-title">
+            <span>Поиск окружности</span>
+            <button onclick="closeRoundSearchingModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <label style="display:flex; align-items:center; gap:8px;">
+                    <input type="radio" name="shape" id="chooseCircle" value="circle" checked>
+                    <span>Окружность</span>
+                </label>
+        
+                <label style="display:flex; align-items:center; gap:8px;">
+                    <input type="radio" name="shape" id="chooseEllipse" value="ellipse">
+                    <span>Эллипс</span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" id="uploadButton" onclick="applyRoundSearchingFilter()">Ок</button>
+            <button class="modal-btn" onclick="closeRoundSearchingModal()" id="cancelButton">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно вывода парамеров окружности-->
+<div class="modal " id="resultRoundSearchingModal">
+    <div class="modal-content" style="width: 300px;height: 150px;">
+        <div class="modal-title">
+            <span>Параметры окружности (в пикселях)</span>
+            <button onclick="closeResultRoundSearchingModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <div class="form-group">
+                    <label for="centerX">Центр (X):</label>
+                    <output id="centerX" class="output-value"></output>
+                </div>
+                
+                <div class="form-group">
+                    <label for="centerY">Центр (Y):</label>
+                    <output id="centerY" class="output-value"></output>
+                </div>
+                
+                <div class="form-group">
+                    <label for="radius">Радиус:</label>
+                    <output id="radius" class="output-value"></output>
+                </div>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="closeResultRoundSearchingModal()">Ок</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модальное окно помощи -->
+<div class="modal" id="helpModal">
+    <div class="modal-content" style="width: 800px; max-width: 90vw; max-height: 85vh; overflow-y: auto;">
+        <div class="modal-title">
+            <span>Помощь - Описание функционала WTIS</span>
+            <button onclick="closeHelpModal()">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 20px; overflow-y: auto;">
+            <div class="help-section">
+                <h3><i class="fas fa-folder"></i> Вкладка "Файл"</h3>
+                <p>Управление файлами проекта:</p>
+                <ul>
+                    <li><strong>Открыть</strong> - загрузка изображений с компьютера или сервера</li>
+                    <li><strong>Сохранить</strong> - сохранение результатов работы локально или на сервере</li>
+                    <li><strong>Открытые файлы</strong> - переключение между несколькими открытыми изображениями</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3><i class="fas fa-undo"></i> Вкладка "Правка"</h3>
+                <p>Работа с историей действий:</p>
+                <ul>
+                    <li><strong>Отменить (Ctrl+Z)</strong> - отмена последнего действия</li>
+                    <li><strong>Повторить (Ctrl+Y)</strong> - повтор ранее отменённого действия</li>
+                    <li><strong>История (Ctrl+H)</strong> - просмотр и навигация по истории изменений</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3><i class="fas fa-search"></i> Вкладка "Вид"</h3>
+                <p>Управление отображением изображения:</p>
+                <ul>
+                    <li><strong>Увеличить</strong> - приближение изображения</li>
+                    <li><strong>Уменьшить</strong> - отдаление изображения</li>
+                    <li><strong>100%</strong> - сброс масштаба к исходному размеру</li>
+                    <li><strong>По размеру окна</strong> - автоматическое масштабирование под размер экрана</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3><i class="fas fa-image"></i> Вкладка "Изображение"</h3>
+                <p>Геометрические преобразования:</p>
+                <ul>
+                    <li><strong>Обрезка</strong> - обрезка изображения по выделенной области</li>
+                    <li><strong>Поворот</strong> - поворот на 90°, 180°, 270°</li>
+                    <li><strong>Отражение</strong> - зеркальное отражение по горизонтали или вертикали</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3><i class="fas fa-magic"></i> Вкладка "Фильтры"</h3>
+                <p>Применение фильтров и обработка изображений:</p>
+                <ul>
+                    <li><strong>Выделение контуров</strong> - фильтры для обнаружения границ и контуров</li>
+                    <li><strong>Поиск объектов</strong> - поиск окружностей, осей симметрии, центров</li>
+                    <li><strong>Предварительная обработка</strong> - аппроксимация, арифметические операции, удаление дефектов</li>
+                    <li><strong>Прочее</strong> - медианный фильтр, нормализация</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3><i class="fas fa-sliders-h"></i> Вкладка "Регулировка"</h3>
+                <p>Настройка параметров изображения:</p>
+                <ul>
+                    <li><strong>Основные настройки</strong> - поворот/масштабирование, функции окна, яркость/контраст</li>
+                    <li><strong>Цветокоррекция</strong> - баланс цвета, тон/насыщенность, уровни, кривые</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3><i class="fas fa-tools"></i> Вкладка "Инструменты"</h3>
+                <p>Специализированные инструменты:</p>
+                <ul>
+                    <li><strong>Code Lab</strong> - выполнение пользовательских скриптов</li>
+                    <li><strong>СРТИ</strong> - исправление и фильтрация СРТИ</li>
+                    <li><strong>Фотохронометрия</strong> - фильтр ФХМ</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3><i class="fas fa-project-diagram"></i> Вкладка "Режимы"</h3>
+                <p>Переключение режимов работы приложения:</p>
+                <ul>
+                    <li><strong>Режимы</strong> - переход к workflow (сценариям обработки)</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3><i class="fas fa-cog"></i> Вкладка "Настройки"</h3>
+                <p>Параметры приложения:</p>
+                <ul>
+                    <li><strong>Интерфейс</strong> - отображение цветовой шкалы, выбор палитры</li>
+                    <li><strong>Тема оформления</strong> - переключение светлой/тёмной темы</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3><i class="fas fa-mouse-pointer"></i> Панель инструментов</h3>
+                <p>Инструменты для работы с изображением:</p>
+                <ul>
+                    <li><strong>Курсор</strong> - выбор и перемещение по изображению, получение информации о пикселях</li>
+                    <li><strong>Профиль</strong> - построение графика интенсивности вдоль линии</li>
+                    <li><strong>Лассо</strong> - выделение произвольной области</li>
+                    <li><strong>Перемещение</strong> - перемещение выделенной области</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3><i class="fas fa-keyboard"></i> Горячие клавиши</h3>
+                <ul>
+                    <li><strong>Ctrl+Z</strong> - Отменить действие</li>
+                    <li><strong>Ctrl+Y</strong> - Повторить действие</li>
+                    <li><strong>Ctrl+H</strong> - Открыть историю</li>
+                    <li><strong>Ctrl+S</strong> - Сохранить</li>
+                    <li><strong>Ctrl+O</strong> - Открыть файл</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="closeHelpModal()">Закрыть</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<script src="src/globals/globals.js"></script>
+<script src="src/tools/tools.js"></script>
+<script src="src/fileManager/fileManager.js"></script>
+<script src="src/history/history.js"></script>
+<!-- <script src="src/color/color.js"></script> -->
+
+
+<script src="src/imageOps/imageOps.js"></script>
+<script src="src/recentFiles/recentFiles.js"></script>
+<script src="src/server/server.js"></script>
+<script src="src/ui/ui.js"></script>
+<script src="src/events/events.js"></script>
+
+<!-- <script src="src/menuStubs/menuStubs.js"></script> -->
+<script src="src/main/main.js"></script>
+<script src="src/drawing/drawing.js"></script>
+<script src="src/tabs/tabs.js"></script>
+<script src="src/modals/models.js"></script>
+<script src="src/matrix/matrix.js"></script>
+<script src="src/onboarding/onboarding.js"></script>
+    <script>
+
+        console.log('Новый интерфейс: http://dev.wtis.wfront.svk.sils.local/new_int');
+        console.log('WorkFlow: http://dev.wtis.wfront.svk.sils.local/workflow');
+        console.log('Просмотр иконок: http://dev.wtis.wfront.svk.sils.local/viewIcons');
+        console.log('Скачать тестовые данные: http://dev.wtis.wfront.svk.sils.local/test.tpt');
+        console.log('Скачать цель worflow: http://dev.wtis.wfront.svk.sils.local/purpose.png');
+        console.log('Скачать логи: http://dev.wtis.wfront.svk.sils.local/logs/requests.log');
+        console.log('Скачать логи: http://dev.wtis.wfront.svk.sils.local/logs/app.log');
+    </script>
+</body>
+</html>

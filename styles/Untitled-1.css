@@ -1,0 +1,569 @@
+/* Контейнер выпадающего списка */
+ .open-files-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 340px;
+    background: var(--background-secondary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    visibility: hidden;
+    transition: all var(--transition-normal);
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+}
+
+.open-files-dropdown.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+}
+
+/* Заголовок выпадающего списка */
+.open-files-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--background-tertiary);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.close-dropdown-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-dropdown-btn:hover {
+    background: var(--danger-color);
+    color: var(--text-primary);
+}
+
+/* Контейнер списка файлов */
+.open-files-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(70vh - 120px);
+}
+
+/* Скроллбар */
+.open-files-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.open-files-list::-webkit-scrollbar-track {
+    background: var(--background-tertiary);
+    border-radius: var(--radius-md);
+}
+
+.open-files-list::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.open-files-list::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* Элемент списка файлов */
+.open-file-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    border-radius: var(--radius-sm);
+}
+
+/* Чередование фона */
+.open-file-item:nth-child(even) {
+    background-color: var(--background-tertiary);
+}
+
+.open-file-item:hover {
+    background-color: var(--primary-light);
+}
+
+.open-file-item.active {
+    background-color: var(--primary-light);
+    border-left: 3px solid var(--primary-color);
+}
+
+/* Миниатюра изображения */
+.open-file-thumbnail {
+    width: 48px; /* 3.2.1 - Размер 48×48px */
+    height: 48px;
+    border-radius: 4px; /* 3.2.1 - Закругленные углы 4px */
+    overflow: hidden;
+    border: 1px solid #e0e0e0; /* 3.2.1 - Тонкая рамка */
+    flex-shrink: 0;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.open-file-item:hover .open-file-thumbnail {
+    transform: scale(1.05); /* 3.2.1 - Легкое увеличение при наведении */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.open-file-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 3.2.1 - Центральное обрезанное масштабирование */
+}
+
+.open-file-thumbnail-placeholder {
+    color: #999;
+    font-size: 20px;
+}
+
+/* Информация о файле - 3.2.2 */
+.open-file-info {
+    flex: 1;
+    margin-left: 12px;
+    min-width: 0; /* Важно для усечения текста */
+}
+
+.open-file-name {
+    font-weight: 500;
+    font-size: 14px; /* 3.2.2 - Основной текст 14px */
+    color: #333;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 3.2.2 - Усечение с многоточием */
+}
+
+.open-file-details {
+    font-size: 12px; /* 3.2.2 - Дополнительный текст 12px */
+    color: #666;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.open-file-resolution,
+.open-file-format {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.open-file-resolution::before {
+    content: "🖼️";
+    font-size: 10px;
+}
+
+.open-file-format::before {
+    content: "📄";
+    font-size: 10px;
+}
+
+/* Элементы управления - 3.2.3 */
+.open-file-actions {
+    margin-left: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.open-file-item:hover .open-file-actions {
+    opacity: 1;
+}
+
+.close-file-btn {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 3px;
+    transition: background-color 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-file-btn:hover {
+    background: var(--danger-color);
+    color: #d32f2f;
+}
+
+/* Заблокированный/недоступный файл - 3.4 */
+.open-file-item.disabled {
+    opacity: 0.5; /* 3.4 - Уменьшенная opacity */
+    cursor: not-allowed;
+}
+
+.open-file-item.disabled:hover {
+    background-color: inherit;
+}
+
+/* Сообщение при пустом списке - 3.5 */
+.no-files-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #999;
+    text-align: center;
+}
+
+.no-files-message i {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.no-files-message div {
+    font-size: 14px;
+}
+
+
+
+/* Индикатор количества файлов в свернутом состоянии - 2 */
+.file-count-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #0078d7;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Кнопка открытия выпадающего списка */
+#openFilesDropdownBtn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    background: linear-gradient(180deg, #f5f5f5 0%, #e8e8e8 100%);
+}
+
+
+
+/* Футер с кнопками быстрых действий */
+.open-files-footer {
+    display: flex;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color);
+    background: var(--background-tertiary);
+    gap: 8px;
+}
+    
+.footer-btn {
+    flex: 1;
+    padding: 10px 14px;
+    background: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all var(--transition-fast);
+    font-weight: 500;
+}
+
+.footer-btn:hover {
+    background: var(--background-tertiary);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.footer-btn:first-child {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-hover);
+}
+
+.footer-btn:first-child:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+/* Футер с кнопками быстрых действий - 3.6 */
+.open-files-footer {
+    display: flex;
+    padding: 12px 16px;
+    border-top: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    border-radius: 0 0 6px 6px;
+    gap: 8px;
+}
+
+.footer-btn {
+    flex: 1;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #333;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.footer-btn:hover {
+    background: #f0f0f0;
+    border-color: #ccc;
+}
+
+.footer-btn:first-child {
+    background: #0078d7;
+    color: white;
+    border-color: #0078d7;
+}
+
+.footer-btn:first-child:hover {
+    background: #106ebe;
+    border-color: #106ebe;
+}
+
+
+
+/* Элемент списка файлов */
+.open-file-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    border-radius: var(--radius-sm);
+}  
+/* Чередование фона */
+.open-file-item:nth-child(even) {
+    background-color: var(--background-tertiary);
+}
+.open-file-item:hover {
+    background-color: var(--primary-light);
+}
+    
+.open-file-item.active {
+    background-color: var(--primary-light);
+    border-left: 3px solid var(--primary-color);
+}  
+    .open-file-item:hover .open-file-thumbnail {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.open-file-item:hover{
+    opacity: 1;
+}
+
+/* Контейнер списка файлов */
+.open-files-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(70vh - 120px); /* Учитываем высоту заголовка и футера */
+}
+    
+/* Скроллбар - 3.5 */
+.open-files-list::-webkit-scrollbar {
+    width: 6px;
+}
+        
+.open-files-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.open-files-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.open-files-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+
+        /* --- Open Files Dropdown --- */
+        .open-files-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            z-index: 1000;
+            min-width: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .open-files-dropdown.show {
+            display: block;
+        }
+
+        .open-files-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--color-border);
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .close-dropdown-btn {
+            background: transparent;
+            border: none;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            padding: 2px;
+        }
+        .close-dropdown-btn:hover {
+            color: var(--color-text);
+        }
+
+        .open-files-list {
+            padding: 4px 0;
+        }
+
+        .open-file-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+
+        .open-file-item:hover {
+            background: var(--color-surface-hover);
+        }
+
+        .open-file-item.active {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .open-file-thumbnail {
+            width: 32px;
+            height: 32px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .open-file-thumbnail-placeholder {
+            color: var(--color-text-secondary);
+            font-size: 16px;
+        }
+
+        .open-file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .open-file-name {
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .open-file-details {
+            display: flex;
+            gap: 8px;
+            font-size: 10px;
+            color: var(--color-text-secondary);
+        }
+
+        .open-file-item.active .open-file-details {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .open-file-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .close-file-btn {
+            background: transparent;
+            border: none;
+            color: var(--color-text-secondary);
+            padding: 2px;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+        .close-file-btn:hover {
+            background: var(--color-danger);
+            color: white;
+        }
+
+
+        .open-files-footer {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .footer-btn {
+            flex: 1;
+            padding: 6px 8px;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+            font-size: 11px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .footer-btn:hover {
+            background: var(--color-surface-hover);
+            border-color: var(--color-primary);
+        }

@@ -1,0 +1,187 @@
+ribbon
+
+.ribbon {
+    background: linear-gradient(135deg, var(--background-secondary) 0%, #f8fafc 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding: 6px 12px;
+    display: flex;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* .ribbon-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 12px;
+    border-right: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+} */
+
+.ribbon-group:hover {
+    background: var(--background-tertiary);
+}
+
+.ribbon-group:last-child {
+    border-right: none;
+}
+
+.ribbon-group-title {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.ribbon-buttons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.ribbon-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    overflow: visible;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+    color: var(--text-primary);
+}
+
+/* Кнопки в ribbon для вкладок - компактные */
+.ribbon-tab-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+    height: auto;
+    width: auto;
+    gap: 4px;
+}
+
+.ribbon-tab-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.ribbon-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+.ribbon-btn:hover .ribbon-icon,
+.ribbon-btn:hover .icon {
+    fill: var(--primary-color);
+}
+
+
+.ribbon-btn.active {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    color: white;
+    border-color: var(--primary-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.ribbon-btn.active .ribbon-icon,
+.ribbon-btn.active .icon {
+    fill: white;
+}
+
+.ribbon-btn-large {
+    width: 48px;
+    height: 48px;
+    flex-direction: column;
+    font-size: 18px;
+}
+
+.ribbon-btn-label {
+    font-size: 10px;
+    margin-top: 3px;
+    color: var(--text-secondary);
+}
+.ribbon-btn-large .ribbon-icon {
+    width: 24px;
+    height: 24px;
+}
+.ribbon-btn img {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+}
+
+
+
+        /* --- Ribbon Groups --- */
+        .ribbon-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-right: 1px solid var(--color-border);
+        }
+
+        .ribbon-buttons {
+            display: flex;
+            gap: 4px;
+            position: relative;
+        }
+
+        .ribbon-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            background: transparent;
+            color: var(--color-text);
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            font-size: 12px;
+            transition: all var(--transition);
+        }
+
+        .ribbon-btn:hover {
+            background: var(--color-surface-hover);
+            border-color: var(--color-border);
+        }
+
+        .ribbon-btn-large {
+            padding: 6px 10px;
+        }
+
+        .ribbon-btn-thumb {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            border-radius: 2px;
+        }
+
+        .ribbon-btn-label {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-count-badge {
+            background: var(--color-primary);
+            color: white;
+            font-size: 10px;
+            padding: 1px 4px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+        }

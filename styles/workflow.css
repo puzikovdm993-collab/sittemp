@@ -1,0 +1,577 @@
+/* CSS-переменные для гибкости тем */ 
+:root {
+    --primary: #0066b8;
+    --primary-dark: #005a9e;
+    --gray-50: #f3f4f6;
+    --gray-100: #e8e8e8;
+    --gray-800: #f3f3f3;
+    --bg: #ffffff;
+    --text: #333333;
+    --sidebar-width: 280px;
+    --sidebar-collapsed: 150px;
+    --preview-height: 360px;
+    --preview-collapsed: 50px;
+    --sidebar-bg: #f3f3f3;
+    --inspector-bg: #f3f3f3;
+    --toolbar-bg: rgba(243, 243, 243, 0.9);
+    --graph-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --input-bg: #ffffff;
+    --hover-bg: #e0e0e0;
+    --selection-bg: #add6ff;
+}
+
+/* Темная тема для workflow - более темные тона */
+[data-theme="dark"] {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-800: #1f2937;
+    --bg: #1e1e1e;
+    --text: #cccccc;
+    --sidebar-width: 280px;
+    --sidebar-collapsed: 150px;
+    --preview-height: 360px;
+    --preview-collapsed: 50px;
+    --sidebar-bg: #252526;
+    --inspector-bg: #252526;
+    --toolbar-bg: rgba(37, 37, 38, 0.9);
+    --graph-bg: #1e1e1e;
+    --border-color: #3c3c3c;
+    --input-bg: #3c3c3c;
+    --hover-bg: #2a2d2e;
+    --selection-bg: #264f78;
+}
+
+
+
+/* Сброс стандартных стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Полноэкранная область с градиентным фоном */
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Контейнер приложения с flex-раскладкой */
+.app {
+    display: flex;
+    height: 100vh;
+}
+
+/* Сайдбар с начальными размерами и эффектами */
+.sidebar {
+    /* Задаёт ширину сайдбара через CSS-переменную (--sidebar-width) */
+    width: var(--sidebar-width);
+    /* Фон сайдбара — используем переменную --sidebar-bg */
+    background: var(--sidebar-bg);
+    /* Цвет текста внутри сайдбара — используем переменную --text */
+    color: var(--text);
+    /* Плавная анимация изменения ширины (0.4 секунды, с кубической кривой Безье для эффекта "отскока") */
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Отступы: 30px сверху/снизу, 20px слева/справа */
+    padding: 30px 20px;
+    /* Позиционирование: относительное (чтобы дочерние элементы могли позиционироваться внутри) */
+    position: relative;
+    /* Устанавливает более высокий z-индекс, чтобы сайдбар был поверх других элементов */
+    z-index: 10;
+    /* Вертикальное расположение содержимого (столбец) */
+    display: flex;
+    flex-direction: column;
+    /* Автоматическая прокрутка, если контент не помещается по высоте */
+    overflow-y: auto;
+    /* Запрет сжатия сайдбара (ширина остаётся фиксированной при изменении размеров контейнера) */
+    flex-shrink: 0;
+    /* Высота сайдбара — 100% высоты viewport (полный экран) */
+    height: 100vh;
+}
+
+    /* Размеры cайдбарa при сворачивании */
+    .sidebar.collapsed {
+        width: var(--sidebar-collapsed);
+    }
+
+/* Кнопка сворачивания сайдбара */
+.collapse-btn {
+    position: absolute;
+    top: 30px;
+    right: 5px;
+    background: var(--primary);
+    color: var(--text);
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    transition: all 0.3s;
+}
+
+    .collapse-btn:hover {
+        background: var(--primary-dark);
+        transform: scale(1.1);
+    }
+
+
+/* Сайдбар справа (фиксированный) */
+.inspector {
+    width: var(--sidebar-width); /* Используется переменная */
+    background: var(--inspector-bg); /* Используем переменную для фона */
+    color: var(--text); /* Цвет текста из переменной */
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Анимация ширины и т. д. */
+    padding: 30px 20px; /* Отступы внутри */
+    position: fixed; /* Фиксируем на экране */
+    top: 0; /* Прижимаем к верху */
+    bottom: 0; /* Прижимаем к низу */
+    right: 0; /* Прижимаем к правому краю */
+    z-index: 10; /* Выталкиваем поверх других элементов */
+    display: flex; /* Flexbox для удобства */
+    flex-direction: column; /* Контент вертикально */
+    overflow-y: auto; /* Прокрутка, если контента много */
+    box-shadow: -4px 0 10px rgba(0, 0, 0, 0.3); /* Тень слева для отделения */
+    box-sizing: border-box; /* Чтобы padding не увеличивал ширину */
+}
+
+/* Блок с аватаром и статусом пользователя */
+.user-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.avatar-container {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+/* Стилизованный круговой аватар */
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    overflow: hidden;
+}
+
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+/* Индикатор статуса (зеленый кружок) */
+.status-indicator {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 12px;
+    height: 12px;
+    background: #10b981;
+    border: 2px solid var(--bg);
+    border-radius: 50%;
+}
+
+.user-info {
+    text-align: center;
+    transition: opacity 0.3s;
+}
+
+.sidebar.collapsed .user-info {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+}
+
+/* Поиск узлов */
+/* Контейнер для поля поиска */
+.search-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+/* Поле ввода с placeholder */
+#searchInput {
+    width: 100%;
+    padding: 12px 16px 12px 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+    #searchInput:focus {
+        border-color: var(--primary);
+        background: var(--hover-bg);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+    }
+/* Иконка поиска (SVG) */
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    fill: var(--text-secondary);
+}
+
+.sidebar.collapsed .search-container {
+    display: none;
+}
+
+/* Группы узлов */
+.node-list {
+    flex: 1;
+    overflow-y: auto;
+}
+/* Контейнер группы узлов */
+.node-group {
+    margin-bottom: 16px;
+    font-size: 11pt; /* 12 пунктов */
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+    /* margin: 8px 4%; */
+    margin-right: 10px; /* Только правый отступ */
+}
+
+/* Заголовок группы (кликабельный) */
+.node-group-header {
+    background: var(--hover-bg);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s;
+}
+
+    .node-group-header::after {
+        content: '▼';
+        font-size: 12px;
+        opacity: 0.7;
+        transition: transform 0.3s;
+    }
+
+.node-group.collapsed .node-group-header::after {
+    transform: rotate(180deg);
+}
+
+.node-group-header:hover {
+    background: var(--selection-bg);
+}
+
+/* Контейнер для карточек узлов */
+.node-group-content {
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+/* Скрывает содержимое при сворачивании */
+.node-group.collapsed .node-group-content {
+    max-height: 0;
+}
+
+/* Карточка узла (drag-and-drop) */
+.node-card {
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 8px 0;
+    cursor: grab;
+    transition: all 0.3s;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+    .node-card:hover {
+        background: var(--selection-bg);
+        border-color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .node-card:active {
+        cursor: grabbing;
+    }
+
+    .node-card svg {
+        width: 24px;
+        height: 24px;
+        stroke: currentColor;
+    }
+
+    .node-card small {
+        font-size: 12px;
+        opacity: 0.7;
+        display: block;
+        margin-top: 4px;
+    }
+
+/* Особенности при сворачивании сайдбара (карточки становятся круглыми иконками) */
+.sidebar.collapsed .node-card {
+    justify-content: center;
+    padding: 16px 0;
+    gap: 0;
+}
+
+    .sidebar.collapsed .node-card svg {
+        width: 32px;
+        height: 32px;
+    }
+
+.sidebar.collapsed .node-text-container {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+/* Основная область с графом и превью */
+.main-content {
+    flex: 1;
+    position: relative;
+    background: var(--graph-bg);
+    overflow: hidden;
+}
+
+/* Заголовок приложения */
+.header {
+    background: var(--bg);
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 1.4rem;
+}
+
+/* Панель инструментов с плавным перемещением */
+.toolbar {
+    position: absolute;
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--toolbar-bg);
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    backdrop-filter: blur(10px);
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+    /* Сдвиг при сворачивании сайдбара */
+    .toolbar.collapsed {
+        left: var(--sidebar-collapsed);
+    }
+
+    .toolbar button {
+        background: var(--hover-bg);
+        border: none;
+        color: var(--text);
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+    }
+
+        .toolbar button:hover {
+            background: var(--primary);
+        }
+
+
+/* Контейнер для графа и превью */
+#workflow-layout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Контейнер для графа с тенью сетки */
+
+#graph-container {
+    flex: 1;
+    position: relative;
+    background: var(--graph-bg);
+    overflow: hidden;
+    /* background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="20" height="20" fill="%23111"/><rect x="10" width="10" height="20" fill="%23181"/><rect y="10" width="20" height="10" fill="%23181"/></svg>'); */
+}
+
+/* Canvas графа LiteGraph */
+#graph-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+
+/* Стили для скроллбара */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--hover-bg);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--vscode-scrollbar);
+    border-radius: 3px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary);
+    }
+
+/* Стили для инспектора */
+#inspector {
+    width: 20rem;
+    min-width: 16.25rem;
+    max-width: 26.25rem;
+    /* background: var(--panel); */
+    background: var(--inspector-bg);
+    border-left: 1px solid var(--border-color);
+    padding: 0.75rem;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transform: translateX(0.875rem);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 220ms ease, opacity 220ms ease;
+}
+
+    #inspector.visible {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    #inspector h3 {
+        margin: 0 0 0.375rem 0;
+        color: var(--primary);
+        font-size: 0.875rem;
+    }
+
+    #inspector .preview {
+        margin-top: 16%;
+        background: var(--bg);
+        border-radius: 0.375rem;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 11.25rem;
+        border: 1px solid var(--border-color);
+        top: 20px;
+    }
+
+    #inspector .props {
+        overflow: auto;
+        max-height: calc(100vh - 18.75rem);
+        padding-right: 0.375rem;
+    }
+
+    #inspector .prop {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+        #inspector .prop label {
+            min-width: 5.625rem;
+            color: var(--text-secondary);
+        }
+
+        #inspector .prop input[type="number"], #inspector .prop input[type="text"], #inspector .prop select {
+            width: 100%;
+            padding: 0.375rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text);
+        }
+
+    #inspector .widget-prop {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    #inspector .widget-label {
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.125rem;
+    }
+
+    #inspector .widget-input {
+        padding: 0.375rem;
+        border-radius: 0.375rem;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text);
+        font-size: 0.875rem;
+    }
+
+    #inspector input[type="range"] {
+        width: 100%;
+        accent-color: var(--primary);
+    }
+
+    #inspector input[type="checkbox"] {
+        width: auto;
+        accent-color: var(--primary);
+    }
+
+.inspector-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.625rem;
+}
+
+    .inspector-controls button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+#inspector .preview canvas {
+    display: block;
+    margin: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}

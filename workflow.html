@@ -1,0 +1,4278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Название приложения -->
+    <title>WTIS</title>
+
+    <!-- Подключаем CSS-файл LiteGraph.js для стилизации узлов и связей -->
+    <link rel="stylesheet" type="text/css" href="static/css/litegraph.css">
+    <link rel="stylesheet" href="styles/workflow.css">
+</head>
+<body>
+    <main class="app">
+
+
+
+        <!-- Основная область -->
+        <div class="main-content" id="mainContent">
+
+            <!-- Боковая панель (сайдбар) -->
+            <aside class="sidebar" id="sidebar">
+
+                <!-- Кнопка сворачивания -->
+                <button class="collapse-btn" onclick="toggleSidebar()">
+                    <span id="collapseIcon">←</span>
+                </button>
+
+                <!-- Информация о пользователе -->
+                <div class="user-section">
+                    <div class="avatar">AI</div>
+                    <div class="user-info">
+                        <div class="user-name">TIS_user</div>
+                        <div class="user-role">Senior Developer</div>
+                    </div>
+                </div>
+
+                <!-- Поиск -->
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Поиск узлов..." autocomplete="off">
+                    <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                </div>
+
+                <div class="node-list">
+                    <!-- Группа: Ввод/Вывод -->
+                    <div class="node-group">
+                        <div class="node-group-header" onclick="toggleGroup(this)">Ввод/Вывод</div>
+                        <div class="node-group-content">
+                            <div class="node-card" draggable="true" data-node-type="input/LoadNode">
+                                <svg><use href="#icon-download"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Загрузить</div>
+                                    <!-- <small>Входной узел</small> -->
+                                </div>
+                            </div>
+                            <div class="node-card" draggable="true" data-node-type="output/SaveNode">
+                                <svg><use href="#icon-upload"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Сохранить</div>
+                                    <!-- <small>Выходной узел</small> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Группа: Filters -->
+                    <div class="node-group">
+                        <div class="node-group-header" onclick="toggleGroup(this)">Фильтры</div>
+                        <div class="node-group-content">
+                            <div class="node-card" draggable="true" data-node-type="filter/Sobel">
+                                <svg><use href="#lucide-eye"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Фильтр собель</div>
+                                    <!-- <small>Фильтр серого</small> -->
+                                </div>
+                            </div>
+                            <div class="node-card" draggable="true" data-node-type="filter/Median">
+                                <svg><use href="#lucide-invert"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Медианный фильтр</div>
+                                    <!-- <small>Инверсия цвета</small> -->
+                                </div>
+                            </div>
+                            <div class="node-card" draggable="true" data-node-type="filter/Normalisation">
+                                <svg><use href="#lucide-sliders-horizontal"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Нормализация</div>
+                                    <!-- <small>Изменить яркость</small> -->
+                                </div>
+                            </div>
+                            <div class="node-card" draggable="true" data-node-type="filter/BackgroundCorrectionPolynomialNode">
+                                <svg><use href="#lucide-sliders-horizontal"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Апроксимация</div>
+                                    <!-- <small>Изменить яркость</small> -->
+                                </div>
+                            </div>
+                           
+                            <div class="node-card" draggable="true" data-node-type="filter/Logarithm">
+                                <svg><use href="#lucide-sliders-horizontal"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Логарифмирование</div>
+                                    <!-- <small>Изменить яркость</small> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Группа: Transform -->
+                    <div class="node-group">
+                        <div class="node-group-header" onclick="toggleGroup(this)">Трансформ</div>
+                        <div class="node-group-content">
+                            <div class="node-card" draggable="true" data-node-type="transform/Resize">
+                                <svg><use href="#lucide-eye"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Размер</div>
+                                    <!-- <small>Вывод в превью</small> -->
+                                </div>
+                            </div>
+                            
+                            <div class="node-card" draggable="true" data-node-type="transform/Rotate">
+                                <svg><use href="#lucide-download"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Поворот</div>
+                                    <!-- <small>Выходной узел</small> -->
+                                </div>
+                            </div>
+                            <div class="node-card" draggable="true" data-node-type="transform/Crop">
+                                <svg><use href="#lucide-download"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Обрезка</div>
+                                    <!-- <small>Выходной узел</small> -->
+                                </div>
+                            </div>
+                            <div class="node-card" draggable="true" data-node-type="transform/Threshold">
+                                <svg><use href="#lucide-download"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Порог</div>
+                                    <!-- <small>Выходной узел</small> -->
+                                </div>
+                            </div>
+                            
+                            <div class="node-card" draggable="true" data-node-type="transform/CoordinateTransformNode">
+                                <svg><use href="#lucide-download"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Полярные координаты</div>
+                                    <!-- <small>Выходной узел</small> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Группа: Calculation -->
+                    <div class="node-group">
+                        <div class="node-group-header" onclick="toggleGroup(this)">Калькулятор</div>
+                        <div class="node-group-content">
+                            <div class="node-card" draggable="true" data-node-type="Calculation/Difference">
+                                <svg><use href="#lucide-eye"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Деление</div>
+                                    <!-- <small>Вывод в превью</small> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Группа: ROI -->
+                    <div class="node-group">
+                        <div class="node-group-header" onclick="toggleGroup(this)">Выделение</div>
+                        <div class="node-group-content">
+                            <div class="node-card" draggable="true" data-node-type="roi/lasso">
+                                <svg><use href="#lucide-eye"></use></svg>
+                                <div class="node-text-container">
+                                    <div>Лассо</div>
+                                    <!-- <small>Вывод в превью</small> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Панель инструментов -->
+            <header class="header">Workflow Редактирования Изображений</header>
+
+            <div class="toolbar" id="toolbar">
+                <button id="run">Запустить</button>
+                <button id="export-graph">Экспорт JSON</button>
+                <button id="import-graph">Импорт JSON</button>
+                <button id="clear-graph">Очистить</button>
+
+                <button class="clear-graph">
+                    <a href="index.html" class="btn-link">Paint</a>
+                </button>
+
+            </div>
+
+            <!-- Контейнер для LiteGraph -->
+            <div id="workflow-layout">
+                <div id="graph-container">
+                    <canvas id="graph-canvas"></canvas>
+                </div>
+            </div>
+
+            <aside class="inspector" id="inspector">
+                <div class="preview" id="inspector-preview">
+                    <div>Нет превью</div>
+                </div>
+                <div id="inspector-node-controls" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"></div>
+                <!-- <div id="inspector-actions" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></div>
+                <div id="toast-container" aria-live="polite" aria-atomic="true"></div> -->
+            </aside>
+
+            <div class="preview-tooltip" id="previewTooltip">
+                <!-- Содержимое тултипа -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Всплывающие окна и модалки -->
+    <div class="modal" id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center;">
+        <span class="close-modal" style="position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer;">&times;</span>
+        <img class="modal-content" id="modalImage" src="" alt="" style="max-width: 90%; max-height: 90%; border-radius: 8px;">
+    </div>
+
+    <!-- Модальное окно для редактирования узлов -->
+    <div id="overlay"></div>
+    <div id="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-title">Edit Node</div>
+            <button class="close-btn" onclick="hideModal()">&times;</button>
+        </div>
+        <div class="modal-content" id="modal-content">
+            <!-- Содержимое будет генерироваться динамически -->
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="hideModal()">Cancel</button>
+            <button class="btn-save" onclick="saveNodeProperties()">Save</button>
+        </div>
+    </div>
+
+    <!-- SVG-иконки (скрыты, используются через <use>) -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+        <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+        <symbol id="icon-invert" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 12h20"/><path d="m5 5 7 7m0 0 7-7m-7 7v10"/></symbol>
+        <symbol id="icon-grayscale" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18"/><path d="M12 3v18"/></symbol>
+        <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="icon-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+        <symbol id="icon-brightness" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></symbol>
+        <symbol id="icon-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2v2M12 20v-2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+        <symbol id="icon-sepia" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor"/></symbol>
+        <symbol id="icon-resize" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18"/><line x1="21" y1="3" x2="21" y2="21"/><line x1="3" y1="21" x2="21" y2="21"/></symbol>
+        <symbol id="icon-rotate" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M2.5 22v-6h6" /><path d="M2 11.5a10 10 0 0 1 18.8-3H17a6 6 0 0 0-10.8 3H2z" /><path d="M22 12.5a10 10 0 0 1-18.8 3H7a6 6 0 0 0 10.8-3H22z" /></symbol>
+        <symbol id="icon-crop" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20"/><path d="M16 2L2 16"/></symbol>
+        <symbol id="icon-blur" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5" fill="currentColor"/></symbol>
+        <symbol id="icon-flip" viewBox="0 0 24 24"><path d="M12 3v18" /><path d="M16 7h3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-3" /><path d="M8 7H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3" /></symbol>
+        <symbol id="icon-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
+    
+        <symbol id="lucide-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></symbol>
+        <symbol id="lucide-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="lucide-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+        <symbol id="lucide-sliders-horizontal" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/><circle cx="6" cy="6" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+        <symbol id="lucide-droplet" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 1-7-7c0-4 7-11 7-11s7 7 7 11a7 7 0 0 1-7 7z"/><path d="M12 2v4"/></symbol>
+        <symbol id="lucide-invert" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 12h20"/></symbol>
+    </svg>
+
+
+    <!-- === ПОДКЛЮЧЕНИЕ БИБЛИОТЕК === -->
+    <script src="static/js/litegraph.js"></script> <!-- Основная библиотека для создания графов узлов -->
+
+    <script>
+
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Супер-веб-страница загружается...');
+            
+            // Инициализация всех систем
+
+            initTabs();
+
+            
+            // // Анимация загрузки
+            // setTimeout(() => {
+            //     document.querySelectorAll('.card').forEach((card, i) => {
+            //         card.style.animation = `fadeInUp 0.5s ease ${i * 0.1}s both`;
+            //     });
+                
+            //     // Разблокировать первое достижение
+            //     unlockAchievement('firstVisit', 'Первый визит', 'Вы впервые посетили эту страницу', 'fas fa-door-open');
+                
+            //     // Показать приветственное уведомление
+            //     showNotification('Добро пожаловать на супер-веб-страницу! 🚀', 'info', 5000);
+            // }, 1000);
+            
+            console.log('✅ Все системы инициализированы!');
+        });
+
+
+
+        const previewTooltip = document.getElementById('previewTooltip');
+
+
+
+
+
+        //alert('Ошибка: LiteGraph не загрузился. Проверьте соединение.');
+        
+        
+        // ===================================================================
+        // === 1. ИНИЦИАЛИЗАЦИЯ ГРАФА И ХОЛСТОВ ===
+        // ===================================================================
+        
+        // Создаём объект графа — это основная структура, где хранятся узлы и связи
+        const graph = new LiteGraph.LGraph();
+        // Создаём холст для отрисовки графа. Указываем селектор #graph-canvas и передаём граф
+        const graphCanvas = new LiteGraph.LGraphCanvas("#graph-canvas", graph);
+        // Разрешает перетаскивание узлов
+        graphCanvas.allow_dragnode = true;
+        // Разрешает перенаправление соединений
+        graphCanvas.allow_reconnect = true;
+
+
+        // ===================================================================
+        // === 2. ОПРЕДЕЛЕНИЕ УЗЛОВ ===
+        // ===================================================================
+
+        // Узел загрузки изображения
+        class LoadNode extends LGraphNode  {
+            constructor() {
+                super();
+                this.addOutput("Image", "object"); 
+                // Свойства узла (по умолчанию)
+                this.properties = {
+                    "width": 10,
+                    "height": 10,
+                    "data": "[[0, 0, 0], [0, 255, 0], [0, 0, 0]]", // Начальная матрица (JSON-строка)
+                    "minValue": 0,
+                    "maxValue": 255,
+                    "format": "tpt",
+                    "filename": null,
+                    "autoscale": true,
+                    "colormap": "gray", // Цветовая схема
+                    "previewData":null
+                };
+                this.size = [200, 60];
+                this.resizable = false;
+                this.color = "#66aaff"; // Светло-голубой для матриц
+                this.title = "Загрузить";
+            }
+
+            //Метод `onExecute` вызывается при выполнении узла (например, при нажатии кнопки "Run")
+            onExecute() {
+
+                // Проверяем, есть ли загруженные данные в свойствах
+                if (this.properties.data) {
+                    
+                    // Получаем матрицу с входа или из свойств
+                    let matrix = this.properties.data;
+
+                    const width = this.properties.width;
+                    const height = this.properties.height;
+                    const minVal =  this.properties.minValue;
+                    const maxVal =  this.properties.maxValue;
+
+                    const autoscale = true;
+                    const colormap = 'gray';
+                    const colorMap = getColormap(colormap);
+                    const data = new Uint8ClampedArray(width * height * 4);
+                    let dataIndex = 0;
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            const normalizedValue = autoscale 
+                                ? (matrix[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                                : (matrix[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                            
+                            const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                            data[dataIndex++] = color.r * 255;
+                            data[dataIndex++] = color.g * 255;
+                            data[dataIndex++] = color.b * 255;
+                            data[dataIndex++] = 255;
+                        }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    const imageData = new ImageData(data, width, height);
+                    ctx.putImageData(imageData, 0, 0);
+
+                    // **Сохраняем изображение в превью** (для визуализации)
+                    this.properties.previewData = imageData;
+
+                    // Формируем выходные данные
+                    const outputData = {
+                        width: this.properties.width,
+                        height: this.properties.height,
+                        data: this.properties.data,
+                        minValue: this.properties.minValue,
+                        maxValue: this.properties.maxValue,
+                        format: this.properties.format,
+                        filename: this.properties.filename,
+                        autoscale: this.properties.autoscale,
+                        colormap: this.properties.colormap
+                    };
+
+                    // Если есть, передаём его через выходной порт (индекс 0 — первый выход)
+                    this.setOutputData(0, outputData);
+                }
+            }
+            onDrawForeground(ctx) {
+                if (this.properties.filename == null || this.properties.format == null) {
+                    ctx.fillStyle = "#CCC";
+                    ctx.font = "12px Arial";
+                    ctx.fillText("LoadName:", 10, 42);
+                    ctx.fillStyle = "#FFF";
+                    ctx.fillText(`Файл не выбран`, 75, 42);
+                    return;
+                }
+                ctx.fillStyle = "#CCC";
+                ctx.font = "12px Arial";
+                ctx.fillText("LoadName:", 10, 42);
+                ctx.fillStyle = "#FFF";
+                ctx.fillText(`${this.properties.filename}.${this.properties.format}`, 75, 42);
+            }
+
+            // Обработчик события клика на узел
+            last_mousedown_time = 0;  // Время последнего нажатия
+            is_dragging = false;      // Флаг перетаскивания
+            drag_threshold = 5;       // Порог смещения (пиксели) для определения drag
+            click_timeout = 200;      // Максимальное время для клика (мс)
+
+            // Обработчик нажатия мыши (фиксация начала клика)
+            onMouseDown(event, pos, graphcanvas) {
+                this.last_mousedown_time = Date.now();
+                this.is_dragging = false;
+                
+                // Проверяем, находится ли клик в области заголовка узла (первые NODE_TITLE_HEIGHT пикселей по оси Y)
+                // Если да, возвращаем false, чтобы разрешить стандартное поведение (перетаскивание узла)
+                if (pos[1] < LiteGraph.NODE_TITLE_HEIGHT) {
+                    return false; // Разрешаем drag через заголовок
+                }
+
+                // Проверяем, не попал ли клик в область слота (input/output)
+                // getSlotInPosition(pos) возвращает объект слота, если позиция совпадает с его областью
+                const slot = this.getSlotInPosition(pos);
+                if (slot !== null) {
+                    return false; // Разрешаем стандартное поведение (подключение связей между слотами)
+                }
+                
+                // Запоминаем начальную позицию для проверки drag
+                this._start_pos = pos;
+                return true; // Блокируем стандартное поведение (чтобы не начинался drag сразу)
+                //return false; 
+            }
+
+            // Обработчик отпускания мыши (проверка клика или drag)
+            onMouseUp(event, pos, graphcanvas) {
+                if (!this._start_pos) return false; // Если не было начального клика
+                
+                const time_difference = Date.now() - this.last_mousedown_time;
+                const drag_difference = [
+                    Math.abs(pos[0] - this._start_pos[0]),
+                    Math.abs(pos[1] - this._start_pos[1])
+                ];
+                
+                // Если прошло слишком много времени (drag) или было значительное смещение — это перетаскивание
+                if (time_difference > this.click_timeout || 
+                    drag_difference[0] > this.drag_threshold || 
+                    drag_difference[1] > this.drag_threshold) {
+                    this.is_dragging = true;
+                    this._start_pos = null; // Сброс для следующего клика
+                    return true; // Разрешаем стандартное перетаскивание
+                }
+                
+                // Иначе — это короткий клик (отображаем настройки)
+                showNodeModal(this);
+                this._start_pos = null; // Сброс для следующего клика
+                return true; // Событие обработано
+            }
+
+            // Обработчик движения мыши (для drag)
+            onMouseMove(event, pos, graphcanvas) {
+                if (!this._start_pos) return false;
+                
+                const drag_difference = [
+                    Math.abs(pos[0] - this._start_pos[0]),
+                    Math.abs(pos[1] - this._start_pos[1])
+                ];
+                
+                // Если смещение превышает порог — начинаем drag
+                if (drag_difference[0] > this.drag_threshold || drag_difference[1] > this.drag_threshold) {
+                    this.is_dragging = true;
+                    this._start_pos = null; // Сброс для следующего клика
+                    return true; // Разрешаем стандартное перетаскивание
+                }
+                return false; // Иначе — не drag
+            }
+                    
+        }
+        LiteGraph.registerNodeType("input/LoadNode", LoadNode);
+
+        // Узел сохранения
+        class SaveNode extends LGraphNode  {
+            constructor() {
+                // Добавляем входящий порт с типом "image" (ожидаем объект ImageData или Canvas)
+                super();
+                this.addInput("Image", "object"); 
+                // Свойства узла (по умолчанию)
+                this.properties = {
+                    "width": 10,
+                    "height": 10,
+                    "data": "[[0, 0, 0], [0, 255, 0], [0, 0, 0]]", // Начальная матрица (JSON-строка)
+                    "minValue": 0,
+                    "maxValue": 255,
+                    "format": null,
+                    "filename": null,
+                    "autoscale": true,
+                    "colormap": "gray", // Цветовая схема
+                    "previewData":null
+                };
+
+                
+                // Устанавливаем размер узла [ширина, высота] в пикселях
+                this.size = [200, 60];
+                this.resizable = false;
+                this.color = "#66aaff"; // Светло-голубой для матриц
+                this.title = "Сохранить";
+            }
+           
+            // Метод, вызываемый при выполнении узла
+            onExecute() {
+
+                const inputData = this.getInputData(0);
+
+                this.properties.width = inputData.width;
+                this.properties.height = inputData.height;
+                this.properties.data = inputData.data;
+                this.properties.minValue = inputData.minValue;
+                this.properties.maxValue = inputData.maxValue;
+                
+                this.properties.autoscale = inputData.autoscale !== undefined ? inputData.autoscale : this.properties.autoscale;
+                this.properties.colormap = inputData.colormap;
+                if (this.properties.filename  == null){
+                    this.properties.filename = "Result";
+                    console.log("this.properties.filename = inputData.filename");
+                }
+                if (this.properties.format == null){
+                    this.properties.format = "tpt";
+                    console.log("this.properties.format = inputData.format");
+                } 
+                const width = this.properties.width;
+                const height = this.properties.height;
+                const minVal =  this.properties.minValue;
+                const maxVal =  this.properties.maxValue;
+                let matrix = this.properties.data;
+
+
+                const autoscale = true;
+                const colormap = 'gray';
+                const colorMap = getColormap(colormap);
+                const data = new Uint8ClampedArray(width * height * 4);
+                let dataIndex = 0;
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const normalizedValue = autoscale 
+                            ? (matrix[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                            : (matrix[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                        
+                        const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                        data[dataIndex++] = color.r * 255;
+                        data[dataIndex++] = color.g * 255;
+                        data[dataIndex++] = color.b * 255;
+                        data[dataIndex++] = 255;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                const imageData = new ImageData(data, width, height);
+                ctx.putImageData(imageData, 0, 0);
+
+                // **Сохраняем изображение в превью** (для визуализации)
+                this.properties.previewData = imageData;
+
+                var max_result = matrix[0][0];
+                var min_result = matrix[0][0];
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+
+                        if(matrix[y][x] > max_result) {
+                            max_result = matrix[y][x];
+                        }
+                        if(matrix[y][x] < min_result) {
+                            min_result = matrix[y][x];
+                        }
+                    }
+                }
+
+                if(this.properties.format == "tpt"){
+                    saveToTptFile(this,  this.properties.filename+ "." + this.properties.format)
+                    .then(message => console.log(message))
+                    .catch(error => console.error(error));
+                }
+                else   {
+
+                    // Определяем MIME-тип по формату
+                    const mimeTypes = {
+                        'png': 'image/png',
+                        'jpg': 'image/jpeg',
+                        'jpeg': 'image/jpeg',
+                        'webp': 'image/webp',
+                        'gif': 'image/gif',
+                        'bmp': 'image/bmp'
+                    };
+                    const mimeType = mimeTypes[this.properties.format] || 'image/png'; // Защита от неизвестных форматов
+
+                    // Сохраняем с нужным форматом
+                    const a = document.createElement('a');
+                    a.download =  this.properties.filename;
+                    a.href = canvas.toDataURL(mimeType); // 🔥 Теперь формат учитывается!
+                    a.click();
+                }
+            }
+
+            // Внутри класса узла (Node) добавьте эти свойства
+                
+            last_mousedown_time = 0;  // Время последнего нажатия
+            is_dragging = false;      // Флаг перетаскивания
+            drag_threshold = 5;       // Порог смещения (пиксели) для определения drag
+            click_timeout = 200;      // Максимальное время для клика (мс)
+
+            // Обработчик нажатия мыши (фиксация начала клика)
+            onMouseDown(event, pos, graphcanvas) {
+                this.last_mousedown_time = Date.now();
+                this.is_dragging = false;
+                
+                // Проверяем, находится ли клик в области заголовка узла (первые NODE_TITLE_HEIGHT пикселей по оси Y)
+                // Если да, возвращаем false, чтобы разрешить стандартное поведение (перетаскивание узла)
+                if (pos[1] < LiteGraph.NODE_TITLE_HEIGHT) {
+                    return false; // Разрешаем drag через заголовок
+                }
+
+                // Проверяем, не попал ли клик в область слота (input/output)
+                // getSlotInPosition(pos) возвращает объект слота, если позиция совпадает с его областью
+                const slot = this.getSlotInPosition(pos);
+                if (slot !== null) {
+                    return false; // Разрешаем стандартное поведение (подключение связей между слотами)
+                }
+                
+                // Запоминаем начальную позицию для проверки drag
+                this._start_pos = pos;
+                return true; // Блокируем стандартное поведение (чтобы не начинался drag сразу)
+                //return false; 
+            }
+
+            // Обработчик отпускания мыши (проверка клика или drag)
+            onMouseUp(event, pos, graphcanvas) {
+                if (!this._start_pos) return false; // Если не было начального клика
+                
+                const time_difference = Date.now() - this.last_mousedown_time;
+                const drag_difference = [
+                    Math.abs(pos[0] - this._start_pos[0]),
+                    Math.abs(pos[1] - this._start_pos[1])
+                ];
+                
+                // Если прошло слишком много времени (drag) или было значительное смещение — это перетаскивание
+                if (time_difference > this.click_timeout || 
+                    drag_difference[0] > this.drag_threshold || 
+                    drag_difference[1] > this.drag_threshold) {
+                    this.is_dragging = true;
+                    this._start_pos = null; // Сброс для следующего клика
+                    return true; // Разрешаем стандартное перетаскивание
+                }
+                
+                // Иначе — это короткий клик (отображаем настройки)
+                showNodeModal(this);
+                this._start_pos = null; // Сброс для следующего клика
+                return true; // Событие обработано
+            }
+
+            // Обработчик движения мыши (для drag)
+            onMouseMove(event, pos, graphcanvas) {
+                    if (!this._start_pos) return false;
+                    
+                    const drag_difference = [
+                        Math.abs(pos[0] - this._start_pos[0]),
+                        Math.abs(pos[1] - this._start_pos[1])
+                    ];
+                    
+                    // Если смещение превышает порог — начинаем drag
+                    if (drag_difference[0] > this.drag_threshold || drag_difference[1] > this.drag_threshold) {
+                        this.is_dragging = true;
+                        this._start_pos = null; // Сброс для следующего клика
+                        return true; // Разрешаем стандартное перетаскивание
+                    }
+                    return false; // Иначе — не drag
+                }
+                      
+            onDrawForeground(ctx) {
+
+                if (this.properties.filename == null || this.properties.format == null) {
+                    ctx.fillStyle = "#CCC";
+                    ctx.font = "12px Arial";
+                    ctx.fillText("SaveName:", 10, 42);
+                    ctx.fillStyle = "#FFF";
+                    ctx.fillText(`result.tpt`, 75, 42);
+                    return;
+                }
+
+                ctx.fillStyle = "#CCC";
+                ctx.font = "12px Arial";
+                ctx.fillText("SaveName:", 10, 42);
+                ctx.fillStyle = "#FFF";
+                ctx.fillText(`${this.properties.filename}.${this.properties.format}`, 75, 42);
+            }
+        }
+        LiteGraph.registerNodeType("output/SaveNode", SaveNode);
+
+        // Базовый класс для фильтрации
+        class FilterNode extends LGraphNode {
+            constructor() {
+                super();
+                this.addInput("Image", "object"); 
+                this.addOutput("Image", "object"); 
+                // Свойства узла (по умолчанию)
+                this.properties = {
+                    "width": 10,
+                    "height": 10,
+                    "data": "[[0, 0, 0], [0, 255, 0], [0, 0, 0]]", // Начальная матрица (JSON-строка)
+                    "minValue": 0,
+                    "maxValue": 255,
+                    "format": null,
+                    "filename": null,
+                    "autoscale": true,
+                    "colormap": "gray", // Цветовая схема
+                    "previewData":null
+                };
+                this.boxcolor = "#6c6";
+            }
+        }
+        
+        class Sobel extends FilterNode {
+            constructor() {
+                super();
+                this.title = "Собель (границы)";
+                this.size[0] = 200; 
+            }
+
+            onExecute() {
+
+                const matrixInput = this.getInputData(0);
+                if (!matrixInput) {
+                    console.warn("Входные данные матрицы отсутствуют");
+                    return;
+                }
+
+                // Валидация входных данных
+                if (!Array.isArray(matrixInput.data) || matrixInput.data.length === 0) {
+                    console.error("Некорректные входные данные: матрица пустая или не массив");
+                    return;
+                }
+
+                const width = matrixInput.width;
+                const height = matrixInput.height;
+                const matrix = matrixInput.data;
+
+                const result = { data: new Array(height).fill(0).map(() => new Array(width).fill(0)) };
+
+                // Ядра Собеля для вычисления градиентов
+                const sobelKernels = {
+                    // Горизонтальный градиент
+                    gx: [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], 
+                    // Вертикальный градиент
+                    gy: [[-1, -2, -1], [0, 0, 0], [1, 2, 1]]   
+                };
+
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        let gxSum = 0, gySum = 0;
+                        // Применяем свёртку (3x3 окно)
+                        for (let ky = -1; ky <= 1; ky++) {
+                            for (let kx = -1; kx <= 1; kx++) {
+                                const px = x + kx;
+                                const py = y + ky;
+
+                                // Проверка границ
+                                if (px >= 0 && px < width && py >= 0 && py < height) {
+                                    // Вклад в градиенты
+                                    gxSum += matrix[py][px] * sobelKernels.gx[ky + 1][kx + 1];
+                                    gySum += matrix[py][px] * sobelKernels.gy[ky + 1][kx + 1];
+                                }
+                            }
+                        }
+                        result.data[y][x] = Math.sqrt(gxSum * gxSum + gySum * gySum);
+                    }
+                }
+
+                this.properties.width = width;
+                this.properties.height = height;
+                this.properties.data = result.data;
+                this.properties.minValue = matrixInput.minValue;
+                this.properties.maxValue = matrixInput.maxValue;
+                this.properties.autoscale = matrixInput.autoscale;
+                this.properties.colormap = matrixInput.colormap;
+                this.properties.filename = matrixInput.filename;
+                this.properties.format = matrixInput.format;
+
+                // Формируем выходные данные
+                const outputData = {
+                    width: this.properties.width,
+                    height: this.properties.height,
+                    data: this.properties.data,
+                    minValue: this.properties.minValue,
+                    maxValue: this.properties.maxValue,
+                    format: this.properties.format,
+                    filename: this.properties.filename,
+                    autoscale: this.properties.autoscale,
+                    colormap: this.properties.colormap
+                };
+                this.setOutputData(0, outputData);
+
+
+
+
+                // Создаем временный canvas для исходного ImageData
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+
+                tempCanvas.width = this.properties.width;
+                tempCanvas.height = this.properties.height;
+                
+                const minVal =  this.properties.minValue;
+                const maxVal =  this.properties.maxValue;
+
+                const autoscale = this.properties.autoscale;
+                const colormap = this.properties.colormap;
+                const colorMap = getColormap(colormap);
+                const data = new Uint8ClampedArray(width * height * 4);
+                let dataIndex = 0;
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const normalizedValue = autoscale 
+                            ? (result.data[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                            : (result.data[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                        
+                        const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                        data[dataIndex++] = color.r * 255;
+                        data[dataIndex++] = color.g * 255;
+                        data[dataIndex++] = color.b * 255;
+                        data[dataIndex++] = 255;
+                    }
+                }
+                const imageData = new ImageData(data, width, height);
+                // Полное копирование ImageData
+                tempCtx.putImageData(imageData, 0, 0); 
+
+                // Создаем canvas для обрезанного фрагмента
+                const cropped = document.createElement('canvas');
+                const ctx = cropped.getContext('2d');
+                cropped.width = width;
+                cropped.height = height;
+
+                // Рисуем только нужный фрагмент (safeX, safeY, safeWidth, safeHeight)
+                // из временного canvas в final canvas
+                ctx.drawImage(
+                    // Источник (исходное изображение)
+                    tempCanvas,
+                    // Координаты и размер фрагмента в источнике 
+                    0, 0, width, height, 
+                    // Координаты и размер на новом canvas (без масштабирования)
+                    0, 0, width, height         
+                );
+                const out = ctx.getImageData(0, 0, width, height);
+                this.properties.previewData = out;
+            }
+        }
+        LiteGraph.registerNodeType("filter/Sobel", Sobel);
+
+        class Median extends FilterNode {
+            constructor() {
+                super();
+                this.title = "Медианный фильтр";
+                this.size[0] = 200; 
+                this.properties.aperture = 3;
+                this.addWidget("number", "Размер апертуры", 3, v => this.properties.aperture = v, { min: 1, max: 100, step:20, precision: 0});
+            }
+            onExecute() {
+
+                const matrixInput = this.getInputData(0);
+                if (!matrixInput) {
+                    console.warn("Входные данные матрицы отсутствуют");
+                    return;
+                }
+
+                // Валидация входных данных
+                if (!Array.isArray(matrixInput.data) || matrixInput.data.length === 0) {
+                    console.error("Некорректные входные данные: матрица пустая или не массив");
+                    return;
+                }
+
+                const width = matrixInput.width;
+                const height = matrixInput.height;
+                const matrix = matrixInput.data;
+
+                const filtered123 = this._medianFilter(matrix, this.properties.aperture);
+
+                this.properties.width = width;
+                this.properties.height = height;
+                this.properties.data = filtered123;
+                this.properties.minValue = matrixInput.minValue;
+                this.properties.maxValue = matrixInput.maxValue;
+                this.properties.autoscale = matrixInput.autoscale;
+                this.properties.colormap = matrixInput.colormap;
+                this.properties.filename = matrixInput.filename;
+                this.properties.format = matrixInput.format;
+
+                // Формируем выходные данные
+                const outputData = {
+                    width: this.properties.width,
+                    height: this.properties.height,
+                    data: this.properties.data,
+                    minValue: this.properties.minValue,
+                    maxValue: this.properties.maxValue,
+                    format: this.properties.format,
+                    filename: this.properties.filename,
+                    autoscale: this.properties.autoscale,
+                    colormap: this.properties.colormap
+                };
+                this.setOutputData(0, outputData);
+
+                // Создаем временный canvas для исходного ImageData
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+
+                tempCanvas.width = this.properties.width;
+                tempCanvas.height = this.properties.height;
+
+                const minVal =  this.properties.minValue;
+                const maxVal =  this.properties.maxValue;
+
+                const autoscale = this.properties.autoscale;
+                const colormap = this.properties.colormap;
+                const colorMap = getColormap(colormap);
+                const data = new Uint8ClampedArray(width * height * 4);
+                let dataIndex = 0;
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const normalizedValue = autoscale 
+                            ? (this.properties.data[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                            : (this.properties.data[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                        
+                        const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                        data[dataIndex++] = color.r * 255;
+                        data[dataIndex++] = color.g * 255;
+                        data[dataIndex++] = color.b * 255;
+                        data[dataIndex++] = 255;
+                    }
+                }
+                const imageData = new ImageData(data, width, height);
+                tempCtx.putImageData(imageData, 0, 0); // Полное копирование ImageData
+
+                // Создаем canvas для обрезанного фрагмента
+                const cropped = document.createElement('canvas');
+                const ctx = cropped.getContext('2d');
+                cropped.width = width;
+                cropped.height = height;
+
+                // Рисуем только нужный фрагмент (safeX, safeY, safeWidth, safeHeight) 
+                // из временного canvas в final canvas
+                ctx.drawImage(
+                    // Источник (исходное изображение)
+                    tempCanvas,
+                    // Координаты и размер фрагмента в источнике
+                    0, 0, width, height,
+                    // Координаты и размер на новом canvas (без масштабирования)
+                    0, 0, width, height
+                );
+                const out = ctx.getImageData(0, 0, width, height);
+                this.properties.previewData = out;
+            }
+
+            /**
+             * Применяет медианный фильтр к матрице m × n.
+             * @param {number[][]} matrix - Входная матрица (массив массивов).
+             * @param {number} kernelSize - Размер окна фильтра (нечетное число, например 3).
+             * @returns {number[][]} - Отфильтрованная матрица.
+             */
+            _medianFilter(matrix, kernelSize = 3) {
+                const m = matrix.length;
+                const n = matrix[0].length;
+                const padSize = Math.floor(kernelSize / 2);
+                const paddedMatrix = this._createPaddedMatrix(matrix, padSize);
+                const filteredMatrix = [];
+
+                for (let i = 0; i < m; i++) {
+                    const row = [];
+                    for (let j = 0; j < n; j++) {
+                        // Извлекаем подматрицу (окрестность) размера kernelSize × kernelSize
+                        const window = this._extractWindow(paddedMatrix, i + padSize, j + padSize, kernelSize);
+                        // Находим медиану
+                        const median = this._calculateMedian(window);
+                        row.push(median);
+                    }
+                    filteredMatrix.push(row);
+                }
+
+                return filteredMatrix;
+            }
+
+            /**
+             * Создает расширенную матрицу с нулевыми границами для обработки краев.
+             */
+            _createPaddedMatrix(matrix, padSize) {
+                const m = matrix.length;
+                const n = matrix[0].length;
+                const padded = new Array(m + 2 * padSize);
+
+                for (let i = 0; i < padded.length; i++) {
+                    padded[i] = new Array(n + 2 * padSize).fill(0);
+                }
+
+                // Копируем исходную матрицу в центр расширенной
+                for (let i = 0; i < m; i++) {
+                    for (let j = 0; j < n; j++) {
+                        padded[i + padSize][j + padSize] = matrix[i][j];
+                    }
+                }
+
+                return padded;
+            }
+
+            /**
+             * Извлекает подматрицу (окрестность) вокруг точки (x, y).
+             */
+            _extractWindow(matrix, x, y, size) {
+                const half = Math.floor(size / 2);
+                const window = [];
+
+                for (let i = x - half; i <= x + half; i++) {
+                    for (let j = y - half; j <= y + half; j++) {
+                        window.push(matrix[i][j]);
+                    }
+                }
+
+                return window;
+            }
+
+            /**
+             * Вычисляет медиану массива чисел.
+             */
+            _calculateMedian(arr) {
+                const sorted = [...arr].sort((a, b) => a - b);
+                const mid = Math.floor(sorted.length / 2);
+                return sorted.length % 2 !== 0 
+                    ? sorted[mid] 
+                    : (sorted[mid - 1] + sorted[mid]) / 2;
+            }
+        }
+        LiteGraph.registerNodeType("filter/Median", Median);
+
+        class Normalisation extends FilterNode {
+            constructor() {
+                super();
+                this.title = "Нормировка";
+                this.size[0] = 200; 
+                this.properties.min_norm = 0;
+                this.properties.max_norm = 1;
+                this.addWidget("number", "min", 0, v => this.properties.min_norm = v, { min: 0, max: 100, step:0.01, precision: 3 });
+                this.addWidget("number", "max", 1, v => this.properties.max_norm = v, { min: 0, max: 100, step:0.01, precision: 3 });
+            }
+            onExecute() {
+
+                const matrixInput = this.getInputData(0);
+                if (!matrixInput) {
+                    console.warn("Входные данные матрицы отсутствуют");
+                    return;
+                }
+
+                // Валидация входных данных
+                if (!Array.isArray(matrixInput.data) || matrixInput.data.length === 0) {
+                    console.error("Некорректные входные данные: матрица пустая или не массив");
+                    return;
+                }
+
+                this.properties.width = matrixInput.width;
+                this.properties.height = matrixInput.height;
+                this.properties.data = matrixInput.data;
+                this.properties.minValue = matrixInput.minValue;
+                this.properties.maxValue = matrixInput.maxValue;
+                this.properties.autoscale = matrixInput.autoscale;
+                this.properties.colormap = matrixInput.colormap;
+                this.properties.filename = matrixInput.filename;
+                this.properties.format = matrixInput.format;
+
+
+                const width = matrixInput.width;
+                const height = matrixInput.height;
+                const result = { data: new Array(height).fill(0).map(() => new Array(width).fill(0)) };
+
+                const matrix = matrixInput.data;
+
+                const minValue = matrixInput.minValue;
+                const maxValue = matrixInput.maxValue;
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const normalizedValue = (matrix[y][x] - minValue) / (maxValue - minValue) * (this.properties.max_norm - this.properties.min_norm) + this.properties.min_norm;
+                        result.data[y][x] = normalizedValue;
+                    }
+                }
+
+
+                this.properties.data =  result.data;
+                this.properties.minValue = this.properties.min_norm;
+                this.properties.maxValue = this.properties.max_norm;
+                
+
+                // Формируем выходные данные
+                const outputData = {
+                    width: this.properties.width,
+                    height: this.properties.height,
+                    data: this.properties.data,
+                    minValue: this.properties.minValue,
+                    maxValue: this.properties.maxValue,
+                    format: this.properties.format,
+                    filename: this.properties.filendame,
+                    autoscale: this.properties.autoscale,
+                    colormap: this.properties.colormap
+                };
+                this.setOutputData(0, outputData);
+
+                // Создаем временный canvas для исходного ImageData
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+
+                tempCanvas.width = this.properties.width;
+                tempCanvas.height = this.properties.height;
+
+                const minVal =  this.properties.minValue;
+                const maxVal =  this.properties.maxValue;
+
+                const autoscale = this.properties.autoscale;
+                const colormap = this.properties.colormap;
+                const colorMap = getColormap(colormap);
+                const data = new Uint8ClampedArray(width * height * 4);
+                let dataIndex = 0;
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const normalizedValue = autoscale 
+                            ? (this.properties.data[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                            : (this.properties.data[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                        
+                        const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                        data[dataIndex++] = color.r * 255;
+                        data[dataIndex++] = color.g * 255;
+                        data[dataIndex++] = color.b * 255;
+                        data[dataIndex++] = 255;
+                    }
+                }
+                const imageData = new ImageData(data, width, height);
+                tempCtx.putImageData(imageData, 0, 0); // Полное копирование ImageData
+
+                // Создаем canvas для обрезанного фрагмента
+                const cropped = document.createElement('canvas');
+                const ctx = cropped.getContext('2d');
+                cropped.width = width;
+                cropped.height = height;
+
+                // Рисуем только нужный фрагмент (safeX, safeY, safeWidth, safeHeight) из временного canvas в final canvas
+                ctx.drawImage(
+                    tempCanvas, // Источник (исходное изображение)
+                    0, 0, width, height, // Координаты и размер фрагмента в источнике
+                    0, 0, width, height         // Координаты и размер на новом canvas (без масштабирования)
+                );
+                const out = ctx.getImageData(0, 0, width, height);
+                this.properties.previewData = out;
+
+                // saveToTptFile(this,  this.properties.filename+ "." + this.properties.format)
+                //             .then(message => console.log(message))
+                //             .catch(error => console.error(error));
+            }
+        }
+        LiteGraph.registerNodeType("filter/Normalisation", Normalisation);
+
+        class BackgroundCorrectionPolynomialNode extends FilterNode {
+            constructor() {
+                super(); 
+                this.title = "Апроксимация поверхностью";
+                this.title_fixed =  false  ;
+
+                this.properties.node_order = 2;// Порядок полинома (2 - квадратичный, 3 - кубический)
+                this.properties.node_allArea = true;// Обрабатывать все изображение или только выделенную область
+                this.boxColor = "#6a9fb5";
+
+                this.boxColor = "#ff6666";
+                this.addWidget("number", "Порядок", this.properties.node_order,v => {
+                    this.properties.node_order = v;
+                    window.updateInspectorIfSelected?.(this);
+                }, { 
+                    min: 1,
+                    step: 10,
+                    precision: 0
+                } );
+            }
+
+
+            onExecute() {
+
+                // Получаем входное изображение (canvas или объект с полем `data`)
+                if (this.inputs[0] && this.inputs[0].link) {
+                    const inputData = this.getInputData(0);
+                    if (inputData) {
+                        this.properties.width = inputData.width;
+                        this.properties.height = inputData.height;
+                        this.properties.data = inputData.data;
+                        this.properties.minValue = inputData.minValue;
+                        this.properties.maxValue = inputData.maxValue;
+                        this.properties.autoscale = inputData.autoscale !== undefined ? inputData.autoscale : this.properties.autoscale;
+                        this.properties.colormap = inputData.colormap;
+                        this.properties.filename = inputData.filename;
+                        this.properties.format = inputData.format;
+
+
+                        
+                        let matrix  =   this.properties.data;
+                        const width =   this.properties.width;
+                        const height =  this.properties.height;
+                        // const minVal =  this.properties.node_less_min;
+                        // const maxVal =  this.properties.node_more_max;
+
+                        // Вычисляем коэффициенты полиномиальной модели фона методом наименьших квадратов
+                        const { coefficients, success } = this._computePolynomialCoefficients(
+                            matrix, width, height, 
+                            this.properties.node_order, 
+                            this.properties.node_allArea
+                        );
+
+                        if (!success) {
+                            console.log(" this.boxColor = '#ff6666';");
+                            //this.boxColor = "#ff6666";
+                            return;
+                        }
+
+                        // Применяем коррекцию
+                        const correctedData = this._applyPolynomialCorrection(
+                            matrix, width, height, 
+                            coefficients, 
+                            this.properties.node_allArea
+                        );
+
+
+
+                        //console.log(matrix);
+
+
+
+
+
+
+                        const autoscale = true;
+                        const colormap = 'gray';
+                        const colorMap = getColormap(colormap);
+                        const data = new Uint8ClampedArray(width * height * 4);
+                        let dataIndex = 0;
+
+                        var max_value = 0;
+                        var  min_value  = 12312312;
+                        for (let y = 0; y < height; y++) {
+                            for (let x = 0; x < width; x++) {
+
+                                if(correctedData[y][x]>max_value)
+                                {
+                                    max_value =  correctedData[y][x];
+                                }
+                                if(correctedData[y][x] < min_value)
+                                {
+                                    min_value =  correctedData[y][x];
+                                }
+
+                            }
+                        }
+                //console.log(max_value);
+                //console.log(min_value);
+
+                const minVal =  min_value;
+                        const maxVal =  max_value;
+
+                    for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+
+                        const normalizedValue = autoscale 
+                            ? (correctedData[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                            : (correctedData[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                        
+                        const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                        data[dataIndex++] = color.r * 255;
+                        data[dataIndex++] = color.g * 255;
+                        data[dataIndex++] = color.b * 255;
+                        data[dataIndex++] = 255;
+                    }
+                }
+
+
+                const imageData = new ImageData(data, width, height);
+                const canvas = document.createElement('canvas');
+                canvas.width = width; 
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                const tmp = document.createElement('canvas');
+                tmp.width = width;
+                tmp.height = height;
+                tmp.getContext('2d').putImageData(imageData, 0, 0);
+                ctx.imageSmoothingEnabled = true;
+                ctx.drawImage(tmp, 0, 0, width, height);
+                const out = ctx.getImageData(0, 0, width, height);
+                const restoredMatrix = imageToMatrix(out,width, height, minVal, maxVal, true);
+
+                // **Сохраняем изображение в превью** (для визуализации)
+                this.properties.previewData = out;
+                                        // Формируем выходные данные
+                                        const outputData = {
+                            width: width,
+                            height: height,
+                            data: correctedData,
+                            minValue: this.properties.minValue,
+                            maxValue: this.properties.maxValue,
+                            format: this.properties.format,
+                            filename: this.properties.filename,
+                            autoscale: this.properties.autoscale,
+                            colormap: this.properties.colormap
+                        };
+                        this.setOutputData(0, outputData);
+
+
+                    }
+                }
+                
+
+                
+
+
+
+                
+
+                
+                // // Создаем новое изображение
+                // const correctedImgData = new ImageData(correctedData, width, height);
+                // const correctedCanvas = document.createElement('canvas');
+                // correctedCanvas.width = width;
+                // correctedCanvas.height = height;
+                // const correctedCtx = correctedCanvas.getContext('2d');
+                // correctedCtx.putImageData(correctedImgData, 0, 0);
+                
+                // // Возвращаем результат
+                // this.setOutputData(0, correctedCanvas);
+                // this.boxColor = "#6a9fb5"; // Сброс цвета при успешном выполнении
+            }
+
+
+
+            // Вычисление коэффициентов полинома методом наименьших квадратов
+            _computePolynomialCoefficients(matrix, width, height, order, allArea) {
+                
+                // 1. Подсчет точек и коэффициентов
+                // N — общее число точек
+                // K — число коэффициентов полинома
+                const N = allArea ? width * height : this._countSelectedPixels(matrix, width, height);
+                const K = this._calculatePolynomialTerms(order);
+                
+                if (N <= 2 * K) {
+                    console.warn("Insufficient data points for polynomial fit (N <= 2*K)");
+                    return { coefficients: null, success: false };
+                }
+
+                // 2. Инициализация матрицы сумм (K×K) и вектора b (K элементов)
+                const sums = Array(K + 1).fill(0).map(() => Array(K + 1).fill(0));// Матрица A^T A
+                const b = Array(K + 1).fill(0);// Вектор A^T y
+
+                // 3. Заполнение матрицы и вектора через метод `_buildSystemMatrix`
+                this._buildSystemMatrix(matrix, width, height, order, allArea, sums, b);
+                
+                // 4. Решение системы линейных уравнений методом Гаусса
+                const coefficients = this._solveGaussianElimination(sums, b);
+                
+                return { coefficients, success: true };// Возвращаем коэффициенты и флаг успеха
+
+            }
+
+            // Подсчет количества точек в выделенной области (заглушка)
+            _countSelectedPixels(matrix, width, height) {
+                // В реальном приложении здесь должна быть логика работы с выделением
+                // Пока считаем все пиксели
+                return width * height;
+            }
+
+            // Расчет количества членов полинома для заданного порядка
+            _calculatePolynomialTerms(order) {
+                // Формула для количества членов: (order+1)(order+2)/2 - 1
+                return (order + 1) * (order + 2) / 2 - 1;
+            }
+
+            // Построение матрицы сумм и вектора b
+            _buildSystemMatrix(matrix, width, height, order, allArea, sums, b) {
+                const terms = this._getPolynomialTerms(order);
+                const N = allArea ? width * height : this._countSelectedPixels(matrix, width, height);
+                
+                // Обходим все пиксели
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        //const index = y * width + x;
+                        const value = matrix[y][x];
+                        
+                        // Пропуска точек вне выделенной области (если нужно)
+                        if (!allArea && !this._isPixelSelected(x, y)) {
+                            continue;
+                        }
+                        
+                        // Вычисляем вектор A для текущей точки
+                        const A = this._calculatePolynomialTerms1(x, y, order);
+                        
+                        // Обновляем матрицу сумм
+                        for (let i = 0; i < A.length; i++) {
+                            for (let j = 0; j < A.length; j++) {
+                                sums[i][j] += A[i] * A[j];
+                            }
+                        }
+                        
+                        // Обновляем вектор b
+                        for (let i = 0; i < A.length; i++) {
+                            b[i] += A[i] * value;
+                        }
+                    }
+                }
+            }
+
+            // Проверка, находится ли пиксель в выделенной области (заглушка)
+            _isPixelSelected(x, y) {
+                // В реальном приложении здесь должна быть логика работы с выделением
+                return true;
+            }
+
+
+        
+            // Генерация списка членов полинома для заданного порядка
+            _getPolynomialTerms(order) {
+                const terms = [];
+                let count = 0;
+                
+                for (let m = 0; m <= order; m++) {
+                    for (let n = 0; n <= m; n++) {
+                        terms.push({ m: m, n: n });
+                        count++;
+                    }
+                }
+                
+                return terms;
+            }
+
+            // Вычисление вектора A для конкретной точки (x, y)
+            _calculatePolynomialTerms1(x, y, order) {
+                const terms = this._getPolynomialTerms(order);
+                const A = [1.0]; // Первый член - константа
+                
+                for (let i = 1; i < terms.length; i++) {
+                    const term = terms[i];
+                    const xTerm = Math.pow(x, term.m - term.n);
+                    const yTerm = Math.pow(y, term.n);
+                    A.push(xTerm * yTerm);
+                }
+                
+                return A;
+            }
+
+            // Метод Гаусса для решения системы уравнений
+            _solveGaussianElimination(sums, b) {
+                const K = sums.length - 1;
+                const a = Array(K + 1).fill(0);
+                
+                // Прямой ход (элиминация)
+                for (let k = 0; k < K; k++) {
+                    // Поиск ведущего элемента (для устойчивости)
+                    let maxRow = k;
+                    for (let i = k + 1; i < K; i++) {
+                        if (Math.abs(sums[i][k]) > Math.abs(sums[maxRow][k])) {
+                            maxRow = i;
+                        }
+                    }
+                    
+                    // Проверка на сингулярность
+                    if (sums[maxRow][k] === 0) {
+                        console.error("Singular matrix - cannot solve system");
+                        return null;
+                    }
+                    
+                    // Перестановка строк
+                    if (maxRow !== k) {
+                        for (let j = k; j <= K; j++) {
+                            [sums[k][j], sums[maxRow][j]] = [sums[maxRow][j], sums[k][j]];
+                        }
+                        [b[k], b[maxRow]] = [b[maxRow], b[k]];
+                    }
+                    
+                    // Нормализация строки
+                    const factor = sums[k][k];
+                    for (let j = k; j <= K; j++) {
+                        sums[k][j] /= factor;
+                    }
+                    b[k] /= factor;
+                    
+                    // Исключение переменных
+                    for (let i = k + 1; i < K; i++) {
+                        const factor = sums[i][k];
+                        for (let j = k; j <= K; j++) {
+                            sums[i][j] -= factor * sums[k][j];
+                        }
+                        b[i] -= factor * b[k];
+                    }
+                }
+                
+                // Обратный ход
+                for (let i = K - 1; i >= 0; i--) {
+                    a[i] = b[i];
+                    for (let j = i + 1; j < K; j++) {
+                        a[i] -= sums[i][j] * a[j];
+                    }
+                    a[i] /= sums[i][i];
+                }
+                
+                return a;
+            }
+
+            // Применение полинома к изображенияю
+            _applyPolynomialCorrection(matrix, width, height, coefficients, allArea) {
+                const order = Math.floor(Math.sqrt(2 * coefficients.length + 1)) - 1;
+                const terms = this._getPolynomialTerms(order);
+
+                        //   console.log(order);
+                        //   console.log(terms);
+                
+                //const correctedData = new Float32Array(grayData.length);
+                const correctedData = new Array(height);
+ 
+
+
+                // Обрабатываем все пиксели
+                for (let y = 0; y < height; y++) {
+                    correctedData[y] = new Array(width)
+                    for (let x = 0; x < width; x++) {
+
+                        //const index = y * width + x;
+                        const value = matrix[y][x];
+                        
+                        // Пропуска точек вне выделенной области (если нужно)
+                        if (!allArea && !this._isPixelSelected(x, y)) {
+                            correctedData[y][x] = value; // Оставляем исходное значение
+                            //correctedData[index] = value; // Оставляем исходное значение
+                            continue;
+                        }
+                        
+                        // Вычисляем вектор A для текущей точки
+                        const A = this._calculatePolynomialTerms1(x, y, order);
+                        
+                        // Вычисляем значение полинома
+                        let val = 0;
+                        for (let i = 0; i < coefficients.length; i++) {
+                            val += coefficients[i] * A[i];
+                        }
+                        //console.log(val);
+                        //  console.log(coefficients);
+
+                        // Коррекция: исходное значение - фоновое значение
+                        //correctedData[index] = Math.max(0, Math.min(1, value - val));
+
+                        correctedData[y][x] = val;
+                        //correctedData[y][x] = Math.max(0, Math.min(1, value - val));
+                    }
+                }
+                
+                return correctedData;
+            }
+
+            // Конвертация обратно в RGBA
+            _convertToRGBA(grayData, width, height) {
+                const rgbaData = new Uint8ClampedArray(grayData.length * 4);
+                
+                for (let i = 0; i < grayData.length; i++) {
+                    const value = Math.min(255, Math.max(0, grayData[i] * 255));
+                    const idx = i * 4;
+                    rgbaData[idx] = value;
+                    rgbaData[idx + 1] = value;
+                    rgbaData[idx + 2] = value;
+                    rgbaData[idx + 3] = 255; // Альфа-канал
+                }
+                
+                return rgbaData;
+            }
+
+
+
+
+            createWidgets() {
+                // Очищаем существующие виджеты
+                this.widgets = [];  
+                // Создаем виджеты с текущими значениями свойств
+                this.addWidget("number", "Ширина", this.properties.node_width,v => {
+                    this.properties.node_width = v;
+                    window.updateInspectorIfSelected?.(this);
+                }, { 
+                    min: 1,
+                    step: 10,
+                    precision: 0
+                }
+                );
+                this.addWidget("number", "Высота", this.properties.node_height, v => {
+                    this.properties.node_height = v; 
+                    window.updateInspectorIfSelected?.(this);
+                }, {
+                    min: 1,
+                    step: 10,
+                    precision: 0
+                });
+            };
+
+            // Метод для восстановления состояния виджетов
+            onConfigure(o) {
+
+                // Восстанавливаем свойства
+                if (o.properties.node_height !== undefined)  this.properties.node_height = o.properties.node_height;
+                if (o.properties.node_width !== undefined)  this.properties.node_width = o.properties.node_width;
+                
+                // Пересоздаем виджеты с восстановленными значениями
+                this.createWidgets();
+            };
+        
+        }
+        LiteGraph.registerNodeType("filter/BackgroundCorrectionPolynomialNode", BackgroundCorrectionPolynomialNode);
+
+        class Logarithm extends FilterNode{
+            constructor() {
+                super();
+                // this.addInput("Image", "object"); 
+                // this.addOutput("Image", "object"); 
+                // Свойства узла (по умолчанию)
+                this.boxcolor = "#6c6";
+                this.title = "Логарифмирование";
+            }
+
+            onExecute() {
+
+                const epsilon = 0.0001;
+
+                // Получаем входные данные
+                const matrixA = this.getInputData(0);
+
+
+                // Если нет данных - возвращаем null
+                if (!matrixA) {
+                    this.outputs[0].links = null;
+                    return;
+                }
+                
+                // Проверяем структуру матриц
+                if (!this._isValidMatrix(matrixA)) {
+                    console.error("Invalid matrix structure");
+                    this.outputs[0].links = null;
+                    return;
+                }
+        
+
+                // Определяем размеры результата (минимум из размеров входов)
+                const width = Math.min(matrixA.width);
+                const height = Math.min(matrixA.height);
+
+                // Создаем матрицу для результата
+                const result = {
+                    data: new Array(height)
+                };
+                
+                // Выполняем поэлементное деление
+                for (let y = 0; y < height; y++) {
+                    result.data[y] = new Array(width);
+                    for (let x = 0; x < width; x++) {
+
+                        const a = matrixA.data[y][x] ?? 0;
+                        // const b = matrixB.data[y][x] ?? 0;
+                        // LogarithmImage
+                        const lg_matrix = Math.log10(a);
+                        const ln_matrix = Math.log(a);
+
+                        // Защита от деления на ноль
+                        //const denominator = Math.abs(b) < epsilon ? epsilon : b;
+                        
+                        // // Вычисляем результат
+                        // let value;
+                        // if (this.properties.outputType === "int") {
+                        //     value = Math.floor(a / denominator);
+                        // } else {
+                        //     value = a / denominator;
+                        // }
+                        
+
+                        result.data[y][x] = ln_matrix;
+                    }
+                }
+
+
+                var max_result = result.data[0][0];
+                var min_result = result.data[0][0];
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+
+                        if(result.data[y][x] > max_result) {
+                            max_result = result.data[y][x];
+                        }
+                        if(result.data[y][x] < min_result) {
+                            min_result = result.data[y][x];
+                        }
+                    }
+                }
+                
+            
+                // Формируем выходные данные
+                const outputData = {
+                    width: width,
+                    height: height,
+                    data: result.data,
+                    minValue: min_result,
+                    maxValue: max_result,
+                    format: matrixA.format,
+                    filename: matrixA.filename,
+                    autoscale: matrixA.autoscale,
+                    colormap: matrixA.colormap
+                };
+                this.setOutputData(0, outputData);
+
+                // Создаем временный canvas для исходного ImageData
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+                
+                const minVal =  min_result;
+                const maxVal =  max_result;
+
+                const autoscale = true;
+                const colormap = 'gray';
+                const colorMap = getColormap(colormap);
+                const data = new Uint8ClampedArray(width * height * 4);
+                let dataIndex = 0;
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const normalizedValue = autoscale 
+                            ? (result.data[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                            : (result.data[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                        
+                        const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                        data[dataIndex++] = color.r * 255;
+                        data[dataIndex++] = color.g * 255;
+                        data[dataIndex++] = color.b * 255;
+                        data[dataIndex++] = 255;
+                    }
+                }
+                const imageData = new ImageData(data, width, height);
+                tempCtx.putImageData(imageData, 0, 0); // Полное копирование ImageData
+
+                // Создаем canvas для обрезанного фрагмента
+                const cropped = document.createElement('canvas');
+                const ctx = cropped.getContext('2d');
+                cropped.width = width;
+                cropped.height = height;
+
+                // Рисуем только нужный фрагмент (safeX, safeY, safeWidth, safeHeight) из временного canvas в final canvas
+                ctx.drawImage(
+                    tempCanvas, // Источник (исходное изображение)
+                    0, 0, width, height, // Координаты и размер фрагмента в источнике
+                    0, 0, width, height         // Координаты и размер на новом canvas (без масштабирования)
+                );
+                const out = ctx.getImageData(0, 0, width, height);
+                this.properties.previewData = out;
+            }
+
+            _isValidMatrix(matrix) {
+                return matrix && 
+                    typeof matrix.width === 'number' && 
+                    typeof matrix.height === 'number' &&
+                    Array.isArray(matrix.data) &&
+                    matrix.data.length === matrix.height;
+            }
+        }
+        LiteGraph.registerNodeType("filter/Logarithm", Logarithm);
+
+
+        // Базовый класс для трансформаций
+        class TransformNode extends LGraphNode {
+            constructor() {
+                super();
+                this.addInput("Image", "object"); 
+                this.addOutput("Image", "object"); 
+                // Свойства узла (по умолчанию)
+                this.properties = {
+                    "width": 10,
+                    "height": 10,
+                    "data": "[[0, 0, 0], [0, 255, 0], [0, 0, 0]]", // Начальная матрица (JSON-строка)
+                    "minValue": 0,
+                    "maxValue": 255,
+                    "format": null,
+                    "filename": null,
+                    "autoscale": true,
+                    "colormap": "gray", // Цветовая схема
+                    "previewData":null
+                };
+                this.boxcolor = "#6c6";
+                this.size[0] = 200;
+            }
+        }
+        
+        class Resize extends TransformNode {
+            constructor() {
+                super(); 
+                this.title = "Размер";
+                this.properties.node_width = 512;
+                this.properties.node_height = 512;
+                this.addWidget("number", "Ширина", this.properties.node_width,v => {
+                    this.properties.node_width = v;
+                    window.updateInspectorIfSelected?.(this);
+                }, { 
+                    min: 1,
+                    step: 10,
+                    precision: 0
+                }
+                );
+                this.addWidget("number", "Высота", this.properties.node_height, v => {
+                    this.properties.node_height = v; 
+                    window.updateInspectorIfSelected?.(this);
+                }, {
+                    min: 1,
+                    step: 10,
+                    precision: 0
+                });
+            }
+            onExecute() {
+                if (this.inputs[0] && this.inputs[0].link) {
+                    const inputData = this.getInputData(0);
+                    if (inputData) {
+
+                        this.properties.width = inputData.width;
+                        this.properties.height = inputData.height;
+                        this.properties.data = inputData.data;
+                        this.properties.minValue = inputData.minValue;
+                        this.properties.maxValue = inputData.maxValue;
+                        this.properties.autoscale = inputData.autoscale !== undefined ? inputData.autoscale : this.properties.autoscale;
+                        this.properties.colormap = inputData.colormap;
+                        this.properties.filename = inputData.filename;
+                        this.properties.format = inputData.format;
+
+                        const w = Math.max(1, Math.round(this.properties.node_width));
+                        const h = Math.max(1, Math.round(this.properties.node_height));
+
+                        let matrix = this.properties.data;
+                        const width = this.properties.width;
+                        const height = this.properties.height;
+                        const minVal =  this.properties.minValue;
+                        const maxVal =  this.properties.maxValue;
+                        const autoscale = true;
+                        const colormap = 'gray';
+                        const colorMap = getColormap(colormap);
+                        const data = new Uint8ClampedArray(width * height * 4);
+                        let dataIndex = 0;
+                        for (let y = 0; y < height; y++) {
+                            for (let x = 0; x < width; x++) {
+                                const normalizedValue = autoscale 
+                                    ? (matrix[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                                    : (matrix[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                                
+                                const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                                data[dataIndex++] = color.r * 255;
+                                data[dataIndex++] = color.g * 255;
+                                data[dataIndex++] = color.b * 255;
+                                data[dataIndex++] = 255;
+                            }
+                        }
+                        const imageData = new ImageData(data, width, height);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w; 
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        const tmp = document.createElement('canvas');
+                        tmp.width = imageData.width;
+                        tmp.height = imageData.height;
+                        tmp.getContext('2d').putImageData(imageData, 0, 0);
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.drawImage(tmp, 0, 0, w, h);
+                        const out = ctx.getImageData(0, 0, w, h);
+                        const restoredMatrix = imageToMatrix(out,w,h, minVal, maxVal, true);
+
+
+                        // Формируем выходные данные
+                        const outputData = {
+                            width: w,
+                            height: h,
+                            data: restoredMatrix,
+                            minValue: this.properties.minValue,
+                            maxValue: this.properties.maxValue,
+                            format: this.properties.format,
+                            filename: this.properties.filename,
+                            autoscale: this.properties.autoscale,
+                            colormap: this.properties.colormap
+                        };
+                        this.setOutputData(0, outputData);
+
+                        // **Сохраняем изображение в превью** (для визуализации)
+                        this.properties.previewData = out;
+                    }
+                }
+            }
+            createWidgets() {
+                // Очищаем существующие виджеты
+                this.widgets = [];  
+                // Создаем виджеты с текущими значениями свойств
+                this.addWidget("number", "Ширина", this.properties.node_width,v => {
+                    this.properties.node_width = v;
+                    window.updateInspectorIfSelected?.(this);
+                }, { 
+                    min: 1,
+                    step: 10,
+                    precision: 0
+                }
+                );
+                this.addWidget("number", "Высота", this.properties.node_height, v => {
+                    this.properties.node_height = v; 
+                    window.updateInspectorIfSelected?.(this);
+                }, {
+                    min: 1,
+                    step: 10,
+                    precision: 0
+                });
+            };
+
+            // Метод для восстановления состояния виджетов
+            onConfigure(o) {
+
+                // Восстанавливаем свойства
+                if (o.properties.node_height !== undefined)  this.properties.node_height = o.properties.node_height;
+                if (o.properties.node_width !== undefined)  this.properties.node_width = o.properties.node_width;
+                
+                // Пересоздаем виджеты с восстановленными значениями
+                this.createWidgets();
+            };
+        
+        }
+        LiteGraph.registerNodeType("transform/Resize", Resize);
+
+        class Rotate extends TransformNode {
+            constructor() {
+                super(); 
+                this.title = "Повернуть";
+
+                this.properties.Angle = 0.0;
+                this.addWidget("number", "Угол",this.properties.Angle,v => {
+                    this.properties.Angle = v;
+                    window.updateInspectorIfSelected?.(this);
+                }, 
+                {
+                    min: 0.0,    // Минимальное значение
+                    max: 360,    // Максимальное значение
+                    step: 0.01,   // Шаг изменения
+                    precision: 2 // Точность вывода (2 знака после запятой)
+                }
+                 
+            
+                );
+            }
+        
+            onExecute() {
+
+                if (this.inputs[0] && this.inputs[0].link) {
+                    const inputData = this.getInputData(0);
+                    if (inputData) {
+
+                        this.properties.width = inputData.width;
+                        this.properties.height = inputData.height;
+                        this.properties.data = inputData.data;
+                        this.properties.minValue = inputData.minValue;
+                        this.properties.maxValue = inputData.maxValue;
+                        this.properties.autoscale = inputData.autoscale !== undefined ? inputData.autoscale : this.properties.autoscale;
+                        this.properties.colormap = inputData.colormap;
+                        this.properties.filename = inputData.filename;
+                        this.properties.format = inputData.format;
+
+                        // ----- поворот всего изображения -----
+                        let matrix = this.properties.data;
+                        const width = this.properties.width;
+                        const height = this.properties.height;
+                        const minVal =  this.properties.minValue;
+                        const maxVal =  this.properties.maxValue;
+                        const autoscale = true;
+                        const colormap = 'gray';
+                        const colorMap = getColormap(colormap);
+                        const data = new Uint8ClampedArray(width * height * 4);
+                        let dataIndex = 0;
+                        for (let y = 0; y < height; y++) {
+                            for (let x = 0; x < width; x++) {
+                                const normalizedValue = autoscale 
+                                    ? (matrix[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                                    : (matrix[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                                
+                                const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                                data[dataIndex++] = color.r * 255;
+                                data[dataIndex++] = color.g * 255;
+                                data[dataIndex++] = color.b * 255;
+                                data[dataIndex++] = 255;
+                            }
+                        }
+
+                        // ----- поворот всего изображения -----
+                        const imageData = new ImageData(data, width, height);
+                        const rad = (this.properties.Angle * Math.PI) / 180;
+                        const sin = Math.abs(Math.sin(rad));
+                        const cos = Math.abs(Math.cos(rad));
+                        const nw = Math.round(width * cos + height * sin);
+                        const nh = Math.round(width * sin + height * cos);
+                        const c = document.createElement('canvas');
+                        c.width = nw;
+                        c.height = nh;
+                        const ctx = c.getContext('2d');
+                        const tmp = document.createElement('canvas');
+                        tmp.width = width;
+                        tmp.height = height;
+                        tmp.getContext('2d').putImageData(imageData, 0, 0);
+                        ctx.translate(nw / 2, nh / 2);
+                        ctx.rotate(rad);
+                        ctx.drawImage(tmp, -width / 2, -height / 2);
+                        const out = ctx.getImageData(0, 0, nw, nh);
+                        const restoredMatrix = imageToMatrix(out,nw,nh, minVal, maxVal, true);
+
+                        // Формируем выходные данные
+                        const outputData = {
+                            width: nw,
+                            height: nh,
+                            data: restoredMatrix,
+                            minValue: this.properties.minValue,
+                            maxValue: this.properties.maxValue,
+                            format: this.properties.format,
+                            filename: this.properties.filename,
+                            autoscale: this.properties.autoscale,
+                            colormap: this.properties.colormap
+                        };
+                        this.setOutputData(0, outputData);
+
+                        // **Сохраняем изображение в превью** (для визуализации)
+                        this.properties.previewData = out;
+                    }
+                }
+            }
+        
+    
+            createWidgets() {
+                // Очищаем существующие виджеты
+                this.widgets = [];  
+                // Создаем виджеты с текущими значениями свойств
+                this.addWidget("number", "Угол",this.properties.Angle,v => this.properties.Angle = v, {
+                    min: 0.0,    // Минимальное значение
+                    max: 360,    // Максимальное значение
+                    step: 0.1,   // Шаг изменения
+                    precision: 2 // Точность вывода (2 знака после запятой)
+                });
+            };
+
+            // Метод для восстановления состояния виджетов
+            onConfigure(o) {
+
+                // Восстанавливаем свойства
+                if (o.properties.Angle !== undefined)  this.properties.Angle = o.properties.Angle;
+                
+                // Пересоздаем виджеты с восстановленными значениями
+                this.createWidgets();
+            };
+        }
+        LiteGraph.registerNodeType("transform/Rotate", Rotate);
+
+        class Crop extends TransformNode {
+            constructor() {
+                super(); 
+                this.title = "Обрезка";
+                this.properties = {
+                    node_x: 0,
+                    node_y: 0,
+                    node_width: 256,
+                    node_height: 256,
+                };
+                this.addWidget("number", "X", 0, v => this.properties.node_x = v, { min: 0, max: 5000, step:10, precision: 0 });
+                this.addWidget("number", "Y", 0, v => this.properties.node_y = v, { min: 0, max: 5000, step:10, precision: 0 });
+                this.addWidget("number", "Ширина", 256, v => this.properties.node_width = v, { min: 1, max: 5000, step:10, precision: 0 });
+                this.addWidget("number", "Высота", 256, v => this.properties.node_height = v, { min: 1, max: 5000, step:10, precision: 0 });
+                this.size[0] = 250; // Только ширина = 250, высота — авто
+            }
+            onExecute() {
+
+                if (this.inputs[0] && this.inputs[0].link) {
+                    const inputData = this.getInputData(0);
+                    if (inputData) {
+                        this.properties.width = inputData.width;
+                        this.properties.height = inputData.height;
+                        this.properties.data = inputData.data;
+                        this.properties.minValue = inputData.minValue;
+                        this.properties.maxValue = inputData.maxValue;
+                        this.properties.autoscale = inputData.autoscale !== undefined ? inputData.autoscale : this.properties.autoscale;
+                        this.properties.colormap = inputData.colormap;
+                        this.properties.filename = inputData.filename;
+                        this.properties.format = inputData.format;
+
+
+
+            
+
+                        // Ограничиваем значения, чтобы они не выходили за границы
+                        const safeX = Math.max(0, Math.min(this.properties.node_x, inputData.width - 1));
+                        const safeY = Math.max(0, Math.min(this.properties.node_y, inputData.height - 1));
+                        const safeWidth = Math.min(this.properties.node_width, inputData.width - safeX);
+                        const safeHeight = Math.min(this.properties.node_height, inputData.height - safeY);
+
+
+
+
+                        // Создаем временный canvas для исходного ImageData
+                        const tempCanvas = document.createElement('canvas');
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCanvas.width = inputData.width;
+                        tempCanvas.height = inputData.height;
+
+                        let matrix = this.properties.data;
+                        const width = this.properties.width;
+                        const height = this.properties.height;
+                        const minVal =  this.properties.minValue;
+                        const maxVal =  this.properties.maxValue;
+                        const autoscale = true;
+                        const colormap = 'gray';
+                        const colorMap = getColormap(colormap);
+                        const data = new Uint8ClampedArray(width * height * 4);
+                        let dataIndex = 0;
+                        for (let y = 0; y < height; y++) {
+                            for (let x = 0; x < width; x++) {
+                                const normalizedValue = autoscale 
+                                    ? (matrix[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                                    : (matrix[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                                
+                                const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                                data[dataIndex++] = color.r * 255;
+                                data[dataIndex++] = color.g * 255;
+                                data[dataIndex++] = color.b * 255;
+                                data[dataIndex++] = 255;
+                            }
+                        }
+                        const imageData = new ImageData(data, width, height);
+                        tempCtx.putImageData(imageData, 0, 0); // Полное копирование ImageData
+
+                        // Создаем canvas для обрезанного фрагмента
+                        const cropped = document.createElement('canvas');
+                        const ctx = cropped.getContext('2d');
+                        cropped.width = safeWidth;
+                        cropped.height = safeHeight;
+
+                        // Рисуем только нужный фрагмент (safeX, safeY, safeWidth, safeHeight) из временного canvas в final canvas
+                        ctx.drawImage(
+                            tempCanvas, // Источник (исходное изображение)
+                            safeX, safeY, safeWidth, safeHeight, // Координаты и размер фрагмента в источнике
+                            0, 0, safeWidth, safeHeight         // Координаты и размер на новом canvas (без масштабирования)
+                        );
+
+
+                        const out = ctx.getImageData(0, 0, safeWidth, safeHeight);
+                        this.properties.previewData = out;
+                        const restoredMatrix = imageToMatrix(out,safeWidth,safeHeight, minVal, maxVal, true);
+
+
+
+
+                        // Формируем выходные данные
+                        const outputData = {
+                            width: safeWidth,
+                            height: safeHeight,
+                            data: restoredMatrix,
+                            minValue: this.properties.minValue,
+                            maxValue: this.properties.maxValue,
+                            format: this.properties.format,
+                            filename: this.properties.filename,
+                            autoscale: this.properties.autoscale,
+                            colormap: this.properties.colormap
+                        };
+                        this.setOutputData(0, outputData);
+
+                        
+
+                    }
+                }
+
+            }
+        }
+        LiteGraph.registerNodeType("transform/Crop", Crop);
+
+        class Threshold extends TransformNode {
+            constructor() {
+                super(); 
+                this.title = "Порог";
+                this.properties = {
+                    node_min: 0,
+                    node_less_min: 0,
+                    node_max: 1,
+                    node_more_max: 1,
+                };
+                this.addWidget("number", "Минимум", 0, v => this.properties.node_min = v,           { min: -50000, max: 50000, step:0.00001, precision: 6 });
+                this.addWidget("number", "< Минимума", 0, v => this.properties.node_less_min = v,   { min: -50000, max: 50000, step:0.00001, precision: 6 });
+                this.addWidget("number", "Максимум", 1, v => this.properties.node_max = v,          { min: -50000, max: 50000, step:0.00001, precision: 6 });
+                this.addWidget("number", "> Максимума", 1, v => this.properties.node_more_max = v,  { min: -50000, max: 50000, step:0.00001, precision: 6 });
+                this.size[0] = 250; // Только ширина = 250, высота — авто
+                this.addInput("sel", "array"); 
+                // Массив для хранения точек лассо (координаты кликов/движений мыши)
+                this.points = [];
+            }
+
+            // Алгоритм точки внутри многоугольника (чётность-нечётность)
+            _isPointInPolygon(px, py) {
+                let inside = false;
+                for (let i = 0, j = this.points.length - 1; i < this.points.length; j = i++) {
+                    const [xi, yi] = this.points[i];
+                    const [xj, yj] = this.points[j];
+                    const intersect = (
+                        yi > py !== yj > py &&
+                        px < (xj - xi) * (py - yi) / (yj - yi) + xi
+                    );
+                    if (intersect) inside = !inside;
+                }
+                return inside;
+            }
+
+            onExecute() {
+               
+                    const inputData = this.getInputData(0);
+                    const sel = this.getInputData(1);
+                    
+                    if (!inputData ) return;// Если нет данных - выходим
+                
+                    this.properties.width = inputData.width;
+                    this.properties.height = inputData.height;
+                    this.properties.data = inputData.data;
+                    this.properties.minValue = inputData.minValue;
+                    this.properties.maxValue = inputData.maxValue;
+                    this.properties.autoscale = inputData.autoscale;
+                    this.properties.colormap = inputData.colormap;
+                    this.properties.filename = inputData.filename;
+                    this.properties.format = inputData.format;
+
+
+                    //let matrix  =   this.properties.data;
+                    const width =   this.properties.width;
+                    const height =  this.properties.height;
+
+
+
+                    // Создаем матрицу для результата
+                    const result = {
+                        data: new Array(height)
+                    };
+                    for (let y = 0; y < height; y++) {
+                        result.data[y] = new Array(width);
+                    }
+                    
+                    if  (!sel) {
+                        // Выполняем поэлементное деление
+                        for (let y = 0; y < height; y++) {
+                            for (let x = 0; x < width; x++) {
+                                result.data[y][x] = this.properties.data[y][x];
+
+                                if(result.data[y][x] > this.properties.node_max) {
+                                    result.data[y][x] = this.properties.node_more_max;
+                                }
+                                
+                                if(result.data[y][x] < this.properties.node_min) {
+                                    result.data[y][x] = this.properties.node_less_min;
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        this.points = sel;
+                        console.log(this.points);
+                        // Выполняем поэлементное деление
+                        for (let y = 0; y < height; y++) {
+                            for (let x = 0; x < width; x++) {
+                                result.data[y][x] = this.properties.data[y][x];
+
+                                let isInside = false;
+                                isInside = this._isPointInPolygon(x, y);
+                                if(isInside){
+                                   
+                                    if(result.data[y][x] > this.properties.node_max) {
+                                        result.data[y][x] = this.properties.node_more_max;
+                                    }
+                                    
+                                    if(result.data[y][x] < this.properties.node_min) {
+                                        result.data[y][x] = this.properties.node_less_min;
+                                    } 
+                                }
+                                //const alpha = isInside ? 255 : 128; 
+                            }
+                        }
+                    }
+
+
+                    var max_result = result.data[0][0];
+                    var min_result = result.data[0][0];
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+
+                            if(result.data[y][x] > max_result) {
+                                max_result = result.data[y][x];
+                            }
+                            if(result.data[y][x] < min_result) {
+                                min_result = result.data[y][x];
+                            }
+                        }
+                    }
+
+
+                    // Формируем выходные данные
+                    const outputData = {
+                        width: width,
+                        height: height,
+                        data: result.data,
+                        minValue: min_result,
+                        maxValue: max_result,
+                        format: this.properties.format,
+                        filename: this.properties.filename,
+                        autoscale: this.properties.autoscale,
+                        colormap: this.properties.colormap
+                    };
+                    this.setOutputData(0, outputData);
+
+
+
+
+
+                // Создаем временный canvas для исходного ImageData
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+                
+                const minVal =  min_result;
+                const maxVal =  max_result;
+
+                const autoscale = this.properties.autoscale;
+                    const colormap = this.properties.colormap;
+                    const colorMap = getColormap(colormap);
+                    const data = new Uint8ClampedArray(width * height * 4);
+                // const autoscale = true;
+                // const colormap = 'gray';
+                // const colorMap = getColormap(colormap);
+                // const data = new Uint8ClampedArray(width * height * 4);
+                let dataIndex = 0;
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const normalizedValue = autoscale 
+                            ? (result.data[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                            : (result.data[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                        
+                        const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                        data[dataIndex++] = color.r * 255;
+                        data[dataIndex++] = color.g * 255;
+                        data[dataIndex++] = color.b * 255;
+                        data[dataIndex++] = 255;
+                    }
+                }
+                const imageData = new ImageData(data, width, height);
+                tempCtx.putImageData(imageData, 0, 0); // Полное копирование ImageData
+
+                // Создаем canvas для обрезанного фрагмента
+                const cropped = document.createElement('canvas');
+                const ctx = cropped.getContext('2d');
+                cropped.width = width;
+                cropped.height = height;
+
+                // Рисуем только нужный фрагмент (safeX, safeY, safeWidth, safeHeight) из временного canvas в final canvas
+                ctx.drawImage(
+                    tempCanvas, // Источник (исходное изображение)
+                    0, 0, width, height, // Координаты и размер фрагмента в источнике
+                    0, 0, width, height         // Координаты и размер на новом canvas (без масштабирования)
+                );
+                const out = ctx.getImageData(0, 0, width, height);
+                this.properties.previewData = out;
+                   
+                
+            }
+
+
+        }
+        LiteGraph.registerNodeType("transform/Threshold", Threshold);
+
+        // Узел для преобразования между полярной и декартовой системами координат
+        class CoordinateTransformNode extends TransformNode {
+        constructor() {
+        super();
+        this.title = "Полярные координаты."
+        // this.addInput("Data", "array");
+        // this.addInput("Old Size", "vec2");
+        // this.addInput("Center", "vec2");
+        // this.addInput("d_angle", "number");
+        // this.addInput("angle0", "number");
+        // this.addInput("New Size", "vec2");
+        // this.addInput("Conditions", "boolean");
+        // this.addInput("dr", "number");
+
+        // this.addOutput("Result", "array");
+
+        //this.setName("Coordinate Transform");
+
+
+        this.properties = {
+        angle0: 0,
+        d_angle: 1.0,
+        dr: 1.0,
+        conditions: true,
+        center_x: 0,
+        center_y: 0
+        };
+
+        this.addWidget("toggle", "Перевод в полярные",true, v => this.properties.conditions = v);
+        this.addWidget("number", "Координаты центра (X):", 0, v => this.properties.center_x = v, { min: 0, max: 5000, step:10, precision: 0 });
+        this.addWidget("number", "Координаты центра (Y):", 0, v => this.properties.center_y = v, { min: 0, max: 5000, step:10, precision: 0 });
+        this.addWidget("number", "Шаг по углу:", 1,           v => this.properties.d_angle = v, { min: 1, max: 5000, step:1, precision: 1 });
+        this.addWidget("number", "Шаг по радиусу", 1,         v => this.properties.dr = v, { min: 1, max: 5000, step:1, precision: 1 });
+        }
+
+        // onDrawForeground(context) {
+        //     // Визуальное представление типа преобразования
+        //     context.font = "12px Arial";
+        //     context.textAlign = "center";
+        //     context.fillText(this.properties.conditions ? "Polar→Cartesian" : "Cartesian→Polar", 
+        //                     120, this.size.y - 20);
+        // }
+
+        _serialize() {
+        let data = super.serialize();
+        data.properties.center = this.properties.center;
+        return data;
+        }
+
+        _deserialize(data) {
+        super.deserialize(data);
+        this.properties.center = data.properties.center || [0, 0];
+        }
+
+        calculatePolarToCartesian(data, oldHeight, oldWidth, center_x, center_y, dAngle, angle0, newHeight, newWidth, dr) {
+        //let Res = new Array(newWidth * newHeight).fill(0);
+        let angle, dx, dy, val, ind_x0, ind_x1, ind_y0, ind_y1;
+        let coord_x, coord_y, dc_x, dc_y, a, b;
+
+        const Res = new Array(newHeight);
+
+        for (let i = 0; i < newHeight; i++) {
+        Res[i] = new Array(newWidth);
+        angle = (2.0 * Math.PI * (angle0 + dAngle * i)) / 360.0;
+        dx = dr * Math.sin(angle);
+        dy = dr * Math.cos(angle);
+
+        for (let j = 0; j < newWidth; j++) {
+
+        coord_y = center_y + dy * j;
+        coord_x = center_x + dx * j;
+
+        // Граничные условия
+        if (coord_x >= oldWidth - 1) coord_x = oldWidth - 2;
+        if (coord_y >= oldHeight - 1) coord_y = oldHeight - 2;
+        if (coord_x < 0) coord_x = 0.0;
+        if (coord_y < 0) coord_y = 0.0;
+
+        ind_y0 = Math.floor(coord_y);
+        ind_x0 = Math.floor(coord_x);
+        ind_x1 = ind_x0 + 1;
+        ind_y1 = ind_y0 + 1;
+
+        dc_x = coord_x - ind_x0;
+        dc_y = coord_y - ind_y0;
+
+        val = 0.0;
+        if (ind_y0 >= 0 && ind_y0 < oldHeight && ind_x0 >= 0 && ind_x0 < oldWidth &&
+        ind_y1 >= 0 && ind_y1 < oldHeight && ind_x1 >= 0 && ind_x1 < oldWidth) {
+
+        a = data[ind_y0][ind_x0] + dc_x * (data[ind_y0][ind_x1] - data[ind_y0][ind_x0]);
+        b = data[ind_y1][ind_x0] + dc_x * (data[ind_y1][ind_x1] - data[ind_y1][ind_x0]);         
+        val = a + dc_y * (b - a);
+        }
+
+        Res[i][j] = val;
+        }
+        }
+        return Res;
+        }
+
+        calculateCartesianToPolar(data, oldHeight, oldWidth, center_x, center_y, dAngle, angle0, newHeight, newWidth, dr) {
+
+
+        let minAngle = Infinity;
+        let r_x, r_y, R, ang_x, angle;
+
+        // Первый проход - определение minAngle
+        for (let i = 0; i < newHeight; i++) {
+        r_y = (-center_y + i) / dr;
+        for (let j = 0; j < newWidth; j++) {
+        r_x = (-center_x + j) / dr;
+        R = Math.sqrt(r_y * r_y + r_x * r_x);
+        if (R < 0.001) R = 0.001;
+
+        ang_x = Math.asin(r_y / R);
+        angle = angle0 + ang_x;
+        if (angle < minAngle) minAngle = angle;
+        }
+        }
+
+        // Корректировка angle0
+        angle0 = Math.PI + (dAngle / 2.0) * (2.0 * Math.PI / 360.0);
+
+        // Второй проход - само преобразование
+        //let Res = new Array(newWidth * newHeight).fill(0);
+        const Res = new Array(newHeight);
+        for (let i = 0; i < newHeight; i++) {
+        Res[i] = new Array(newWidth);
+        r_y = (-center_y + i) / dr;
+        for (let j = 0; j < newWidth; j++) {
+        r_x = (-center_x + j) / dr;
+        R = Math.sqrt(r_y * r_y + r_x * r_x);
+        if (R < 0.001) R = 0.001;
+
+        ang_x = Math.asin(r_y / R);
+        angle = 360.0 * ((angle0 + ang_x - minAngle) / (dAngle * 2.0 * Math.PI));
+
+        // Коррекция для правой полуплоскости
+        if (r_x > 0.0) {
+        angle = (oldHeight + 1.0) - angle;
+        }
+
+        // Граничные условия
+        let angleInt = Math.floor(angle);
+        if (angleInt < 0 || angleInt >= oldHeight || Math.floor(R) >= oldWidth) {
+        Res[i][j] = 0.0;
+        } else {
+        Res[i][j] = data[angleInt][Math.floor(R)];
+        }
+        }
+        }
+        return Res;
+        }
+
+        onExecute() {
+        // if (!this._inputs) return;
+
+        // // Получаем входные данные
+        // let data = this.getInputData(0) || [];
+        // let oldSize = this.getInputData(1) || [];
+        // let center = this.getInputData(2) || this.properties.center;
+        // let dAngle = this.getInputData(3) || this.properties.d_angle;
+        // let angle0 = this.getInputData(4) || this.properties.angle0;
+        // let newSize = this.getInputData(5) || [];
+        // let conditions = this.getInputData(6) !== null ? this.getInputData(6) : this.properties.conditions;
+        // let dr = this.getInputData(7) || this.properties.dr;
+
+
+        const inputData = this.getInputData(0); 
+        this.properties.width = inputData.width;
+        this.properties.height = inputData.height;
+        this.properties.data = inputData.data;
+        this.properties.minValue = inputData.minValue;
+        this.properties.maxValue = inputData.maxValue;
+        this.properties.autoscale = inputData.autoscale !== undefined ? inputData.autoscale : this.properties.autoscale;
+        this.properties.colormap = inputData.colormap;
+        this.properties.filename = inputData.filename;
+        this.properties.format = inputData.format;
+
+
+        // // Проверяем корректность входных данных
+        // if (!Array.isArray(data) || !oldSize || !newSize) {
+        //     this.setOutputData(0, null);
+        //     return;
+        // }
+
+        // // Проверяем размерности
+        // if (data.length !== oldSize[0] * oldSize[1]) {
+        //      .warn("Input data dimensions don't match oldSize");
+        //     this.setOutputData(0, null);
+        //     return;
+        // }
+
+        const old_height = this.properties.height;        // Исходная высота изображения/матрицы
+        const old_width = this.properties.width;          // Исходная ширина
+        const center_x = this.properties.height/2;        // X-координата центра вращения
+        const center_y = this.properties.width/2;         // Y-координата центра вращения
+        const d_angle = this.properties.d_angle;        // Шаг изменения угла (в градусах)
+
+
+        //point1
+        var dx = 0 - center_x;
+        var dy = 0 - center_y;
+        var Diameter = Math.sqrt(dx * dx + dy * dy);
+        //point1
+        dx = old_width - center_x;
+        dy = 0 - center_y;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (Diameter < d) Diameter = d;
+        //point2
+        dx = old_width - center_x;
+        dy = old_height - center_y;
+        d = Math.sqrt(dx * dx + dy * dy);
+        if (Diameter < d) Diameter = d;
+        //point3
+        dx = 0 - center_x;
+        dy = old_height - center_y;
+        d = Math.sqrt(dx * dx + dy * dy);
+        if (Diameter < d) Diameter = d;
+
+        const width_new = Math.floor(1 + (Diameter / this.properties.dr));
+        const height_new = (360.0 / d_angle);//Height_new = (int)((360.0f - d_angle) / d_angle);
+
+
+
+
+        // Создаем матрицу для результата
+
+
+        // let result = Array.from({ length: width_new }, () => 
+        // Array(height_new).fill(0)
+        // );
+
+        // Выполняем преобразование
+        if (this.properties.conditions) {
+        this.properties.data =  this.calculatePolarToCartesian(
+        this.properties.data, 
+        old_height, old_width, 
+        center_x, center_y,
+        this.properties.d_angle, 
+        0, 
+        height_new, width_new, 
+        this.properties.dr 
+        );
+        } else {
+        this.properties.data = this.calculateCartesianToPolar(
+        this.properties.data, 
+        old_height, old_width, 
+        center_x, center_y,
+        this.properties.d_angle, 
+        0, 
+        height_new, width_new, 
+        this.properties.dr 
+        );
+        }
+
+        //this.setOutputData(0, this.properties.data);
+
+
+        this.properties.width = width_new;
+        this.properties.height = height_new;
+        this.properties.minValue = inputData.minValue;
+        this.properties.maxValue = inputData.maxValue;
+        this.properties.autoscale = inputData.autoscale !== undefined ? inputData.autoscale : this.properties.autoscale;
+        this.properties.colormap = inputData.colormap;
+        this.properties.filename = inputData.filename;
+        this.properties.format = inputData.format;
+
+
+        // Формируем выходные данные
+        const outputData = {
+        width: this.properties.width,
+        height: this.properties.height,
+        data: this.properties.data,
+        minValue: this.properties.minValue,
+        maxValue: this.properties.maxValue,
+        format: this.properties.format,
+        filename: this.properties.filename,
+        autoscale: this.properties.autoscale,
+        colormap: this.properties.colormap
+        };
+        this.setOutputData(0, outputData);
+
+        // Создаем временный canvas для исходного ImageData
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+
+        tempCanvas.width = this.properties.width;
+        tempCanvas.height = this.properties.height;
+
+        const minVal =  this.properties.minValue;
+        const maxVal =  this.properties.maxValue;
+
+        const autoscale = this.properties.autoscale;
+        const colormap = this.properties.colormap;
+        const colorMap = getColormap(colormap);
+        const data = new Uint8ClampedArray(this.properties.width *this.properties.height * 4);
+        let dataIndex = 0;
+        for (let y = 0; y < this.properties.height; y++) {
+        for (let x = 0; x < this.properties.width; x++) {
+        const normalizedValue = autoscale 
+        ? (this.properties.data[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+        : (this.properties.data[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+
+        const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+        data[dataIndex++] = color.r * 255;
+        data[dataIndex++] = color.g * 255;
+        data[dataIndex++] = color.b * 255;
+        data[dataIndex++] = 255;
+        }
+        }
+        const imageData = new ImageData(data, this.properties.width, this.properties.height);
+        tempCtx.putImageData(imageData, 0, 0); // Полное копирование ImageData
+
+        // Создаем canvas для обрезанного фрагмента
+        const cropped = document.createElement('canvas');
+        const ctx = cropped.getContext('2d');
+        cropped.width = this.properties.width;
+        cropped.height = this.properties.height;
+
+        // Рисуем только нужный фрагмент (safeX, safeY, safeWidth, safeHeight) из временного canvas в final canvas
+        ctx.drawImage(
+        tempCanvas, // Источник (исходное изображение)
+        0, 0, this.properties.width, this.properties.height, // Координаты и размер фрагмента в источнике
+        0, 0, this.properties.width, this.properties.height         // Координаты и размер на новом canvas (без масштабирования)
+        );
+        const out = ctx.getImageData(0, 0, this.properties.width, this.properties.height);
+        this.properties.previewData = out;
+
+        // saveToTptFile(this,  this.properties.filename+ "." + this.properties.format)
+        //             .then(message => console.log(message))
+        //             .catch(error => console.error(error));
+        }
+
+        // onGetInputs() {
+        //     return [
+        //         ["Data", "array"],
+        //         ["Old Size", "vec2"],
+        //         ["Center", "vec2"],
+        //         ["d_angle", "number"],
+        //         ["angle0", "number"],
+        //         ["New Size", "vec2"],
+        //         ["Conditions", "boolean"],
+        //         ["dr", "number"]
+        //     ];
+        // }
+
+        // onGetOutputs() {
+        //     return [["Result", "array"]];
+        // }
+
+        //static desc = "Преобразует координаты между полярной и декартовой системами";
+        }
+        LiteGraph.registerNodeType("transform/CoordinateTransformNode", CoordinateTransformNode);
+
+
+
+        // Базовый класс для калькулятора
+        class CalculationNode extends LGraphNode {
+            constructor() {
+                super();
+                this.addInput("Image1", "object"); 
+                this.addInput("Image2", "object"); 
+                this.addOutput("Image", "object"); 
+                // Свойства узла (по умолчанию)
+                this.boxcolor = "#6c6";
+                this.size[0] = 200; // Только ширина = 250, высота — авто
+            }
+        }
+
+        class Difference extends CalculationNode {
+            constructor() {
+                super(); 
+                this.title = "Деление";
+            }
+
+            onExecute() {
+
+                const epsilon = 0.0001;
+
+                // Получаем входные данные
+                const matrixA = this.getInputData(0);
+                const matrixB = this.getInputData(1);
+                //const epsilon = this.getInputData(2) ?? this.properties.epsilon;
+
+
+                // const inputData = this.getInputData(0);
+                // this.properties.width = inputData.width;
+                // this.properties.height = inputData.height;
+                // this.properties.data = inputData.data;
+                // this.properties.minValue = inputData.minValue;
+                // this.properties.maxValue = inputData.maxValue;
+                // this.properties.autoscale = inputData.autoscale !== undefined ? inputData.autoscale : this.properties.autoscale;
+                // this.properties.colormap = inputData.colormap;
+                // this.properties.filename = inputData.filename;
+                // this.properties.format = inputData.format;
+
+
+                // Если нет данных - возвращаем null
+                if (!matrixA || !matrixB) {
+                    this.outputs[0].links = null;
+                    return;
+                }
+                
+                // Проверяем структуру матриц
+                if (!this._isValidMatrix(matrixA) || !this._isValidMatrix(matrixB)) {
+                    console.error("Invalid matrix structure");
+                    this.outputs[0].links = null;
+                    return;
+                }
+        
+
+
+
+
+
+                // Определяем размеры результата (минимум из размеров входов)
+                const width = Math.min(matrixA.width, matrixB.width);
+                const height = Math.min(matrixA.height, matrixB.height);
+
+                // Создаем матрицу для результата
+                const result = {
+                    data: new Array(height)
+                };
+                
+                // Выполняем поэлементное деление
+                for (let y = 0; y < height; y++) {
+                    result.data[y] = new Array(width);
+                    for (let x = 0; x < width; x++) {
+                        const a = matrixA.data[y][x] ?? 0;
+                        const b = matrixB.data[y][x] ?? 0;
+                        
+                        // Защита от деления на ноль
+                        const denominator = Math.abs(b) < epsilon ? epsilon : b;
+                        
+                        // Вычисляем результат
+                        let value;
+                        if (this.properties.outputType === "int") {
+                            value = Math.floor(a / denominator);
+                        } else {
+                            value = a / denominator;
+                        }
+                        
+                        result.data[y][x] = value;
+                    }
+                }
+
+
+                var max_result = result.data[0][0];
+                var min_result = result.data[0][0];
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+
+                        if(result.data[y][x] > max_result) {
+                            max_result = result.data[y][x];
+                        }
+                        if(result.data[y][x] < min_result) {
+                            min_result = result.data[y][x];
+                        }
+                    }
+                }
+                
+                
+
+
+                // Формируем выходные данные
+                const outputData = {
+                    width: width,
+                    height: height,
+                    data: result.data,
+                    minValue: min_result,
+                    maxValue: max_result,
+                    format: matrixA.format,
+                    filename: matrixA.filename,
+                    autoscale: matrixA.autoscale,
+                    colormap: matrixA.colormap
+                };
+                this.setOutputData(0, outputData);
+
+
+
+                // Создаем временный canvas для исходного ImageData
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+                
+                const minVal =  min_result;
+                const maxVal =  max_result;
+
+                const autoscale = true;
+                const colormap = 'gray';
+                const colorMap = getColormap(colormap);
+                const data = new Uint8ClampedArray(width * height * 4);
+                let dataIndex = 0;
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const normalizedValue = autoscale 
+                            ? (result.data[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                            : (result.data[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                        
+                        const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                        data[dataIndex++] = color.r * 255;
+                        data[dataIndex++] = color.g * 255;
+                        data[dataIndex++] = color.b * 255;
+                        data[dataIndex++] = 255;
+                    }
+                }
+                const imageData = new ImageData(data, width, height);
+                tempCtx.putImageData(imageData, 0, 0); // Полное копирование ImageData
+
+                // Создаем canvas для обрезанного фрагмента
+                const cropped = document.createElement('canvas');
+                const ctx = cropped.getContext('2d');
+                cropped.width = width;
+                cropped.height = height;
+
+                // Рисуем только нужный фрагмент (safeX, safeY, safeWidth, safeHeight) из временного canvas в final canvas
+                ctx.drawImage(
+                    tempCanvas, // Источник (исходное изображение)
+                    0, 0, width, height, // Координаты и размер фрагмента в источнике
+                    0, 0, width, height         // Координаты и размер на новом canvas (без масштабирования)
+                );
+
+
+                        const out = ctx.getImageData(0, 0, width, height);
+                        this.properties.previewData = out;
+
+
+                // Устанавливаем выходные данные
+                //this.setOutputData(0, result);
+            }
+
+            _isValidMatrix(matrix) {
+                return matrix && 
+                    typeof matrix.width === 'number' && 
+                    typeof matrix.height === 'number' &&
+                    Array.isArray(matrix.data) &&
+                    matrix.data.length === matrix.height;
+            }
+
+            // getPropertyMenuOptions() {
+            //     return [
+            //         {
+            //             content: "Epsilon",
+            //             type: "number",
+            //             value: this.properties.epsilon,
+            //             min: 0.00001,
+            //             max: 1.0,
+            //             step: 0.00001,
+            //             callback: (v) => {
+            //                 this.properties.epsilon = v;
+            //                 this.setDirtyCanvas();
+            //             }
+            //         },
+            //         {
+            //             content: "Output Type",
+            //             type: "enum",
+            //             options: ["float", "int"],
+            //             value: this.properties.outputType,
+            //             callback: (v) => {
+            //                 this.properties.outputType = v;
+            //                 this.setDirtyCanvas();
+            //             }
+            //         },
+            //         {
+            //             content: "Reset",
+            //             type: "button",
+            //             callback: () => {
+            //                 this.properties.epsilon = 0.0001;
+            //                 this.properties.outputType = "float";
+            //                 this.setDirtyCanvas();
+            //             }
+            //         }
+            //     ];
+            // }
+        }
+        LiteGraph.registerNodeType("Calculation/Difference", Difference);
+
+        // Узел для выделения области интереса (ROI) методом "лассо" (Freehand Selection)
+        class ROILassoNode extends LGraphNode {
+            constructor() {
+                super();
+
+                this.title = "Лассо";
+                // Добавляем входной порт для изображения (тип данных - объект)
+                this.addInput("image", "object");
+
+                // Добавляем выходной порт для изображения (тип данных - объект)
+                this.addOutput("image", "object");
+                // Добавляем выходной порт для координат пикселей (тип данных - массив)
+                this.addOutput("sel", "array"); 
+                
+                // Массив для хранения точек лассо (координаты кликов/движений мыши)
+                this.points = [];
+                // Путь рисования (объект Path2D для построения полигона)
+                this.path = new Path2D();
+
+                // Смещение при перетаскивании (сохраняет предыдущее положение для вычисления delta)
+                this.offsetX = 0;
+                this.offsetY = 0;
+                // Флаг перетаскивания (true, когда засечён drag-движение)
+                this.isDragging = false;
+                // Флаг активного рисования (true, когда пользователь рисует лассо)
+                this.isDrawing = false;
+                // Флаг выделения (true, когда лассо выбрано для перемещения)
+                this.selected = false;
+
+                // Хранение данных изображения (ImageData или null)
+                this.img = null;
+
+                this.allPoints = [];
+
+
+
+                this.beginx = 25;
+                this.beginy = 65;
+            }
+
+            // Обработчик нажатия мыши (mousedown)
+            onMouseDown(event, pos) {
+                // Если не в режиме рисования - начинаем новый ROI
+                if (!this.isDrawing) {
+                    this.isDrawing = true;
+                    // Сохраняем первую точку как начальную
+                    //this.points = [pos];
+                    if(pos[0] >= this.beginx && pos[0] < this.properties.width + this.beginx && 
+                       pos[1] >= this.beginy && pos[1] < this.properties.height + this.beginy)
+                    {
+                        this.points = [pos];
+                    }
+                    if (pos[0] < this.beginx || pos[0] >= this.properties.width + this.beginx ||
+                        pos[1] < this.beginy || pos[1] >= this.properties.height + this.beginy) {
+                        // Ограничиваем координаты границами [100, 300] по обеим осям
+                        pos[0] = Math.max(this.beginx, Math.min(this.properties.width + this.beginx, pos[0]));
+                        pos[1] = Math.max(this.beginy, Math.min(this.properties.height + this.beginy , pos[1]));
+                        
+                        this.points = [pos];
+                    }
+
+                }
+                // Если уже рисуем - проверяем попадание в текущую область
+                else 
+                {
+                    // Проверяем, находится ли точка (x,y) 
+                    // внутри полигона (используется ctx.isPointInPath)
+                    // Используем spread-оператор для извлечения x/y из pos
+                    if (this.path.isPointInPath(x, y)) {
+                        // Если да - начинаем drag-режим
+                        this.isDragging = true;
+                        // Сохраняем текущие координаты как точку отсчёта
+                        this.offsetX = pos[0];
+                        this.offsetY = pos[1];
+                        this.selected = true;
+                    }
+                }
+                // Возвращаем true для указания, что событие обработано
+                return true;
+            }
+
+            // Обработчик движения мыши (mousemove)
+            onMouseMove(event,pos) {
+                // Если рисуем и не перетаскиваем - добавляем новую точку
+                if (this.isDrawing && !this.isDragging)
+                {
+                    if(pos[0] >= this.beginx && pos[0] < this.properties.width + this.beginx && 
+                       pos[1] >= this.beginy && pos[1] < this.properties.height + this.beginy)
+                    {
+                        this.points.push(pos);
+                        // Обновляем путь лассо
+                        this.updatePath(); 
+                        // Помечаем граф как "грязный" для фоновой перерисовки
+                        this.graph?.setDirtyCanvas("bg"); 
+
+
+                    }
+                    if (pos[0] < this.beginx || pos[0] >= this.properties.width + this.beginx ||
+                        pos[1] < this.beginy || pos[1] >= this.properties.height + this.beginy) {
+                        // Ограничиваем координаты границами [100, 300] по обеим осям
+                        pos[0] = Math.max(this.beginx, Math.min(this.properties.width + this.beginx, pos[0]));
+                        pos[1] = Math.max(this.beginy, Math.min(this.properties.height + this.beginy , pos[1]));
+                        
+                        // Добавляем точку и обновляем граф только если координаты были изменены
+                        this.points.push([...pos]); // Используем spread-оператор для копирования массива
+                        this.updatePath();
+                        this.graph?.setDirtyCanvas("bg");
+                    }
+                    
+
+                } 
+                // Если перетаскиваем - перемещаем все точки ROI
+                else if (this.isDragging) {
+                    // Изменение по X
+                    const dx = pos[0] - this.offsetX;
+                    // Изменение по Y
+                    const dy = pos[1] - this.offsetY;
+
+                    // Перемещаем все точки полигона на delta (dx, dy)
+                    for (let p of this.points) {
+                        p[0] += dx; // Обновляем координаты X точек
+                        p[1] += dy; // Обновляем координаты Y точек
+                    }
+                    // Обновляем смещение для следующей итерации
+                    this.offsetX = pos[0];
+                    this.offsetY = pos[1];
+                }
+            }
+
+            // Обработчик отпускания мыши (mouseup)
+            onMouseUp() {
+                // Завершаем режим рисования и перетаскивания
+                this.isDrawing = false;
+                this.isDragging = false;
+                // Финальное обновление пути (закрываем контур)
+                this.updatePath();
+
+
+                console.log(this.points.length );
+                // Если есть область (минимум 3 точки для замкнутого контура)
+                if (this.points.length >= 3) {
+                    this.calculatePointsInsidePolygon();
+                } else {
+                    this.points = [];
+                    this.allPoints = []; // Очищаем, если контур не замкнут
+                }
+                //console.log(this.allPoints );
+            }
+
+
+            // Алгоритм точки внутри многоугольника (чётность-нечётность)
+            isPointInPolygon(px, py) {
+                let inside = false;
+                for (let i = 0, j = this.points.length - 1; i < this.points.length; j = i++) {
+                    const [xi, yi] = this.points[i];
+                    const [xj, yj] = this.points[j];
+                    const intersect = (
+                        yi > py !== yj > py &&
+                        px < (xj - xi) * (py - yi) / (yj - yi) + xi
+                    );
+                    if (intersect) inside = !inside;
+                }
+                return inside;
+            }
+
+            // Расчёт всех точек внутри полигона
+            calculatePointsInsidePolygon() {
+                // Очищаем массив внутренних точек
+                this.allPoints = [...this.points]; // Сначала добавляем контур
+                
+                // Получаем границы ROI
+                let minX = Math.min(...this.points.map(p => p[0]));
+                let maxX = Math.max(...this.points.map(p => p[0]));
+                let minY = Math.min(...this.points.map(p => p[1]));
+                let maxY = Math.max(...this.points.map(p => p[1]));
+
+                // Добавляем смещение (100, 100) из onDrawBackground
+                const offsetX = 100;
+                const offsetY = 100;
+                
+                // Проверяем каждый пиксель в ограничительном прямоугольнике
+                for (let y = Math.floor(minY) - 1; y <= Math.ceil(maxY) + 1; y++) {
+                    for (let x = Math.floor(minX) - 1; x <= Math.ceil(maxX) + 1; x++) {
+                        // Преобразуем координаты canvas в координаты изображения
+                        const imgX = x - offsetX;
+                        const imgY = y - offsetY;
+                        
+                        // Проверяем, что координаты в пределах изображения
+                        if (imgX >= 0 && imgY >= 0 && imgX < this.properties.width && imgY < this.properties.height) {
+                            // Проверяем, находится ли точка внутри полигона
+                            if (this.isPointInPolygon(x, y)) {
+                                this.allPoints.push([imgX, imgY]); // Сохраняем координаты относительно изображения
+                            }
+                        }
+                    }
+                }
+                
+                // Уникализация точек (удаление дубликатов)
+                this.allPoints = [...new Set(this.allPoints.map(JSON.stringify))].map(JSON.parse);
+            }
+
+            // Метод обновления пути лассо (Path2D)
+            updatePath() {
+                // Создаём новый путь (очищаем предыдущий)
+                this.path = new Path2D();
+                // Минимум 2 точки для построения контура
+                if (this.points.length < 2) return;
+
+                // Начинаем путь из первой точки
+                this.path.moveTo(...this.points[0]);
+
+                // Добавляем линии между всеми точками
+                for (let i = 1; i < this.points.length; i++)
+                {
+                    this.path.lineTo(...this.points[i]);
+                }
+
+                // Закрываем путь (соединяем последнюю точку с первой)
+                this.path.closePath();
+                //this.addPointsInsidePath(); // Добавляем точки внутри (плотность 20)
+            }
+
+
+            // Метод рисования фона узла (вызвается при отрисовке графа)
+            onDrawBackground(ctx) {
+                // Если изображение не загружено - выходим
+                if (!this.img) return;
+
+                // Создаем временный canvas для работы с изображением
+                const tmp = document.createElement('canvas');
+                // Устанавливаем размер из свойств
+                tmp.width = this.properties.width;
+                tmp.height = this.properties.height;
+                // Копируем ImageData на временный canvas
+                tmp.getContext('2d').putImageData(this.img, 0, 0);
+                // Рисуем изображение в заданных координатах (100,100) и размере (250,250)
+                ctx.drawImage(tmp, this.beginx, this.beginy, this.properties.width, this.properties.height);
+                this.size[0] = this.properties.width + (this.beginx * 2); // (this.beginx * 2) - отступы с права и с лево
+                this.size[1] = this.properties.height + this.beginy + this.beginx;
+                
+                // Настраиваем стиль обводки контура лассо
+                // Красный при выделении, жёлтый - иначе
+                ctx.strokeStyle = this.selected ? 'red' : "#4a9eff";
+                // Толщина линии
+                ctx.lineWidth = 1;
+                // Рисуем путь лассо на основном контексте
+                ctx.stroke(this.path);
+
+                ctx.fillStyle = "rgba(133, 189, 253, 0.15)"; // Пример: полупрозрачный красный
+                ctx.fill(this.path);
+
+                // Настраиваем стиль прямоугольника (красный при выделении, белый иначе)
+                ctx.strokeStyle = this.selected ? 'red' : 'white';
+                ctx.lineWidth = 1; // Толщина линии
+
+                // // Рисуем рамку прямоугольника ROI
+                // ctx.strokeRect(
+                //     100, // X-координата начала
+                //     100, // Y-координата начала
+                //     200, // Ширина прямоугольника
+                //     200  // Высота прямоугольника
+                // );
+            }
+
+            // Основной метод обработки данных (вызывается при execution узла)
+            onExecute() {
+
+                // Получаем входные данные (ожидаем объект с данными изображения)
+                const inputData = this.getInputData(0); 
+                if (!inputData ) {
+                    return;// Если нет данных - выходим
+                }
+
+                // Сохраняем метаданные в свойства узла
+                this.properties.width = inputData.width;
+                this.properties.height = inputData.height;
+                // Матрица значений пикселей
+                this.properties.data = inputData.data;
+                // Минимальное значение в данных
+                this.properties.minValue = inputData.minValue;
+                // Максимальное значение
+                this.properties.maxValue = inputData.maxValue;
+                // Сохраняем autoscale
+                this.properties.autoscale = inputData.autoscale;
+                // Сохраняем цветовую карту
+                this.properties.colormap = inputData.colormap;
+                // Сохраняем имя файла и формат (для сохранения)
+                this.properties.filename = inputData.filename;
+                this.properties.format = inputData.format;
+                        
+
+                //Формируем выходные данные
+                const outputData = {
+                    width: this.properties.width,
+                    height: this.properties.height,
+                    data: this.properties.data,
+                    minValue: this.properties.minValue,
+                    maxValue: this.properties.maxValue,
+                    format: this.properties.format,
+                    filename: this.properties.filename,
+                    autoscale: this.properties.autoscale,
+                    colormap: this.properties.colormap
+                };
+                this.setOutputData(0, outputData);
+                //console.log(this.points.length);
+                if  (this.points.length > 2){
+
+                    this.setOutputData(1, this.points);
+                }
+
+                // Создаем временный canvas для отрисовки исходного изображения
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+
+                // Настраиваем размер временного canvas под изображение
+                tempCanvas.width = this.properties.width;
+                tempCanvas.height = this.properties.height;
+
+                // Получаем цветовую карту по имени
+                const colorMap = getColormap(this.properties.colormap);
+
+                // Создаем буфер для пикселей RGBA
+                const data = new Uint8ClampedArray(this.properties.width * this.properties.height * 4);
+                let dataIndex = 0;
+
+
+                // Преобразуем значения пикселей в цвета
+                for (let y = 0; y < this.properties.height; y++) {
+                    for (let x = 0; x < this.properties.width; x++) {
+
+                        const normalizedValue = (this.properties.data[y][x] - this.properties.minValue) 
+                                        / (this.properties.maxValue - this.properties.minValue + 1e-9);
+                        // Получаем цвет из цветовой карты (ограничиваем в 0-1)
+                        const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                        
+                        // Записываем RGBA значения в буфер
+                        data[dataIndex++] = color.r * 255; // R
+                        data[dataIndex++] = color.g * 255; // G
+                        data[dataIndex++] = color.b * 255; // B
+                        data[dataIndex++] = 255;           // A (полная непрозрачность)
+                    }
+                }
+                // Создаем объект ImageData из обработанных данных
+                const imageData = new ImageData(data, this.properties.width, this.properties.height);
+                // Копируем на временный canvas
+                tempCtx.putImageData(imageData, 0, 0);
+                const out = tempCtx.getImageData(0, 0, this.properties.width, this.properties.height);
+                this.properties.previewData = out;
+                this.img = out;
+            }
+        }
+        LiteGraph.registerNodeType("roi/lasso", ROILassoNode);
+
+
+        // ===================================================================
+        // === 3. ОБРАБОТЧИКИ КНОПОК ===
+        // ===================================================================
+
+        // run
+        document.getElementById('run').onclick = async () => {
+            const btn = document.getElementById('run');
+            btn.classList.add('running');
+            btn.disabled = true;
+            // const inspector = document.getElementById('inspector');
+            // if (!inspector) return;
+            //inspector.classList.remove('visible');
+            try {
+                const loadNodes = graph.findNodesByType("input/LoadNode");
+                for (let node of loadNodes) {
+                    if (!node.properties.imageData) {
+                        // Создаём промис для асинхронной загрузки файла
+                        await new Promise((resolve, reject) => {
+
+                            // Создаём элемент <input type="file"> и настраиваем его:
+                            // Создаём HTML-инпут
+                            const input = document.createElement('input');
+                            // Указываем тип как "файл"
+                            input.type = 'file';
+                            // Разрешаем только файлы с расширением .tpt
+                            input.accept = '.tpt';
+                            // Обрабатываем выбор файла пользователем
+                            input.onchange = async (e) => {
+                                // Получаем первый выбранный файл
+                                const file = e.target.files[0];
+                                // Если файл не выбран
+                                if (!file) {
+                                    // Отклоняем промис с ошибкой
+                                    reject('Файл не выбран');
+                                    // Прерываем выполнение
+                                    return;
+                                }
+
+
+
+
+                                //Проверяем расширение файла:
+                                // Получаем расширение (например, "tpt")
+                                const filenameParts123 = file.name.split('.'); // Разделяем по точке (например, "data.tpt" → ["data", "tpt"])
+                                const filename123 = filenameParts123.slice(0, -1).join('.'); // Базовое имя без расширения (["data"] → "data")
+                                const fileExtension123 = filenameParts123.pop().toLowerCase() || 'unknown'; // Получаем расширение в нижнем регистре (["tpt"] → "tpt")
+                                if (fileExtension123 !== 'tpt') {
+                                    // Ошибка
+                                    reject('Файл должен иметь расширение .tpt');
+                                    return;
+                                }
+
+                                 // Создаём FileReader для чтения содержимого файла:
+                                const reader = new FileReader();
+
+                                // Обработчик ошибок чтения файла (например, CORS или повреждение):
+                                reader.onerror = (err) => {
+                                    // Логируем тип ошибки (например, "NOT_READABLE_ERROR")
+                                    console.error('Ошибка чтения файла:', err.target.error);
+                                    // Передаём сообщение об ошибке
+                                    reject('Ошибка чтения файла: ' + err.target.error.message);
+                                };
+        
+                                // Обработчик успешного чтения файла (содержимое доступно в ev.target.result):
+                                reader.onload = (ev) => {
+
+                                    // Обрабатываем строки файла:
+                                    const lines = ev.target.result.split('\n')  // Разбиваем текст по строкам
+                                        .map(line => line.trim())               // Удаляем лишние пробелы в начале/конце
+                                        .filter(line => line !== '');           // Оставляем только непустые строки
+
+                                    // Проверяем минимальное количество строк (должно быть ≥ 3: width, height, matrix):
+                                    if (lines.length < 3) {
+                                        reject('Файл .tpt должен содержать минимум 3 строки: width, height, matrix');
+                                        return;
+                                    }
+
+                                    //Парсим ширину и высоту матрицы:
+                                    // Первая строка — ширина
+                                    const width = parseInt(lines[0], 10);
+                                    // Вторая строка — высота
+                                    const height = parseInt(lines[1], 10);
+
+                                    // Проверяем, что width и height — корректные числа:
+                                    // Если не числа
+                                    const matrix = lines.slice(2).map(line => line.split(/\s+/).map(Number));
+                                    if (isNaN(width) || isNaN(height)) {
+                                        reject('Ширина и высота должны быть числами');// Ошибка
+                                        return;
+                                    }
+
+                                    // Проверяем соответствие количества строк матрицы заявленному height:
+                                    if (matrix.length !== height) {
+                                        reject(`Ожидалось ${height} строк матрицы, найдено ${matrix.length}`);
+                                        return;
+                                    }
+
+                                    // Проверяем, что все строки матрицы имеют одинаковую ширину (width):
+                                    if (matrix.some(row => row.length !== width)) {
+                                        reject(`Все строки матрицы должны содержать ${width} чисел`);
+                                        return;
+                                    }
+
+                                    // Ограничение на размер матрицы (максимум 5000x5000 элементов):
+                                    if (width * height > 25_000_000) {
+                                        reject('Матрица слишком большая (максимум 25 000 000 элементов)');
+                                        return;
+                                    }
+
+                                    // Находим минимальное и максимальное значения в матрице:
+                                    let minVal = Infinity, maxVal = -Infinity;  // Инициализация
+                                    for (let y = 0; y < height; y++) {          // Проходим по строкам
+                                        for (let x = 0; x < width; x++) {       // Проходим по столбцам
+                                            const val = matrix[y][x];           // Текущее значение
+                                            if (val < minVal) minVal = val;     // Обновляем минимум
+                                            if (val > maxVal) maxVal = val;     // Обновляем максимум
+                                        }
+                                    }
+
+                                    // Сохраняем параметры в свойствах узла (node.properties):
+                                    node.properties.width = width;              // Ширина матрицы
+                                    node.properties.height = height;            // Высота матрицы
+                                    node.properties.data = matrix;              // Сама матрица (массив массивов)
+                                    node.properties.minValue = minVal;          // Минимальное значение
+                                    node.properties.maxValue = maxVal;          // Максимальное значение
+                                    node.properties.filename = filename123;     // Имя файла без расширения
+                                    node.properties.format =  fileExtension123; // Формат файла (tpt)
+
+                                    // Отмечаем граф как "грязный" (требующий перерисовки):
+                                    graph.setDirtyCanvas(true);
+
+                                    // Завершаем промис (успешное выполнение):
+                                    resolve();
+                                };
+
+                                // Альтернативный обработчик ошибок:
+                                reader.onerror = () => reject('Ошибка чтения файла');
+                                // Начинаем чтение файла как текста:
+                                reader.readAsText(file);
+                            };
+                            // Принудительно открываем диалог выбора файла:
+                            input.click();
+                        });
+                    }
+                }
+                const nodesInOrder = graph.computeExecutionOrder(false);
+                // Убедитесь, что эта функция не рекурсивна
+                await animateExecution(nodesInOrder); 
+            } catch (err) {
+                alert(`Ошибка: ${err}`);
+            } finally {
+                btn.classList.remove('running');
+                btn.disabled = false;
+            }
+        };
+
+        // Экспорт графа в JSON
+        document.getElementById('export-graph').onclick = () => {
+            const data = graph.serialize();
+            const cleanedData = JSON.parse(JSON.stringify(data)); // Создаём глубокую копию
+                    console.log(cleanedData);
+            if (cleanedData.nodes) {
+                cleanedData.nodes.forEach(node => {
+                    // Полное удаление properties (включая вложенные поля)
+                    if (node.properties) {
+                        delete node.properties.data;
+                        delete node.properties.width;
+                        delete node.properties.previewData;
+                    }
+                });
+            }
+            
+            // Сохраняем результат
+            const blob = new Blob([JSON.stringify(cleanedData, null, 2)], { 
+                type: 'application/json' 
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'workflow_no_props.json'; // Чёткое название файла
+            a.textContent = 'Экспорт без properties';
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        // Импорт графа из JSON
+        document.getElementById('import-graph').onclick = () => {
+            var input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                var file = e.target.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        var data = JSON.parse(e.target.result);          
+                        graph.clear();
+                        graph.configure(data);
+                        // Перерисовываем канвас
+                        graphCanvas.draw(true, true);
+                        if (typeof updateMinimap === 'function') updateMinimap();
+                    } catch (err) { alert('Ошибка: ' + err.message); }
+                };
+                reader.readAsText(file);
+                
+            };
+            input.click();            
+        };
+
+        // Очищение графа
+        document.getElementById('clear-graph').onclick = () => {
+            if (confirm('Очистить граф?')) {
+                graph.clear();
+                previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                if (typeof updateMinimap === 'function') updateMinimap();
+            }
+        };
+
+
+        // ========== ВКЛАДКИ ==========
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.dataset.tab;
+                    
+                    // Обновляем активные элементы
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                    
+                    // Сохраняем в историю
+                    localStorage.setItem('lastTab', tabId);
+                    
+                    // Разблокируем достижение
+                    if (tabId !== 'main') {
+                        unlockAchievement('explorer', 'Исследователь', 'Посетили все вкладки', 'fas fa-compass');
+                    }
+                });
+            });
+            
+            // Восстанавливаем последнюю вкладку
+            const lastTab = localStorage.getItem('lastTab') || 'main';
+            document.querySelector(`[data-tab="${lastTab}"]`).click();
+        }
+        // ===================================================================
+        // === 4. DRAG-AND-DROP (перетаскивание узлов) ===
+        // ===================================================================
+
+        const nodePanel = document.getElementById("sidebar");
+        const graphContainer = document.getElementById("graph-container");
+
+        nodePanel.addEventListener("dragstart", e => {
+            const card = e.target.closest(".node-card");
+            if (!card || !card.dataset.nodeType) return;
+            e.dataTransfer.setData("text/plain", card.dataset.nodeType);
+            card.classList.add("dragging");
+            graphContainer.classList.add("drag-over");
+        });
+
+        nodePanel.addEventListener("dragend", e => {
+            const card = e.target.closest(".node-card");
+            if (card) card.classList.remove("dragging");
+            graphContainer.classList.remove("drag-over");
+        });
+
+        graphContainer.addEventListener("dragover", e => e.preventDefault());
+        graphContainer.addEventListener("drop", e => {
+            e.preventDefault();
+            graphContainer.classList.remove("drag-over");
+            const nodeType = e.dataTransfer.getData("text/plain");
+            if (!LiteGraph.registered_node_types[nodeType]) return;
+            const rect = graphCanvas.canvas.getBoundingClientRect();
+            const pos = graphCanvas.convertCanvasToOffset([e.clientX - rect.left, e.clientY - rect.top]);
+            const node = LiteGraph.createNode(nodeType);
+            node.pos = [pos[0], pos[1]];
+            graph.add(node);
+            graphCanvas.setDirty(true);
+        });
+
+        // Resize
+        let resizeRafId = null;
+        function resizeGraphCanvas() {
+            const rect = graphContainer.getBoundingClientRect();
+            graphCanvas.canvas.width = rect.width;
+            graphCanvas.canvas.height = rect.height;
+            graphCanvas.resize();
+            resizeRafId = null;
+        };
+        resizeGraphCanvas();
+
+        const onResize = () => {
+            if (resizeRafId) cancelAnimationFrame(resizeRafId);
+            resizeRafId = requestAnimationFrame(resizeGraphCanvas);
+        };
+
+        window.addEventListener("resize", onResize);
+
+        // Поиск
+        // Обработчик ввода
+        document.getElementById('searchInput').addEventListener('input', filterNodes);
+        
+
+
+        // ===================================================================
+        // === 5. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+        // ===================================================================
+
+
+        function imageToMatrix(imageData, width, height, minVal, maxVal, autoscale = true) {
+            // const ctx = canvas.getContext('2d');
+            // const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            // const width = canvas.width;
+            // const height = canvas.height;
+            const data = imageData.data; // Uint8ClampedArray (RGBA)
+            const matrix = new Array(height);
+
+            for (let y = 0; y < height; y++) {
+                matrix[y] = new Array(width);
+                for (let x = 0; x < width; x++) {
+                    // Индекс пикселя в ImageData: 4 * (y * width + x)
+                    const dataIndex = 4 * (y * width + x);
+                    const r = data[dataIndex] / 255;     // Нормализованное значение (0..1)
+                    const g = data[dataIndex + 1] / 255;
+                    const b = data[dataIndex + 2] / 255;
+
+                    // Для градаций серого используем среднее (или любой канал, например r)
+                    const normalizedValue = (r + g + b) / 3; // или просто r (если изображение чёрно-белое)
+
+                    // Обратное преобразование в исходные значения
+                    const matrixValue = autoscale 
+                        ? minVal + normalizedValue * (maxVal - minVal) 
+                        : scale[0] + normalizedValue * (scale[1] - scale[0]);
+
+                    matrix[y][x] = matrixValue;
+                }
+            }
+
+            return matrix;
+        }
+
+        function matrixToImage(matrix, width, height, minVal, maxVal, autoscale = true) {
+            // Проверяем корректность размеров
+            if (matrix.length !== height || matrix.some(row => row.length !== width)) {
+                throw new Error("Размеры матрицы не соответствуют заданным width/height");
+            }
+
+            // Создаем массив для данных изображения (RGBA)
+            const data = new Uint8ClampedArray(width * height * 4);
+            //const maxVal = 255; // Максимальное значение для канала (0..255)
+
+            const colormap = 'gray';
+            const colorMap = getColormap(colormap);
+
+            let dataIndex = 0;
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const matrixValue = matrix[y][x];
+
+                    
+                    const normalizedValue = autoscale 
+                        ? (matrix[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                        : (matrix[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                    
+                    const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                    data[dataIndex++] = color.r * 255;
+                    data[dataIndex++] = color.g * 255;
+                    data[dataIndex++] = color.b * 255;
+                    data[dataIndex++] = 255;
+                }
+            }
+            return new ImageData(data, width, height);
+        }
+        
+        function getColormap(name) {
+            const colormaps = {
+                'hot': (t) => ({
+                    r: t < 0.5 ? 0 : 2 * t,
+                    g: t < 0.25 ? 0 : t < 0.75 ? 2 * t - 0.5 : 1,
+                    b: t < 0.75 ? 0 : 2 * t - 1
+                }),
+                'jet': (t) => {
+                    const h = 240 * (1 - t); // От синего (t=0) до красного (t=1)
+                    const hslToRgb = (h) => {
+                        const hue = h / 360; // Нормализуем до [0, 1]
+                        const i = Math.floor(hue * 6); // Индекс сегмента
+                        const f = hue * 6 - i; // Дополнительная доля
+                        
+                        // Значения для RGB (избегаем дублирования имён)
+                        const red = [1, f, 1 - f, 0, 0, 0][i % 6];
+                        const green = [1 - f, 1, 1, 1 - f, 1 - f, 1 - f][i % 6];
+                        const blue = [0, 0, 0, 0, 1 - f, 1][i % 6];
+                        
+                        return { r: red, g: green, b: blue }; // Теперь ключи объекта не конфликтуют
+                    };
+                    return hslToRgb(h);
+                },
+                'gray': (t) => ({ r: t, g: t, b: t }),
+                'viridis': (t) => { // Упрощённая версия
+                    const x = 1 - t;
+                    const a = 16.0, b = 254.0;
+                    const red = ((6.0 - 2.4 * x) * x * x * x + (-4.8 * x * x * x + 18.0 * x * x - 22.2 * x + 8.3) * x * x * x + (b - a) * x * x * x * x * x * x + a) / 255;
+                    const green = ((13.0 - 1.5 * x) * x * x * x + (-12.0 * x * x * x + 45.0 * x * x - 49.5 * x + 17.0) * x * x * x + (b - a) * x * x * x * x * x * x + a) / 255;
+                    const blue = ((b - a) * x * x * x * x * x * x + a) / 255;
+                    return { r: red, g: green, b: blue }; // Ключи объекта не конфликтуют
+                }
+            };
+
+            if (!colormaps[name]) {
+                console.warn(`Цветовая карта "${name}" не найдена. Используется "gray".`);
+                return colormaps['gray'];
+            }
+            return colormaps[name];
+        }
+
+        // Функция для подсветки узла и его входных связей
+        function highlightNode(node, highlight = true) {
+            if (highlight) {
+                node.color = '#00FF00'; // Зеленый для подсветки узла
+                if (node.inputs) {
+                    node.inputs.forEach(input => {
+                        if (input.link !== null) {
+                            const link = graph.links[input.link];
+                            if (link) {
+                                link.color = '#00FF00'; // Зеленый для подсветки связи
+                            }
+                        }
+                    });
+                }
+            } else {
+                node.color = null; // Сброс цвета узла
+                if (node.inputs) {
+                    node.inputs.forEach(input => {
+                        if (input.link !== null) {
+                            const link = graph.links[input.link];
+                            if (link) {
+                                link.color = undefined; // Сброс цвета связи
+                            }
+                        }
+                    });
+                }
+            }
+            graphCanvas.setDirty(true);
+        }
+
+        // Асинхронная функция, которая анимирует выполнение узлов графа поочерёдно
+        async function animateExecution(nodesInOrder) {
+            // Итерируемся по каждому узлу в заданном порядке (nodesInOrder)
+            for (const node of nodesInOrder) {
+                // Проверяем, нужно ли выполнять узел:
+                // - LiteGraph.ALWAYS: узел всегда активен (например, генерирует данные)
+                // - LiteGraph.ON_TRIGGER: узел запускается при получении триггера
+                if (node.mode === LiteGraph.ALWAYS || node.mode === LiteGraph.ON_TRIGGER) {
+                    // Подсвечиваем узел (например, меняем цвет фона или добавляем эффект)
+                    // Аргумент `true` означает "активировать подсветку"
+                    highlightNode(node, true);
+
+                    // Ручное выполнение узла (аналог автоматического запуска в LiteGraph)
+                    // Этот метод вызывает `onExecute` узла, передавая ему входные данные
+                    node.doExecute(); 
+
+                    // Задержка на 500 мс, чтобы пользователь успел увидеть анимацию
+                    // `await` блокирует выполнение цикла до окончания задержки
+                    await new Promise(resolve => setTimeout(resolve, 500)); 
+
+                    // Убираем подсветку узла после выполнения
+                    // Аргумент `false` означает "деактивировать подсветку"
+                    highlightNode(node, false);
+                }
+            }
+        }
+
+        // сохранения
+        function saveToTptFile(node, filename = null) {
+            return new Promise((resolve, reject) => {
+                try {
+                    // Получаем данные из node.properties
+                    const { width, height, data, minValue, maxValue, filename: originalFilename } = node.properties;
+                    
+                    // Если filename не указан, используем оригинальный или генерируем новый
+                    const outputFilename = filename || originalFilename || `matrix_${Date.now()}.tpt`;
+                    
+                    // Формируем строки файла
+                    const header = `${height}\n${width}\n`;
+                    const matrixLines = data.map(row => 
+                        row.map(val => val.toString()).join('\t') // Числа разделены табуляцией (можно заменить на пробел)
+                    ).join('\n');
+                    
+                    // Объединяем заголовок и матрицу
+                    const fileContent = header + matrixLines;
+                    
+                    // Создаём Blob (UTF-8 текст)
+                    const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+                    
+                    // Сохраняем файл (используем FileSaver.js или нативный способ)
+                    if (typeof saveAs === 'function') {
+                        // Если доступна библиотека FileSaver.js
+                        saveAs(blob, outputFilename);
+                    } else {
+                        // Альтернативный способ (без FileSaver.js)
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = outputFilename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }
+                    
+                    //resolve(`Файл "${outputFilename}" успешно сохранён!`);
+                } catch (error) {
+                    reject(`Ошибка сохранения файла: ${error.message}`);
+                }
+            });
+        }
+        
+        
+
+        // Функция сворачивания сайдбара
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('collapseIcon');
+            const toolbar = document.getElementById('toolbar');
+            const mainContent = document.getElementById('mainContent');
+
+            // Переключает класс
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            // Синхронизирует toolbar
+            toolbar.classList.toggle('collapsed', isCollapsed);
+            // Обновляет mainContent
+            mainContent.classList.toggle('collapsed', isCollapsed);
+            // Меняет иконку
+            icon.textContent = isCollapsed ? '→' : '←';
+
+            setTimeout(() => {
+                resizeGraphCanvas();// Переразмеряет граф
+                updateLayout();// Обновляет позицию toolbar
+            }, 350);// Задержка для анимации
+        }
+
+        // Функция переключения аккордеона группы узлов
+        function toggleGroup(header) {
+            // Находит родительский .node-group
+            const group = header.parentElement;
+            // Переключает состояние
+            group.classList.toggle('collapsed');
+        }
+
+        // Функция обновления позиции toolbar
+        function updateLayout() {
+            const toolbar = document.getElementById('toolbar');
+            const collapsed = document.getElementById('sidebar').classList.contains('collapsed');
+            const width = collapsed 
+                ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-collapsed'))
+                : parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width'));
+            
+            toolbar.style.left = width + 'px';
+            resizeGraphCanvas();
+        }
+
+        // Фильтрация узлов по поисковому запросу
+        function filterNodes() {
+            const input = document.getElementById('searchInput').value.toLowerCase().trim();
+            const groups = document.querySelectorAll('.node-group');
+            const cards = document.querySelectorAll('.node-card');
+
+            // Флаг наличия совпадений
+            let hasAnyMatch = false;
+
+            groups.forEach(group => {// Проход по всем группам
+                let groupHasMatch = false;
+                const groupCards = group.querySelectorAll('.node-card');
+
+                groupCards.forEach(card => {// Проверяет каждую карточку
+                    const title = card.querySelector('div').textContent.toLowerCase();
+                    if (title.includes(input)) {// Совпадение с поиском
+                        card.style.display = 'flex';// Показывает
+                        groupHasMatch = true;
+                        hasAnyMatch = true;
+                    } else {
+                        card.style.display = 'none';// Скрывает
+                    }
+                });
+
+                // Показывает/скрывает группу в зависимости от совпадений
+                if (groupHasMatch) {
+                    group.style.display = 'block';
+                    group.classList.remove('collapsed'); // Раскрываем группу
+                } else {
+                    group.style.display = 'none'; // Скрываем пустую группу
+                }
+            });
+
+            // Если поиск пустой — показываем все группы
+            if (!input) {
+                groups.forEach(group => {
+                    group.style.display = 'block';
+                    group.classList.add('collapsed'); // Возвращаем в свёрнутое состояние
+                });
+            }
+        }
+        
+        // ===================================================================
+        // === 6. ИНСПЕКТОР ===
+        // ===================================================================
+        function updateInspector(node) {
+
+        // Получаем DOM-элементы панели инспектора:
+        // - `inspector` — основной контейнер
+        // - `preview` — область для отображения превью узла
+        // - `controls` — область для элементов управления (виджетов)
+        const inspector = document.getElementById('inspector');
+        const preview = document.getElementById('inspector-preview');
+        const controls = document.getElementById('inspector-node-controls');
+
+        // Если панель инспектора не найдена — выходим
+        if (!inspector) return;
+
+        // Если узел не передан (null/undefined) — скрываем инспектор
+        if (!node) {
+            inspector.classList.remove('visible');// Убираем класс "видимый"
+            return;
+        }
+
+        // Если узел есть — показываем инспектор
+        inspector.classList.add('visible');
+
+        // Очищаем превью и настройки перед обновлением
+        preview.innerHTML = '';
+        controls.innerHTML = '';
+
+        // --- РАЗДЕЛ: ОТСЛЕЖИВАНИЕ ПРЕВЬЮ ---
+        // Проверяем, есть ли у узла данные для превью
+        if (node.properties?.previewData) {
+            // Создаём временный canvas для отображения превью
+            const canvas = document.createElement('canvas');
+            // Устанавливаем размеры из данных узла
+            canvas.width = node.properties.previewData.width;
+            canvas.height = node.properties.previewData.height;
+            // Настраиваем стили для адаптации под контейнер
+            canvas.style.maxWidth = '100%';
+            canvas.style.height = 'auto';
+            // Рисуем ImageData на canvas
+            canvas.getContext('2d').putImageData(node.properties.previewData, 0, 0);
+            // Добавляем canvas в область превью
+            preview.appendChild(canvas);
+
+
+            preview.addEventListener('click', () => {
+                //showLocationInfo(location);
+                const modal = document.getElementById('imageModal');
+                const modalImg = document.getElementById('modalImage');
+                modal.style.display = 'flex';
+                modal.appendChild(canvas);
+            });
+            // Закрытие модального окна
+                document.querySelector('.close-modal').addEventListener('click', () => {
+                document.getElementById('imageModal').style.display = 'none';
+                // Добавляем canvas в область превью
+                preview.appendChild(canvas);
+            });
+
+
+        } else {
+            // Если превью нет — показываем текстовое уведомление
+            preview.textContent = 'Нет превью123';
+        }
+
+
+            
+
+
+        // --- РАЗДЕЛ: ОТСЛЕЖИВАНИЕ НАСТРОЕК ---
+        // Проверяем, есть ли у узла настройки
+        if (node.widgets) {
+            // Проходим по каждому виджету
+            node.widgets.forEach(widget => {
+
+                // Создаём контейнер для виджета (div с классом "widget-prop")
+                const div = document.createElement('div');
+                div.className = 'widget-prop';
+                // Создаём метку (label) для виджета
+                const label = document.createElement('label');
+                label.className = 'widget-label';
+                label.textContent = widget.name;// Название виджета (например, "Яркость")
+                div.appendChild(label);// Добавляем label в контейнер
+
+
+                // --- ЛОГИКА ДЛЯ РАЗНЫХ ТИПов ВИДЖЕТОВ ---
+                let input;// Переменная для элемента управления
+                // 1. Виджет типа "ползунок" (slider)
+                if (widget.type === 'slider') {
+                    input = document.createElement('input');
+                    input.type = 'range'; // HTML-разметка для ползунка
+                    // Устанавливаем параметры ползунка (по умолчанию 0-100 с шагом 1)
+                    input.min = widget.min ?? 0; // nullish coalescing: если min не задан — 0
+                    input.max = widget.max ?? 100;
+
+
+                    input.step = widget.step?? 1;
+                    input.value = widget.value; // Текущее значение виджета
+                    
+                    // Обработчик изменения значения
+                    input.oninput = () => {
+                        // Обновляем значения в объекте виджета и свойств узла
+                        widget.value = +input.value; // Унарный плюс преобразует строку в число
+                        node.properties[widget.name] = +input.value;
+                        // Вызываем метод выполнения узла (если есть)
+                        node.onExecute?.();
+                        // Помечаем граф как "грязный" для перерендеринга
+                        graphCanvas.setDirty(true, true);
+                    };
+                }
+                
+                // 2. Виджет типа "числовое поле" (number)
+                else if (widget.type === 'number') {
+
+                    input = document.createElement('input');
+                    input.type = 'number'; // HTML-разметка для числового ввода
+
+                    // console.log(node);
+                    // console.log(widget.options.min);
+
+                    if(node.title == "Порог" && widget.name == "Минимум"){
+                        input.min = widget.options.min;
+                    }
+                    else {
+                        input.min = widget.min || 0; // Если min не задан — 0 (или 0 при falsy)
+                    }     
+                            
+
+                    
+                    input.value = widget.value; // Инициализация значением виджета
+                    var temp =  widget.options.step/10;
+                    input.step = temp || 0.01;  // По умолчанию 0.01 (для дробей)
+                
+
+                    // Обработчик изменения (срабатывает при потере фокуса)
+                    input.onchange = () => {
+
+                        // Обновляем значения и перезапускаем узел
+                        widget.value = +input.value;
+                        //const myNodes = graph.findNodesByProperty("title", node.title);
+                        //console.log(myNodes);
+
+                        node.properties[widget.name] = input.value;
+                        if(widget.name == "Ширина")
+                            node.setProperty("node_width", input.value);
+                        if(widget.name == "Высота")
+                            node.setProperty("node_height", input.value);
+
+                        // console.log(node.properties[widget.name].value);
+                        // console.log(input.value);
+                        // console.log(node.properties.node_width);
+                        // console.log(node.properties.node_height);
+                        //node.onExecute?.();
+                        graphCanvas.setDirty(true, true);
+                    };
+                }
+                
+                // 3. Виджет типа "флажок" (checkbox)
+                else if (widget.type === 'checkbox') {
+                    input = document.createElement('input');
+                    input.type = 'checkbox'; // HTML-разметка для чекбокса
+                    input.checked = !!widget.value; // Приводим значение к булевому
+                    
+                    // Обработчик изменения состояния
+                    input.onchange = () => {
+                        // Обновляем флажок и свойства узла
+                        widget.value = input.checked;
+                        node.properties[widget.name] = input.checked;
+                        node.onExecute?.();
+                        graphCanvas.setDirty(true, true);
+                    };
+                }
+                else if (widget.type === 'toggle') {
+                    input = document.createElement('input');
+                    input.type = 'checkbox'; // HTML-разметка для чекбокса
+                    input.checked = !!widget.value; // Приводим значение к булевому
+                    
+                    // Обработчик изменения состояния
+                    input.onchange = () => {
+                        // Обновляем флажок и свойства узла
+                        widget.value = input.checked;
+                        node.properties[widget.name] = input.checked;
+                        node.onExecute?.();
+                        graphCanvas.setDirty(true, true);
+                    };
+                }
+                
+                // 4. Виджет типа "кнопка" (button)
+                else if (widget.type === 'button') {
+                    input = document.createElement('button');
+                    input.textContent = widget.value; // Текст кнопки берётся из значения виджета
+                    // Обработчик клика (вызов callback-функции виджета)
+                    input.onclick = () => widget.callback?.();
+                }
+
+                // Если элемент управления создан (input или button) — добавляем его
+                if (input) div.appendChild(input);
+                // Добавляем готовый блок (label + input) в панель управления
+                controls.appendChild(div);
+            });
+        }
+        }
+        window.updateInspectorIfSelected = (node) => {
+        if (graphCanvas.selected_nodes && Object.values(graphCanvas.selected_nodes)[0] === node) {
+            updateInspector(node);
+        }
+        };
+        graphCanvas.onNodeSelected = (node) => updateInspector(node);
+        graphCanvas.onNodeDeselected = () => updateInspector(null);
+
+
+        // ===================================================================
+        // === 7. tooltip ===
+        // ===================================================================
+
+        // Показать информацию о локации
+        function showLocationInfo(location) {
+            const tooltipX = parseFloat(location.x);
+            const tooltipY = parseFloat(location.y);
+
+            previewTooltip.innerHTML = `
+            <div class="tooltip-header">
+            <div class="tooltip-icon">📍</div>
+            <div>
+            <div class="tooltip-title">${location.name}</div>
+            <div class="tooltip-subtitle">${location.address}</div>
+            </div>
+            </div>
+            <div style="color: #475569; font-size: 0.9rem; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span>⭐ ${location.rating}/5</span>
+            <span>📞 ${location.phone}</span>
+            </div>
+            <div style="background: #f1f5f9; padding: 10px; border-radius: 8px;">
+            </div>
+            </div>
+            <button style="
+            width: 100%;
+            padding: 10px;
+            background: ${location.color};
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            " onclick="navigateToLocation(${location.id})">
+            Проложить маршрут
+            </button>
+            `;
+
+            // Позиционируем тултип
+            const viewportWidth = 150;
+            const viewportHeight = 350;
+
+            // let left = (tooltipX / 100) * viewportWidth;
+            // let top = (tooltipY / 100) * viewportHeight;
+            let left = 100;
+            let top = 100;
+            console.log(left);
+            console.log(top);
+            // Проверяем, чтобы тултип не выходил за границы
+            const tooltipWidth = 300;
+            const tooltipHeight = 200;
+
+            if (left + tooltipWidth > viewportWidth) {
+                left = viewportWidth - tooltipWidth - 20;
+            }
+
+            if (top - tooltipHeight < 0) {
+                top = tooltipHeight + 20;
+            }
+            console.log(left);
+            console.log(top);
+            previewTooltip.style.left = `${left}px`;    
+            previewTooltip.style.top = `${top}px`;
+            previewTooltip.classList.add('show');
+        }
+
+        // Задержка для корректного рендеринга
+        setTimeout(() => {
+            resizeGraphCanvas();
+            updateLayout();
+        }, 500);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+
+</body>
