@@ -1809,7 +1809,7 @@ input, textarea, select,
 
 /* Цветовая панель (Color Bar) */
 .color-bar {
-    width: 150px;
+    width: 200px;
     height: 24px;
     background: var(--background-secondary);
     padding: 4px 8px;
@@ -1817,8 +1817,7 @@ input, textarea, select,
     flex-direction: row;
     align-items: center;
     box-shadow: var(--shadow-sm);
-    justify-content: space-between; /* Равномерное распределение */
-
+    gap: 8px;
 }
 .color-bar-gray {
     cursor: pointer;
@@ -1826,6 +1825,7 @@ input, textarea, select,
     background: linear-gradient(to right, rgb(0, 0, 0), rgb(255, 255, 255));
     flex-grow: 1;
     height: 100%;
+    min-width: 80px;
 }
 
 
@@ -2009,16 +2009,13 @@ input, textarea, select,
 
 /* Специальные стили для каждой метки */
 .color-bar-label-max {
-    order: 3; /* Первая строка (верх) */
-    transform: rotate(0deg);
+    order: 3; /* Последняя позиция (справа) */
 }
 
 .color-bar-label-median {
-    order: 2; /* Вторая строка (центр) */
-    transform: rotate(0deg);
+    order: 2; /* Средняя позиция (центр) */
 }
 
 .color-bar-label-min {
-    order: 1; /* Третья строка (низ) */
-    transform: rotate(0deg); /* Оставляем MIN перевернутым (если нужно) */
+    order: 1; /* Первая позиция (слева от градиента) */
 }
