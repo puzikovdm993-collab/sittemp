@@ -64,3 +64,96 @@
   filter: drop-shadow(0 0 2px var(--primary-hover)) drop-shadow(0 0 5px var(--primary-hover))
     drop-shadow(0 0 15px var(--primary-hover));
 }
+.navigation {
+  position: fixed;
+  left: 20px;
+  bottom: 48px;
+  z-index: 1000;
+  width: 48px;
+  height: 48px;
+  background: #171b21;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Ускоренная анимация и убрана задержка */
+  transition: width 0.3s, height 0.3s;
+  transition-delay: 0s;
+  box-shadow: var(--shadow-sm);
+}
+
+.navigation.active {
+  width: 200px;
+  height: 200px;
+  /* Убрана задержка при открытии */
+  transition-delay: 0s;
+}
+
+.navigation span {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--text-primary);
+  border-radius: 50%;
+  transform: translate(calc(12px * var(--x)), calc(12px * var(--y)));
+  /* Ускоренная анимация элементов */
+  transition: transform 0.3s, width 0.3s, height 0.3s, background 0.3s;
+  transition-delay: calc(0.05s * var(--i));
+}
+
+.navigation.active span {
+  width: 45px;
+  height: 45px;
+  background: var(--primary-light);
+  transform: translate(calc(60px * var(--x)), calc(60px * var(--y)));
+}
+
+/* Стили для центральной кнопки закрытия */
+.navigation span.close-btn {
+  z-index: 10;
+  background: transparent;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.navigation.active span.close-btn {
+  width: 45px;
+  height: 45px;
+  background: #ff4757; /* Красный цвет для кнопки закрытия */
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(0, 0) !important; /* Центрирование независимо от переменных --x/--y */
+}
+
+.navigation span ion-icon {
+  transition: 0.3s;
+  font-size: 0em;
+  color: var(--text-primary);
+}
+
+.navigation.active span ion-icon {
+  font-size: 1.35em;
+  color: var(--text-primary);
+}
+
+/* Особый стиль для иконки закрытия */
+.navigation.active span.close-btn ion-icon {
+  color: #fff;
+}
+
+.navigation.active span:hover ion-icon {
+  color: var(--primary-hover);
+  filter: drop-shadow(0 0 2px var(--primary-hover)) drop-shadow(0 0 5px var(--primary-hover))
+    drop-shadow(0 0 15px var(--primary-hover));
+}
+
+.navigation.active span.close-btn:hover ion-icon {
+  color: #fff;
+  filter: none;
+}
