@@ -111,20 +111,10 @@
   height: 45px;
   background: var(--primary-light);
   transform: translate(calc(60px * var(--x)), calc(60px * var(--y)));
-  /* Небольшая анимация появления с задержкой для каждой кнопки */
-  animation: popIn 0.3s ease forwards;
-  animation-delay: calc(0.05s * var(--i));
-}
-
-@keyframes popIn {
-  0% {
-    opacity: 0;
-    transform: translate(calc(60px * var(--x)), calc(60px * var(--y))) scale(0.5);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(calc(60px * var(--x)), calc(60px * var(--y))) scale(1);
-  }
+  /* Плавное появление без моргания */
+  transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease, background 0.3s ease, opacity 0.3s ease;
+  transition-delay: calc(0.03s * var(--i));
+  opacity: 1;
 }
 
 /* Стили для центральной кнопки закрытия */
