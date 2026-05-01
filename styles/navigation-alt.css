@@ -1,0 +1,193 @@
+/* Альтернативная навигация - боковое выдвижное меню (sidebar) */
+
+:root {
+  --sidebar-width: 280px;
+  --sidebar-bg: #171b21;
+  --sidebar-header-height: 60px;
+}
+
+/* Кнопка открытия меню (гамбургер) */
+.nav-toggle {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1100;
+  width: 45px;
+  height: 45px;
+  background: var(--sidebar-bg);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.3s, transform 0.3s;
+}
+
+.nav-toggle:hover {
+  background: var(--primary-light);
+  transform: scale(1.05);
+}
+
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Анимация гамбургера в крестик */
+.nav-toggle.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.nav-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-toggle.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* Боковая панель */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: calc(-1 * var(--sidebar-width));
+  z-index: 1099;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  transition: left 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+/* Заголовок sidebar */
+.sidebar-header {
+  height: var(--sidebar-header-height);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sidebar-close {
+  width: 35px;
+  height: 35px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.3s;
+}
+
+.sidebar-close:hover {
+  background: rgba(255, 71, 87, 0.2);
+}
+
+.sidebar-close ion-icon {
+  font-size: 1.5rem;
+  color: #ff4757;
+}
+
+/* Навигация */
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+}
+
+.sidebar-nav li {
+  margin-bottom: 5px;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.3s;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-nav a:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border-left-color: var(--primary-light);
+}
+
+.sidebar-nav a.active {
+  background: rgba(99, 179, 237, 0.1);
+  color: var(--primary-light);
+  border-left-color: var(--primary-light);
+}
+
+.sidebar-nav a ion-icon {
+  font-size: 1.3rem;
+  min-width: 20px;
+}
+
+/* Подвал sidebar */
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Затемнение фона */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1098;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+  backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 260px;
+  }
+  
+  .nav-toggle {
+    top: 15px;
+    left: 15px;
+  }
+}
