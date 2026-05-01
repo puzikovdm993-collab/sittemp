@@ -1,0 +1,172 @@
+/* 
+ * Radial Context Menu Styles
+ * Implementation of Technical Specification v1.0
+ */
+
+:root {
+    --rm-bg-color: #1a1a1a;
+    --rm-segment-bg: #252525;
+    --rm-segment-hover: #333333;
+    --rm-border-color: #444444;
+    --rm-text-color: #e0e0e0;
+    --rm-accent-green: #4caf50;
+    --rm-accent-blue: #2196f3;
+    --rm-accent-red: #f44336;
+    --rm-accent-cyan: #00bcd4;
+    --rm-size-outer: 280px;
+    --rm-size-inner: 180px;
+    --rm-btn-size: 40px;
+    --rm-anim-speed: 0.3s;
+}
+
+/* Container */
+.radial-menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Скрыто по умолчанию */
+    z-index: 9999;
+    width: var(--rm-size-outer);
+    height: var(--rm-size-outer);
+    margin-left: calc(var(--rm-size-outer) / -2);
+    margin-top: calc(var(--rm-size-outer) / -2);
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity var(--rm-anim-speed) ease, transform var(--rm-anim-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.radial-menu.active {
+    pointer-events: auto;
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Common Segment Styles */
+.rm-segment {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: 0 0;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Push content to the outer edge */
+    padding-right: 15px;
+    box-sizing: border-box;
+    transition: background 0.2s ease;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); /* Fallback, refined via JS or specific shapes */
+}
+
+/* Visual separation lines handled by borders or gradients in parent if needed, 
+   but here we style individual segments for clarity */
+
+.rm-segment:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Button Wrapper inside Segment */
+.rm-btn-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transform: translate(0, -50%); /* Center vertically relative to segment arm */
+    pointer-events: none; /* Let clicks pass to segment */
+}
+
+/* The Icon Button */
+.rm-btn {
+    width: var(--rm-btn-size);
+    height: var(--rm-btn-size);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.rm-segment:hover .rm-btn {
+    transform: scale(1.15);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+/* Text Label */
+.rm-label {
+    font-size: 11px;
+    color: var(--rm-text-color);
+    text-shadow: 0 1px 2px black;
+    white-space: nowrap;
+    background: rgba(0,0,0,0.6);
+    padding: 2px 6px;
+    border-radius: 4px;
+    opacity: 0.9;
+}
+
+/* Color Modifiers */
+.rm-btn.green { background-color: var(--rm-accent-green); }
+.rm-btn.blue { background-color: var(--rm-accent-blue); }
+.rm-btn.red { background-color: var(--rm-accent-red); }
+.rm-btn.cyan { background-color: var(--rm-accent-cyan); }
+
+/* Inner Ring Specifics */
+.rm-segment.inner {
+    /* Inner ring logic: shorter radius */
+}
+
+/* Center Close Button (Optional, appears if needed) */
+.rm-center-close {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #333;
+    border: 2px solid #555;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: auto;
+}
+
+.radial-menu.active .rm-center-close {
+    opacity: 1;
+}
+
+.rm-center-close:hover {
+    background: #f44336;
+    border-color: #ff8a80;
+}
+
+/* SVG Icons placeholder styles if not using background-image */
+.rm-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    :root {
+        --rm-size-outer: 240px;
+        --rm-size-inner: 150px;
+        --rm-btn-size: 35px;
+    }
+    .rm-label {
+        font-size: 10px;
+    }
+}
