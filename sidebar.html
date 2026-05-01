@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Боковая навигационная панель</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Основной контент */
+        .main-content {
+            padding: 40px;
+            color: white;
+            transition: filter 0.3s ease;
+        }
+
+        .main-content.blurred {
+            filter: blur(2px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 800px;
+        }
+
+        /* Гамбургер кнопка */
+        .hamburger-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 8px;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            padding: 10px;
+        }
+
+        .hamburger-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .hamburger-btn:focus {
+            outline: 2px solid white;
+            outline-offset: 2px;
+        }
+
+        .hamburger-line {
+            width: 25px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Анимация гамбургера в открытое состояние */
+        .hamburger-btn.active .hamburger-line:nth-child(1) {
+            transform: translateY(9px) rotate(45deg);
+        }
+
+        .hamburger-btn.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .hamburger-btn.active .hamburger-line:nth-child(3) {
+            transform: translateY(-9px) rotate(-45deg);
+        }
+
+        /* Оверлей */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Боковая панель */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100%;
+            background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1002;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.active {
+            transform: translateX(300px);
+        }
+
+        /* Заголовок панели */
+        .sidebar-header {
+            padding: 30px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        /* Навигационные ссылки */
+        .nav-list {
+            list-style: none;
+            padding: 20px 0;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin: 5px 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-link:focus {
+            outline: 2px solid rgba(255, 255, 255, 0.5);
+            outline-offset: 2px;
+        }
+
+        .nav-link.active {
+            background: rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        /* Иконки для ссылок */
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* Нижняя часть панели */
+        .sidebar-footer {
+            padding: 20px 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-footer-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+            }
+
+            .sidebar.active {
+                transform: translateX(280px);
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 100%;
+                left: -100%;
+            }
+
+            .sidebar.active {
+                transform: translateX(100%);
+            }
+
+            .hamburger-btn {
+                width: 45px;
+                height: 45px;
+            }
+        }
+
+        /* Анимация появления элементов */
+        .sidebar.active .nav-item {
+            animation: slideIn 0.3s ease forwards;
+            opacity: 0;
+        }
+
+        .sidebar.active .nav-item:nth-child(1) { animation-delay: 0.05s; }
+        .sidebar.active .nav-item:nth-child(2) { animation-delay: 0.1s; }
+        .sidebar.active .nav-item:nth-child(3) { animation-delay: 0.15s; }
+        .sidebar.active .nav-item:nth-child(4) { animation-delay: 0.2s; }
+        .sidebar.active .nav-item:nth-child(5) { animation-delay: 0.25s; }
+        .sidebar.active .nav-item:nth-child(6) { animation-delay: 0.3s; }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Кнопка гамбургер -->
+    <button 
+        class="hamburger-btn" 
+        id="hamburgerBtn"
+        aria-label="Открыть меню"
+        aria-expanded="false"
+        aria-controls="sidebar"
+    >
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Оверлей -->
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+
+    <!-- Боковая панель -->
+    <nav 
+        class="sidebar" 
+        id="sidebar"
+        role="navigation"
+        aria-label="Основная навигация"
+    >
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">Меню</h2>
+            <p class="sidebar-subtitle">Навигация по сайту</p>
+        </div>
+
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="#" class="nav-link active">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Главная</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Статистика</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Проекты</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Команда</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Настройки</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">❓</span>
+                    <span class="nav-text">Помощь</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <p class="sidebar-footer-text">© 2024 Все права защищены</p>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="main-content" id="mainContent">
+        <h1>Боковая навигационная панель</h1>
+        <p>
+            Нажмите на кнопку гамбургер в левом верхнем углу, чтобы открыть боковую панель навигации.
+            Панель поддерживает следующие функции:
+        </p>
+        <br>
+        <p>
+            ✅ Анимированный гамбургер с плавными переходами<br>
+            ✅ Текстовые подписи к каждому пункту меню<br>
+            ✅ Адаптивный оверлей затемнения фона<br>
+            ✅ Закрытие по клику на оверлей или гамбургер<br>
+            ✅ Поддержка клавиши Escape для закрытия<br>
+            ✅ ARIA-атрибуты для доступности (accessibility)<br>
+            ✅ Плавные анимации и современный дизайн<br>
+            ✅ Полная адаптивность для мобильных устройств
+        </p>
+    </main>
+
+    <script>
+        // Получаем элементы
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const mainContent = document.getElementById('mainContent');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        // Состояние панели
+        let isSidebarOpen = false;
+
+        // Функция открытия/закрытия панели
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+            
+            if (isSidebarOpen) {
+                openSidebar();
+            } else {
+                closeSidebar();
+            }
+        }
+
+        // Открытие панели
+        function openSidebar() {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            hamburgerBtn.classList.add('active');
+            mainContent.classList.add('blurred');
+            
+            // Обновляем ARIA атрибуты
+            hamburgerBtn.setAttribute('aria-expanded', 'true');
+            hamburgerBtn.setAttribute('aria-label', 'Закрыть меню');
+            overlay.setAttribute('aria-hidden', 'false');
+            
+            // Блокируем прокрутку основного контента
+            document.body.style.overflow = 'hidden';
+            
+            // Фокус на первый элемент навигации для доступности
+            setTimeout(() => {
+                const firstNavLink = sidebar.querySelector('.nav-link');
+                if (firstNavLink) {
+                    firstNavLink.focus();
+                }
+            }, 300);
+        }
+
+        // Закрытие панели
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            hamburgerBtn.classList.remove('active');
+            mainContent.classList.remove('blurred');
+            
+            // Обновляем ARIA атрибуты
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+            hamburgerBtn.setAttribute('aria-label', 'Открыть меню');
+            overlay.setAttribute('aria-hidden', 'true');
+            
+            // Возвращаем прокрутку
+            document.body.style.overflow = '';
+            
+            // Возвращаем фокус на кнопку гамбургера
+            hamburgerBtn.focus();
+        }
+
+        // Обработчик клика на гамбургер
+        hamburgerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+
+        // Обработчик клика на оверлей
+        overlay.addEventListener('click', () => {
+            if (isSidebarOpen) {
+                closeSidebar();
+            }
+        });
+
+        // Обработчик клика на ссылки навигации
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                // Убираем активный класс у всех ссылок
+                navLinks.forEach(l => l.classList.remove('active'));
+                // Добавляем активный класс нажатой ссылке
+                link.classList.add('active');
+                
+                // Закрываем панель после выбора пункта
+                setTimeout(() => {
+                    closeSidebar();
+                }, 200);
+            });
+        });
+
+        // Обработчик клавиши Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isSidebarOpen) {
+                closeSidebar();
+            }
+        });
+
+        // Предотвращаем закрытие при клике внутри панели
+        sidebar.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Обработка изменения размера окна
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && isSidebarOpen) {
+                // На больших экранах можно оставить панель открытой
+            }
+        });
+
+        // Инициализация: убеждаемся, что панель закрыта при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            closeSidebar();
+        });
+    </script>
+</body>
+</html>
