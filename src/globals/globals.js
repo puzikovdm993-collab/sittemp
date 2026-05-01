@@ -139,6 +139,44 @@ async function saveProjectToMinIO123(project) {
 }
 async function saveProjectToMinIO_l() {
     const saved = await saveProjectToMinIO123(project);
+    
+    // После сохранения на сервер, обновляем кэш в IndexedDB
+    if (saved && project && project.id) {
+        try {
+            // Формируем данные проекта в том же формате, что и при загрузке
+            const projectData = {
+                project: {
+                    id: project.id,
+                    name: project.name,
+                    type: project.type,
+                    createdAt: project.createdAt,
+                    lastUpdate: project.lastUpdate,
+                    owner: project.owner,
+                    settings: project.settings,
+                    files: project.files.map(file => ({
+                        id: file.id,
+                        filename: file.filename,
+                        matrix: file.matrix,
+                        minValue: file.minValue,
+                        maxValue: file.maxValue,
+                        height: file.height,
+                        width: file.width,
+                        dpi: file.dpi,
+                        autoscale: file.autoscale,
+                        colormap: file.colormap,
+                        history: file.history,
+                        historyIndex: file.historyIndex,
+                        selection: file.selection
+                    }))
+                }
+            };
+            
+            await ProjectDB.saveProject(project.id, projectData);
+            console.log(`✅ Проект ${project.id} обновлён в IndexedDB после сохранения`);
+        } catch (error) {
+            console.warn('⚠️ Не удалось обновить кэш IndexedDB:', error);
+        }
+    }
 }
 
 /**
