@@ -790,13 +790,16 @@ body {
     padding: 4px 12px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 12px;
     color: var(--vscode-statusbar-fg);
+    gap: 16px;
 }
 
 .status-left {
     display: flex;
     gap: 16px;
+    flex-shrink: 0;
 }
 
 
@@ -1806,12 +1809,12 @@ input, textarea, select,
 
 /* Цветовая панель (Color Bar) */
 .color-bar {
-    width: 18px;
-    height: 100%;
+    width: 150px;
+    height: 24px;
     background: var(--background-secondary);
-    padding: 8px 4px;
+    padding: 4px 8px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     box-shadow: var(--shadow-sm);
     justify-content: space-between; /* Равномерное распределение */
@@ -1820,7 +1823,9 @@ input, textarea, select,
 .color-bar-gray {
     cursor: pointer;
     border: 2px solid var(--border-color);
-    background: linear-gradient(to bottom, rgb(255, 255, 255), rgb(0, 0, 0));
+    background: linear-gradient(to right, rgb(0, 0, 0), rgb(255, 255, 255));
+    flex-grow: 1;
+    height: 100%;
 }
 
 
@@ -1988,12 +1993,12 @@ input, textarea, select,
 
 /* Общие стили для меток */
 .color-bar-label {
-    writing-mode: vertical-rl; /* Текст вертикально (справа налево) */
+    writing-mode: horizontal-tb; /* Текст горизонтально */
     text-orientation: mixed; /* Символы остаются читаемыми */
     font-size: 9px;
     font-weight: 600;
     color: var(--text-primary);
-    padding: 8px 0;
+    padding: 0 4px;
     letter-spacing: 1px;
     text-transform: uppercase;
     user-select: none;
@@ -2004,16 +2009,16 @@ input, textarea, select,
 
 /* Специальные стили для каждой метки */
 .color-bar-label-max {
-    grid-row: 1; /* Первая строка (верх) */
-    transform: rotate(180deg);
+    order: 3; /* Первая строка (верх) */
+    transform: rotate(0deg);
 }
 
 .color-bar-label-median {
-    grid-row: 2; /* Вторая строка (центр) */
-    transform: rotate(180deg);
+    order: 2; /* Вторая строка (центр) */
+    transform: rotate(0deg);
 }
 
 .color-bar-label-min {
-    grid-row: 3; /* Третья строка (низ) */
-    transform: rotate(180deg); /* Оставляем MIN перевернутым (если нужно) */
+    order: 1; /* Третья строка (низ) */
+    transform: rotate(0deg); /* Оставляем MIN перевернутым (если нужно) */
 }
