@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Альтернативная навигационная панель</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Основной контент */
+        .main-content {
+            padding: 60px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-content.shifted {
+            margin-left: 280px;
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #4a5568;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        /* Кнопка гамбургер */
+        .hamburger-btn {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            z-index: 1000;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .hamburger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .hamburger-btn:focus {
+            outline: 3px solid #4299e1;
+            outline-offset: 2px;
+        }
+
+        .hamburger-line {
+            width: 28px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Анимация гамбургера в крестик */
+        .hamburger-btn.active .hamburger-line:nth-child(1) {
+            transform: translateY(10px) rotate(45deg);
+        }
+
+        .hamburger-btn.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+            transform: scaleX(0);
+        }
+
+        .hamburger-btn.active .hamburger-line:nth-child(3) {
+            transform: translateY(-10px) rotate(-45deg);
+        }
+
+        /* Оверлей */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            z-index: 998;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Боковая панель */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.15);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(-100%);
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        /* Логотип/Заголовок */
+        .sidebar-brand {
+            padding: 30px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .brand-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .brand-tagline {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Навигация */
+        .nav-list {
+            list-style: none;
+            padding: 25px 15px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #a0aec0;
+            font-weight: 600;
+            padding: 0 15px;
+            margin-bottom: 12px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 18px;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.25s ease;
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(102, 126, 234, 0.08);
+            color: #667eea;
+            transform: translateX(6px);
+        }
+
+        .nav-link:hover::before {
+            transform: scaleY(1);
+        }
+
+        .nav-link:focus {
+            outline: 2px solid #667eea;
+            outline-offset: -2px;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            color: #667eea;
+        }
+
+        .nav-link.active::before {
+            transform: scaleY(1);
+        }
+
+        /* Иконки */
+        .nav-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover .nav-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .nav-link.active .nav-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-text {
+            flex: 1;
+        }
+
+        /* Индикатор уведомлений */
+        .nav-badge {
+            background: #fc8181;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            min-width: 22px;
+            text-align: center;
+        }
+
+        /* Профиль пользователя */
+        .user-profile {
+            padding: 20px 28px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: #a0aec0;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #fed7d7;
+            color: #e53e3e;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1024px) {
+            .main-content.shifted {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+
+            .hamburger-btn {
+                width: 50px;
+                height: 50px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Анимация появления элементов */
+        .sidebar.active .nav-item {
+            animation: fadeInSlide 0.4s ease forwards;
+            opacity: 0;
+            transform: translateX(-15px);
+        }
+
+        .sidebar.active .nav-section:nth-child(1) .nav-item:nth-child(1) { animation-delay: 0.1s; }
+        .sidebar.active .nav-section:nth-child(1) .nav-item:nth-child(2) { animation-delay: 0.15s; }
+        .sidebar.active .nav-section:nth-child(1) .nav-item:nth-child(3) { animation-delay: 0.2s; }
+        .sidebar.active .nav-section:nth-child(2) .nav-item:nth-child(1) { animation-delay: 0.25s; }
+        .sidebar.active .nav-section:nth-child(2) .nav-item:nth-child(2) { animation-delay: 0.3s; }
+        .sidebar.active .nav-section:nth-child(2) .nav-item:nth-child(3) { animation-delay: 0.35s; }
+
+        @keyframes fadeInSlide {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Скроллбар для навигации */
+        .nav-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .nav-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .nav-list::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 3px;
+        }
+
+        .nav-list::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Кнопка гамбургер -->
+    <button 
+        class="hamburger-btn" 
+        id="hamburgerBtn"
+        aria-label="Открыть меню"
+        aria-expanded="false"
+        aria-controls="sidebar"
+    >
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Оверлей -->
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+
+    <!-- Боковая панель -->
+    <nav 
+        class="sidebar" 
+        id="sidebar"
+        role="navigation"
+        aria-label="Основная навигация"
+    >
+        <div class="sidebar-brand">
+            <div class="brand-logo">NAVPRO</div>
+            <div class="brand-tagline">Навигация нового поколения</div>
+        </div>
+
+        <ul class="nav-list">
+            <li class="nav-section">
+                <div class="nav-section-title">Основное</div>
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <span class="nav-icon">🏠</span>
+                        <span class="nav-text">Главная</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-text">Аналитика</span>
+                        <span class="nav-badge">3</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📂</span>
+                        <span class="nav-text">Проекты</span>
+                    </a>
+                </li>
+            </li>
+
+            <li class="nav-section">
+                <div class="nav-section-title">Управление</div>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">👥</span>
+                        <span class="nav-text">Команда</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📅</span>
+                        <span class="nav-text">Календарь</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-text">Настройки</span>
+                    </a>
+                </li>
+            </li>
+        </ul>
+
+        <div class="user-profile">
+            <div class="user-avatar">ИИ</div>
+            <div class="user-info">
+                <div class="user-name">Иван Иванов</div>
+                <div class="user-role">Администратор</div>
+            </div>
+            <button class="logout-btn" aria-label="Выйти">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="main-content" id="mainContent">
+        <h1>Альтернативная навигационная панель</h1>
+        <p>
+            Этот вариант навигации отличается следующим:
+        </p>
+        <br>
+        <p>
+            ✨ Светлая тема с градиентными акцентами<br>
+            ✨ Секционная структура меню с заголовками<br>
+            ✨ Анимированные иконки с градиентным фоном<br>
+            ✨ Индикаторы уведомлений (badges)<br>
+            ✨ Профиль пользователя в нижней части<br>
+            ✨ Сдвиг основного контента при открытии на десктопе<br>
+            ✨ Эффект размытия (backdrop-filter) на оверлее<br>
+            ✨ Кастомный скроллбар для списка навигации<br>
+            ✨ Плавные hover-эффекты с трансформацией<br>
+            ✨ Полная поддержка ARIA и клавиши Escape
+        </p>
+        <br>
+        <p style="color: #718096; font-size: 0.95rem;">
+            Нажмите на кнопку меню слева вверху, чтобы увидеть навигационную панель.
+        </p>
+    </main>
+
+    <script>
+        // Получаем элементы
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const mainContent = document.getElementById('mainContent');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        // Состояние панели
+        let isSidebarOpen = false;
+
+        // Функция открытия/закрытия панели
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+            
+            if (isSidebarOpen) {
+                openSidebar();
+            } else {
+                closeSidebar();
+            }
+        }
+
+        // Открытие панели
+        function openSidebar() {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            hamburgerBtn.classList.add('active');
+            
+            // Сдвигаем контент только на больших экранах
+            if (window.innerWidth > 1024) {
+                mainContent.classList.add('shifted');
+            }
+            
+            // Обновляем ARIA атрибуты
+            hamburgerBtn.setAttribute('aria-expanded', 'true');
+            hamburgerBtn.setAttribute('aria-label', 'Закрыть меню');
+            overlay.setAttribute('aria-hidden', 'false');
+            
+            // Блокируем прокрутку основного контента
+            document.body.style.overflow = 'hidden';
+            
+            // Фокус на первый элемент навигации
+            setTimeout(() => {
+                const firstNavLink = sidebar.querySelector('.nav-link');
+                if (firstNavLink) {
+                    firstNavLink.focus();
+                }
+            }, 400);
+        }
+
+        // Закрытие панели
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            hamburgerBtn.classList.remove('active');
+            mainContent.classList.remove('shifted');
+            
+            // Обновляем ARIA атрибуты
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+            hamburgerBtn.setAttribute('aria-label', 'Открыть меню');
+            overlay.setAttribute('aria-hidden', 'true');
+            
+            // Возвращаем прокрутку
+            document.body.style.overflow = '';
+            
+            // Возвращаем фокус на кнопку гамбургера
+            hamburgerBtn.focus();
+        }
+
+        // Обработчик клика на гамбургер
+        hamburgerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+
+        // Обработчик клика на оверлей
+        overlay.addEventListener('click', () => {
+            if (isSidebarOpen) {
+                closeSidebar();
+            }
+        });
+
+        // Обработчик клика на ссылки навигации
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Убираем активный класс у всех ссылок
+                navLinks.forEach(l => l.classList.remove('active'));
+                // Добавляем активный класс нажатой ссылке
+                link.classList.add('active');
+                
+                // Закрываем панель после выбора пункта
+                setTimeout(() => {
+                    closeSidebar();
+                }, 200);
+            });
+        });
+
+        // Обработчик клавиши Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isSidebarOpen) {
+                closeSidebar();
+            }
+        });
+
+        // Предотвращаем закрытие при клике внутри панели
+        sidebar.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Обработка изменения размера окна
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 1024) {
+                mainContent.classList.remove('shifted');
+            } else if (isSidebarOpen) {
+                mainContent.classList.add('shifted');
+            }
+        });
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            closeSidebar();
+        });
+    </script>
+</body>
+</html>
