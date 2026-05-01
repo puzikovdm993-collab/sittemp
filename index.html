@@ -67,7 +67,7 @@
     <!-- <link rel="stylesheet" href="styles/index.css"> -->
     <link rel="stylesheet" href="styles/modals.css">
     <link rel="stylesheet" href="styles/onboarding.css">
-    <link rel="stylesheet" href="styles/navigation-alt.css">
+    <link rel="stylesheet" href="styles/navigation.css">
 
     <!--
     <style>
@@ -810,51 +810,40 @@
 
 
 
-<!-- Альтернативная навигация - боковое меню -->
-<button class="nav-toggle" aria-label="Открыть меню">
-    <span></span>
-    <span></span>
-    <span></span>
-</button>
+<!-- Радиальная навигация -->
+<div class="navigation">
+  <!-- Кнопки меню -->
+  <span style="--i:0;--x:-1;--y:0;" title="Курсор">
+    <ion-icon name="navigate-outline"></ion-icon>
+  </span>
+  <span style="--i:1;--x:1;--y:0;" title="Профиль">
+    <ion-icon name="analytics-outline"></ion-icon>
+  </span>
+  <span style="--i:2;--x:0;--y:-1;" title="Выбор">
+    <ion-icon name="crop-outline"></ion-icon>
+  </span>
+  <span style="--i:3;--x:0;--y:1;" title="Лассо">
+    <ion-icon name="path-outline"></ion-icon>
+  </span>
+  <span style="--i:4;--x:1;--y:1;" title="Подсказка по файлу">
+    <ion-icon name="help-circle-outline"></ion-icon>
+  </span>
+  <span style="--i:5;--x:-1;--y:-1;" title="Подсказка по проекту">
+    <ion-icon name="help-buoy-outline"></ion-icon>
+  </span>
 
-<div class="sidebar">
-    <nav class="sidebar-nav">
-        <a href="#" class="sidebar-item active" data-tool="cursor">
-            <svg viewBox="0 0 24 24"><use href="#mouse-pointer"/></svg>
-            <span>Курсор</span>
-        </a>
-        <a href="#" class="sidebar-item" data-tool="analytics">
-            <svg viewBox="0 0 24 24"><use href="#icon-shapes"/></svg>
-            <span>Аналитика</span>
-        </a>
-        <a href="#" class="sidebar-item" data-tool="crop">
-            <svg viewBox="0 0 24 24"><use href="#icon-crop"/></svg>
-            <span>Обрезка</span>
-        </a>
-        <a href="#" class="sidebar-item" data-tool="lasso">
-            <svg viewBox="0 0 24 24"><use href="#icon-filter"/></svg>
-            <span>Лассо</span>
-        </a>
-        <a href="#" class="sidebar-item" data-tool="help-file">
-            <svg viewBox="0 0 24 24"><use href="#circle-question-mark"/></svg>
-            <span>Помощь (файл)</span>
-        </a>
-        <a href="#" class="sidebar-item" data-tool="help-project">
-            <svg viewBox="0 0 24 24"><use href="#folder-clock.svg"/></svg>
-            <span>Помощь (проект)</span>
-        </a>
-        <a href="#" class="sidebar-item" data-tool="docs">
-            <svg viewBox="0 0 24 24"><use href="#icon-code"/></svg>
-            <span>Документация</span>
-        </a>
-        <a href="#" class="sidebar-item" data-tool="save">
-            <svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>
-            <span>Сохранить</span>
-        </a>
-    </nav>
+  <!-- Центральная кнопка закрытия (появляется только при active) -->
+  <span class="close-btn" style="--i:6;--x:0;--y:0;" title="Закрыть">
+    <ion-icon name="close-outline"></ion-icon>
+  </span>
+
+  <span style="--i:7;--x:-1;--y:1;" title="Помощь">
+    <ion-icon name="book-outline"></ion-icon>
+  </span>
+  <span style="--i:8;--x:1;--y:-1;" title="Сохранить">
+    <ion-icon name="save-outline"></ion-icon>
+  </span>
 </div>
-
-<div class="sidebar-overlay"></div>
         
         <!-- Цветовая панель (Color Bar) -->
 
@@ -1845,6 +1834,6 @@
     </script>
     <script src='https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js'></script>
     <script src='https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js'></script>
-    <script src="scripts/navigation-alt.js"></script>
+    <script src="scripts/navigation.js"></script>
 </body>
 </html>
