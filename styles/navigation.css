@@ -99,25 +99,32 @@
   align-items: center;
   background: var(--text-primary);
   border-radius: 50%;
-  /* Мгновенное перемещение на финальную позицию без анимации вылета */
-  transform: translate(calc(60px * var(--x)), calc(60px * var(--y)));
-  transition: width 0.3s, height 0.3s, background 0.3s;
+  /* В свернутом состоянии - маленькие точки на своих позициях */
+  transform: translate(calc(12px * var(--x)), calc(12px * var(--y)));
+  transition: transform 0.3s, width 0.3s, height 0.3s, background 0.3s, opacity 0.3s;
   transition-delay: 0s;
-}
-
-.navigation:not(.active) span {
-  width: 7px;
-  height: 7px;
-  background: var(--text-primary);
-  /* В свернутом состоянии скрываем элементы в центре */
-  transform: translate(0, 0);
+  opacity: 1;
 }
 
 .navigation.active span {
   width: 45px;
   height: 45px;
   background: var(--primary-light);
-  /* Финальная позиция уже установлена выше, анимации вылета нет */
+  transform: translate(calc(60px * var(--x)), calc(60px * var(--y)));
+  /* Небольшая анимация появления с задержкой для каждой кнопки */
+  animation: popIn 0.3s ease forwards;
+  animation-delay: calc(0.05s * var(--i));
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: translate(calc(60px * var(--x)), calc(60px * var(--y))) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(calc(60px * var(--x)), calc(60px * var(--y))) scale(1);
+  }
 }
 
 /* Стили для центральной кнопки закрытия */
