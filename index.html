@@ -68,6 +68,7 @@
     <link rel="stylesheet" href="styles/modals.css">
     <link rel="stylesheet" href="styles/onboarding.css">
     <link rel="stylesheet" href="styles/navigation.css">
+    <link rel="stylesheet" href="styles/radial-menu.css">
 
     <!--
     <style>
@@ -843,6 +844,69 @@
   <span style="--i:8;--x:1;--y:-1;" title="Сохранить">
     <ion-icon name="save-outline"></ion-icon>
   </span>
+</div>
+
+<!-- Контекстное радиальное меню (по ТЗ) -->
+<div id="radialMenu" class="radial-menu" style="display: none;">
+    <div class="radial-menu-center">
+        <button class="radial-menu-close" title="Закрыть">×</button>
+    </div>
+    
+    <!-- Внешнее кольцо: навигационные действия -->
+    <div class="radial-menu-ring radial-menu-ring-outer">
+        <div class="radial-menu-segment" data-action="rotate" data-type="nav" style="--angle: 0;">
+            <div class="radial-menu-btn btn-green">
+                <svg class="icon"><use href="#icon-rotate"></use></svg>
+            </div>
+            <span class="radial-menu-label">Вращение</span>
+        </div>
+        <div class="radial-menu-segment" data-action="move" data-type="nav" style="--angle: 45;">
+            <div class="radial-menu-btn btn-blue">
+                <svg class="icon"><use href="#icon-move"></use></svg>
+            </div>
+            <span class="radial-menu-label">Перемещение</span>
+        </div>
+        <div class="radial-menu-segment" data-action="scale" data-type="nav" style="--angle: 90;">
+            <div class="radial-menu-btn btn-cyan">
+                <svg class="icon"><use href="#icon-scale"></use></svg>
+            </div>
+            <span class="radial-menu-label">Масштаб</span>
+        </div>
+        <div class="radial-menu-segment" data-action="zoom" data-type="nav" style="--angle: 135;">
+            <div class="radial-menu-btn btn-green">
+                <svg class="icon"><use href="#icon-zoom"></use></svg>
+            </div>
+            <span class="radial-menu-label">Зум</span>
+        </div>
+    </div>
+    
+    <!-- Внутреннее кольцо: системные действия -->
+    <div class="radial-menu-ring radial-menu-ring-inner">
+        <div class="radial-menu-segment" data-action="search" data-type="system" style="--angle: 180;">
+            <div class="radial-menu-btn btn-blue">
+                <svg class="icon"><use href="#icon-search"></use></svg>
+            </div>
+            <span class="radial-menu-label">Поиск</span>
+        </div>
+        <div class="radial-menu-segment" data-action="links" data-type="system" style="--angle: 225;">
+            <div class="radial-menu-btn btn-cyan">
+                <svg class="icon"><use href="#icon-link"></use></svg>
+            </div>
+            <span class="radial-menu-label">Ссылки</span>
+        </div>
+        <div class="radial-menu-segment" data-action="settings" data-type="system" style="--angle: 270;">
+            <div class="radial-menu-btn btn-red">
+                <svg class="icon"><use href="#icon-settings"></use></svg>
+            </div>
+            <span class="radial-menu-label">Настройки</span>
+        </div>
+        <div class="radial-menu-segment" data-action="delete" data-type="system" style="--angle: 315;">
+            <div class="radial-menu-btn btn-red">
+                <svg class="icon"><use href="#icon-delete"></use></svg>
+            </div>
+            <span class="radial-menu-label">Удалить</span>
+        </div>
+    </div>
 </div>
         
         <!-- Цветовая панель (Color Bar) -->
@@ -1835,5 +1899,6 @@
     <script src='https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js'></script>
     <script src='https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js'></script>
     <script src="scripts/navigation.js"></script>
+    <script src="scripts/radial-menu.js"></script>
 </body>
 </html>
