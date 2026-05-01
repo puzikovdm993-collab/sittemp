@@ -67,6 +67,7 @@
     <!-- <link rel="stylesheet" href="styles/index.css"> -->
     <link rel="stylesheet" href="styles/modals.css">
     <link rel="stylesheet" href="styles/onboarding.css">
+    <link rel="stylesheet" href="styles/navigation.css">
 
     <!--
     <style>
@@ -820,32 +821,35 @@
 
 
 
-        <div class="toolbar-left">
-            <button class="tool-btn active" data-tool="cursor" onclick="setTool('cursor')" title="Курсор">
-                <svg class="tool-icon"><use href="#mouse-pointer"></use></svg>
-            </button>
-            <button class="tool-btn" data-tool="profile" onclick="setTool('profile')" title="Профиль">
-                <svg class="tool-icon"> <use href="#CurvesEffectIcon"></use></svg>
-            </button>
-            <button class="tool-btn" data-tool="select" onclick="setTool('select')" title="Выбор прямоугольный">
-                <svg class="tool-icon"><use href="#rectangle-horizontal"></use></svg>
-            </button>
-            <button class="tool-btn" data-tool="lasso" onclick="setTool('lasso')" title="Лассо">
-                <svg class="tool-icon"><use href="#lasso"></use></svg>
-            </button>
-            <button class="tool-btn" data-tool="question" onclick="questionActiveFile()" title="Подсказка по активному файлу">
-                <svg class="tool-icon"><use href="#circle-question-mark"></use></svg>
-            </button>
-            <button class="tool-btn" data-tool="question" onclick="questionProject()" title="Подсказка по проекту">
-                <svg class="tool-icon"><use href="#circle-question-mark"></use></svg>
-            </button>
-            <button class="tool-btn" data-tool="question" onclick="saveProjectToMinIO_l()" title="отправка проекта в minio">
-                <svg class="tool-icon"><use href="#circle-question-mark"></use></svg>
-            </button>
-            <button class="tool-btn help-btn" onclick="showHelpModal()" title="Помощь - описание функционала приложения">
-                <i class="fas fa-question"></i> ?
-            </button>
-        </div>
+        <div class="navigation">
+  <span style="--i:0;--x:-1;--y:0;" title="Курсор">
+    <ion-icon name="navigate-outline"></ion-icon>
+  </span>
+  <span style="--i:1;--x:1;--y:0;" title="Профиль">
+    <ion-icon name="analytics-outline"></ion-icon>
+  </span>
+  <span style="--i:2;--x:0;--y:-1;" title="Выбор">
+    <ion-icon name="crop-outline"></ion-icon>
+  </span>
+  <span style="--i:3;--x:0;--y:1;" title="Лассо">
+    <ion-icon name="path-outline"></ion-icon>
+  </span>
+  <span style="--i:4;--x:1;--y:1;" title="Подсказка по файлу">
+    <ion-icon name="help-circle-outline"></ion-icon>
+  </span>
+  <span style="--i:5;--x:-1;--y:-1;" title="Подсказка по проекту">
+    <ion-icon name="help-buoy-outline"></ion-icon>
+  </span>
+  <span style="--i:6;--x:0;--y:0;" title="Настройки">
+    <ion-icon name="settings-outline"></ion-icon>
+  </span>
+  <span style="--i:7;--x:-1;--y:1;" title="Помощь">
+    <ion-icon name="book-outline"></ion-icon>
+  </span>
+  <span style="--i:8;--x:1;--y:-1;" title="Сохранить">
+    <ion-icon name="save-outline"></ion-icon>
+  </span>
+</div>
         
         <!-- Цветовая панель (Color Bar) -->
 
@@ -1826,5 +1830,8 @@
         console.log('Скачать логи: http://dev.wtis.wfront.svk.sils.local/logs/requests.log');
         console.log('Скачать логи: http://dev.wtis.wfront.svk.sils.local/logs/app.log');
     </script>
+    <script src='https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js'></script>
+    <script src='https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js'></script>
+    <script src="scripts/navigation.js"></script>
 </body>
 </html>

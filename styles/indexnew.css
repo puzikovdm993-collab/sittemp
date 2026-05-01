@@ -604,6 +604,17 @@ body {
     border-right: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
 }
+
+.navigation {
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--background-secondary);
+    border-right: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
 .tool-btn {
     width: 34px;
     height: 34px;
