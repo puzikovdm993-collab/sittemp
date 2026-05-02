@@ -329,7 +329,7 @@ function attachCanvasEvents(cnv) {
     cnv.addEventListener('mouseup', handleMouseUp);
     cnv.addEventListener('mouseleave', handleMouseUp);
     cnv.addEventListener('dblclick', handleDoubleClick);
-    cnv.addEventListener('contextmenu', (e) => e.preventDefault());
+    cnv.addEventListener('contextmenu', handleCanvasContextMenu);
 }
 
 // function newImage()                         // создаёт новый пустой файл
