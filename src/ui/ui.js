@@ -392,13 +392,18 @@ document.getElementById('colorbarViewToggle')?.addEventListener('change', functi
 
 // Если функции showCodeLab() и hideCodeLab() нет, реализуем базовую логику
 function showCodeLab() {
-    const content = document.getElementById('colorBar');
+
+    const content = document.getElementById('color_bar_label');
     content.style.display='flex';
+    const contents = document.getElementById('colorBar');
+    contents.style.display='flex';
 }
 
 function hideCodeLab() {
-    const content = document.getElementById('colorBar');
+    const content = document.getElementById('color_bar_label');
     content.style.display='none';
+    const contents = document.getElementById('colorBar');
+    contents.style.display='none';
 }
 
 const colorBar = document.getElementById('colorBar');
