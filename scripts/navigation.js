@@ -48,10 +48,35 @@ function setupLinks(elems) {
     var parentMenuItemDisplay = parentMenuItem.currentStyle ? parentMenuItem.currentStyle.display : getComputedStyle(parentMenuItem, null).display;
 
     if (parentMenuItemDisplay !== 'none') {
-      var cssTransform = 'translateY(-50%) translateZ(0) rotateZ(' + degreeInterval * i + 'deg) perspective(' + 300 / 1.5 + 'px)';
-      var transformString = getLinkTransforms(menuItemsCount);
-      cssTransform += transformString;
+      // Поворачиваем каждый элемент на свой угол вокруг центра меню
+      // Смещаем на -90deg чтобы первый элемент был сверху
+      var cssTransform = 'rotateZ(' + ((degreeInterval * i) - 90) + 'deg) translateY(-120px)';
+      // Поворачиваем сам элемент обратно чтобы текст/иконка были вертикально
       elem.style.transform = cssTransform;
+      elem.style.transformOrigin = 'center center';
+      
+      // Поворачиваем содержимое (иконку и контент) обратно на тот же угол
+      var icon = parentMenuItem.querySelector('.radial-menu__menu-icon');
+      var content = parentMenuItem.querySelector('.radial-menu__menu-content');
+      var linkBg = parentMenuItem.querySelector('.radial-menu__menu-link-bg');
+      var link = parentMenuItem.querySelector('.radial-menu__menu-link');
+      
+      var counterRotate = 'rotateZ(' + (-((degreeInterval * i) - 90)) + 'deg)';
+      
+      if (icon) {
+        icon.style.transform = 'translateY(-50%) translateX(-50%) ' + counterRotate;
+      }
+      if (content) {
+        content.style.transform = 'translate(-50%, -50%) ' + counterRotate;
+      }
+      if (linkBg) {
+        linkBg.style.transform = 'rotateZ(' + (-((degreeInterval * i) - 90)) + 'deg)';
+        linkBg.style.transformOrigin = 'left center';
+      }
+      if (link) {
+        link.style.transform = 'rotateZ(' + (-((degreeInterval * i) - 90)) + 'deg)';
+        link.style.transformOrigin = 'left center';
+      }
     }
   }
 }
@@ -137,7 +162,6 @@ function positionIcons(icons, iconDistance) {
   var menuItems = container.querySelectorAll('.radial-menu__menu-item');
   var menuItemsCount = countMenuItems(menuItems);
   var iconsCount = icons.length;
-  var iconOffset = 1.575;
 
   for (var i = 0; i < iconsCount; i++) {
     var icon = icons[i];
@@ -145,12 +169,10 @@ function positionIcons(icons, iconDistance) {
     var parentMenuItemDisplay = parentMenuItem.currentStyle ? parentMenuItem.currentStyle.display : getComputedStyle(parentMenuItem, null).display;
 
     if (parentMenuItemDisplay !== 'none') {
-      var phase = i / menuItemsCount;
-      var theta = phase * 2 * Math.PI;
-      theta = theta + iconOffset;
-
-      icon.style.top = (-iconDistance * Math.cos(theta)).toFixed(1) + 'px';
-      icon.style.left = (iconDistance * Math.sin(theta)).toFixed(1) + 'px';
+      // Иконки позиционируются в центре каждого сегмента меню
+      icon.style.top = '50%';
+      icon.style.left = '50%';
+      icon.style.transform = 'translate(-50%, -50%)';
     }
   }
 }
