@@ -47,6 +47,7 @@
     opacity .1s ease,
     background .1s ease;
   width: 300px;
+  pointer-events: none;
 }
 
 .radial-menu.is-hidden {
@@ -69,6 +70,7 @@
   animation-timing-function: cubic-bezier(.25, .25, .25, 1.25);
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
 }
 
 .radial-menu.item-is-hovered {
@@ -82,7 +84,7 @@
     transform: translate(-50%, -50%) scale(0);
   }
   100% {
-    transform: translateX(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -91,7 +93,7 @@
     transform: translate(-50%, -50%) scale(1);
   }
   100% {
-    transform: translateX(-50%, -50%) scale(0);
+    transform: translate(-50%, -50%) scale(0);
   }
 }
 
@@ -113,7 +115,8 @@
   top: 50%;
   transform: translate(-50%, -50%);
   width: 80px;
-  z-index: 4;
+  z-index: 100;
+  pointer-events: auto;
 }
 
 .radial-menu__menu-content {
@@ -129,6 +132,7 @@
   width: 80px;
   z-index: 1;
   pointer-events: none;
+  transition: all 0.1s ease;
 }
 
 .radial-menu__menu-item.hovered .radial-menu__menu-content {
@@ -175,6 +179,7 @@
   width: 25px;
   z-index: 2;
   pointer-events: none;
+  transition: all 0.1s ease;
 }
 
 .radial-menu__menu-icon .icon-svg {
@@ -219,27 +224,31 @@
   top: 50%;
   transform-origin: center center;
   z-index: 1;
+  width: 0;
+  height: 0;
 }
 
 .radial-menu__menu-item.hovered {
   z-index: 10;
 }
 
+/* Ссылки и их фон - это трапециевидные сегменты */
 .radial-menu__menu-link,
 .radial-menu__menu-link-bg {
-  height: 40px;
-  padding: 5px 20px;
+  display: block;
   position: absolute;
+  left: 0;
+  top: 0;
+  width: 150px;
+  height: 50px;
   transform-origin: left center;
-  transform-style: preserve-3d; 
-  width: 125px;
+  transform-style: preserve-3d;
   pointer-events: auto;
 }
 
 .radial-menu__menu-link {
   border-bottom: 1px solid transparent;
   border-top: 1px solid transparent;
-  display: block;
   z-index: 3;
 }
 
@@ -252,8 +261,6 @@
   text-transform: uppercase;
   transition: background .1s ease;
   z-index: 1;
-  left: 0;
-  top: 0;
 }
 
 .radial-menu__menu-link-bg:after {
@@ -292,6 +299,7 @@
   position: absolute;
   text-transform: uppercase;
   transform: translateX(-50%);
+  pointer-events: none;
 }
 
 @media (max-height: 430px) {
