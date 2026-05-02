@@ -271,6 +271,11 @@
         <symbol id="flip-horizontal"  viewBox="0 0 24 24"       fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3" /><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3" /><path d="M12 20v2" /><path d="M12 14v2" /><path d="M12 8v2" /><path d="M12 2v2" /></symbol>
         <symbol id="flip-vertical"  viewBox="0 0 24 24"         fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3" /><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3" /><path d="M4 12H2" /><path d="M10 12H8" /><path d="M16 12h-2" /><path d="M22 12h-2" /></symbol>
       
+        <!-- Иконки для радиального меню -->
+        <symbol id="icon-analytics" viewBox="0 0 24 24" fill="#007acc"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></symbol>
+        <symbol id="icon-path" viewBox="0 0 24 24" fill="#007acc"><path d="M18 4l4 4-4 4V9H5v6h13v-3l4 4-4 4v-3H5c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2h13V4z"/></symbol>
+        <symbol id="icon-book" viewBox="0 0 24 24" fill="#007acc"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></symbol>
+      
 
         <symbol id="folder-down"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /><path d="M12 10v6" /><path d="m15 13-3 3-3-3" /></symbol>
         <!-- <symbol id="folder"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol> -->
@@ -810,38 +815,161 @@
 
 
 
- <div class="navigation">
-  <!-- Кнопки меню -->
-  <span style="--i:0;--x:-1;--y:0;" title="Курсор">
-    <ion-icon name="navigate-outline"></ion-icon>
-  </span>
-  <span style="--i:1;--x:1;--y:0;" title="Профиль">
-    <ion-icon name="analytics-outline"></ion-icon>
-  </span>
-  <span style="--i:2;--x:0;--y:-1;" title="Выбор">
-    <ion-icon name="crop-outline"></ion-icon>
-  </span>
-  <span style="--i:3;--x:0;--y:1;" title="Лассо">
-    <ion-icon name="path-outline"></ion-icon>
-  </span>
-  <span style="--i:4;--x:1;--y:1;" title="Подсказка по файлу">
-    <ion-icon name="help-circle-outline"></ion-icon>
-  </span>
-  <span style="--i:5;--x:-1;--y:-1;" title="Подсказка по проекту">
-    <ion-icon name="help-buoy-outline"></ion-icon>
-  </span>
-  
-  <!-- Центральная кнопка закрытия (появляется только при active) -->
-  <span class="close-btn" style="--i:6;--x:0;--y:0;" title="Закрыть">
-    <ion-icon name="close-outline"></ion-icon>
-  </span>
+ <div class="radial-menu">
+  <ul class="radial-menu__menu-list">
+    <li class="radial-menu__menu-item">
+      <div class="radial-menu__menu-link-bg"></div>
+      <div class="radial-menu__menu-icon">
+        <svg class="icon-svg"><use href="#mouse-pointer"></use></svg>
+      </div>
+      <div class="radial-menu__menu-content">
+        <div class="radial-menu__menu-content-wrapper">
+          <h6 class="radial-menu__menu-content-title">
+            Курсор
+          </h6>
+          <p class="radial-menu__menu-content-description">
+            Инструмент курсор
+          </p>
+        </div>
+      </div>
+      <a href="javascript:void(0);" class="radial-menu__menu-link"></a>
+    </li>
 
-  <span style="--i:7;--x:-1;--y:1;" title="Помощь">
-    <ion-icon name="book-outline"></ion-icon>
-  </span>
-  <span style="--i:8;--x:1;--y:-1;" title="Сохранить">
-    <ion-icon name="save-outline"></ion-icon>
-  </span>
+    <li class="radial-menu__menu-item">
+      <div class="radial-menu__menu-link-bg"></div>
+      <div class="radial-menu__menu-icon">
+        <svg class="icon-svg"><use href="#icon-analytics"></use></svg>
+      </div>
+      <div class="radial-menu__menu-content">
+        <div class="radial-menu__menu-content-wrapper">
+          <h6 class="radial-menu__menu-content-title">
+            Профиль
+          </h6>
+          <p class="radial-menu__menu-content-description">
+            Анализ профиля
+          </p>
+        </div>
+      </div>
+      <a href="javascript:void(0);" class="radial-menu__menu-link"></a>
+    </li>
+
+    <li class="radial-menu__menu-item">
+      <div class="radial-menu__menu-link-bg"></div>
+      <div class="radial-menu__menu-icon">
+        <svg class="icon-svg"><use href="#icon-crop"></use></svg>
+      </div>
+      <div class="radial-menu__menu-content">
+        <div class="radial-menu__menu-content-wrapper">
+          <h6 class="radial-menu__menu-content-title">
+            Выбор
+          </h6>
+          <p class="radial-menu__menu-content-description">
+            Инструмент выбора
+          </p>
+        </div>
+      </div>
+      <a href="javascript:void(0);" class="radial-menu__menu-link"></a>
+    </li>
+
+    <li class="radial-menu__menu-item">
+      <div class="radial-menu__menu-link-bg"></div>
+      <div class="radial-menu__menu-icon">
+        <svg class="icon-svg"><use href="#icon-path"></use></svg>
+      </div>
+      <div class="radial-menu__menu-content">
+        <div class="radial-menu__menu-content-wrapper">
+          <h6 class="radial-menu__menu-content-title">
+            Лассо
+          </h6>
+          <p class="radial-menu__menu-content-description">
+            Инструмент лассо
+          </p>
+        </div>
+      </div>
+      <a href="javascript:void(0);" class="radial-menu__menu-link"></a>
+    </li>
+
+    <li class="radial-menu__menu-item">
+      <div class="radial-menu__menu-link-bg"></div>
+      <div class="radial-menu__menu-icon">
+        <svg class="icon-svg"><use href="#circle-question-mark"></use></svg>
+      </div>
+      <div class="radial-menu__menu-content">
+        <div class="radial-menu__menu-content-wrapper">
+          <h6 class="radial-menu__menu-content-title">
+            Подсказка
+          </h6>
+          <p class="radial-menu__menu-content-description">
+            Подсказка по файлу
+          </p>
+        </div>
+      </div>
+      <a href="javascript:void(0);" class="radial-menu__menu-link"></a>
+    </li>
+
+    <li class="radial-menu__menu-item">
+      <div class="radial-menu__menu-link-bg"></div>
+      <div class="radial-menu__menu-icon">
+        <svg class="icon-svg"><use href="#folder-clock.svg"></use></svg>
+      </div>
+      <div class="radial-menu__menu-content">
+        <div class="radial-menu__menu-content-wrapper">
+          <h6 class="radial-menu__menu-content-title">
+            Проект
+          </h6>
+          <p class="radial-menu__menu-content-description">
+            Подсказка по проекту
+          </p>
+        </div>
+      </div>
+      <a href="javascript:void(0);" class="radial-menu__menu-link"></a>
+    </li>
+
+    <li class="radial-menu__menu-item">
+      <div class="radial-menu__menu-link-bg"></div>
+      <div class="radial-menu__menu-icon">
+        <svg class="icon-svg"><use href="#icon-book"></use></svg>
+      </div>
+      <div class="radial-menu__menu-content">
+        <div class="radial-menu__menu-content-wrapper">
+          <h6 class="radial-menu__menu-content-title">
+            Помощь
+          </h6>
+          <p class="radial-menu__menu-content-description">
+            Справочная информация
+          </p>
+        </div>
+      </div>
+      <a href="javascript:void(0);" class="radial-menu__menu-link"></a>
+    </li>
+
+    <li class="radial-menu__menu-item">
+      <div class="radial-menu__menu-link-bg"></div>
+      <div class="radial-menu__menu-icon">
+        <svg class="icon-svg"><use href="#icon-save"></use></svg>
+      </div>
+      <div class="radial-menu__menu-content">
+        <div class="radial-menu__menu-content-wrapper">
+          <h6 class="radial-menu__menu-content-title">
+            Сохранить
+          </h6>
+          <p class="radial-menu__menu-content-description">
+            Сохранить проект
+          </p>
+        </div>
+      </div>
+      <a href="javascript:void(0);" class="radial-menu__menu-link"></a>
+    </li>
+  </ul>
+  <div class="radial-menu__label">
+    Меню
+  </div>
+</div>
+
+<div class="right-click-prompt">
+  <p class="right-click-prompt__label">
+    Правый клик для меню
+  </p>
 </div>
         
         <!-- Цветовая панель (Color Bar) -->
