@@ -2022,7 +2022,7 @@ input, textarea, select,
     height: 40px;
     border-radius: 50%;
     border: 2px solid var(--color-border);
-    background: var(--color-surface);
+    background: orange;
     color: var(--color-text);
     cursor: pointer;
     display: flex;
@@ -2042,7 +2042,7 @@ input, textarea, select,
     height: 40px;
     border-radius: 50%;
     border: 2px solid var(--color-border);
-    background: var(--color-surface);
+    background: orange;
     color: var(--color-text);
     cursor: pointer;
     display: flex;
