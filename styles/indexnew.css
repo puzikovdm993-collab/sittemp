@@ -2069,14 +2069,20 @@ input, textarea, select,
 .radial-menu-item .tool-icon {
     width: 24px;
     height: 24px;
-    fill: yellow;
-    stroke: yellow;
+}
+
+.radial-menu-center svg path,
+.radial-menu-item svg path,
+.radial-menu-center .tool-icon path,
+.radial-menu-item .tool-icon path {
+    fill: yellow !important;
+    stroke: yellow !important;
 }
 
 .radial-menu-center .tool-icon use,
 .radial-menu-item .tool-icon use {
-    fill: yellow;
-    stroke: yellow;
+    fill: yellow !important;
+    stroke: yellow !important;
 }
 
 .radial-menu-label {
