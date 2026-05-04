@@ -2069,6 +2069,8 @@ input, textarea, select,
 .radial-menu-item .tool-icon {
     width: 24px;
     height: 24px;
+    fill: yellow !important;
+    stroke: yellow !important;
 }
 
 .radial-menu-center svg path,
@@ -2081,6 +2083,12 @@ input, textarea, select,
 
 .radial-menu-center .tool-icon use,
 .radial-menu-item .tool-icon use {
+    fill: yellow !important;
+    stroke: yellow !important;
+}
+
+.radial-menu-center svg *,
+.radial-menu-item svg * {
     fill: yellow !important;
     stroke: yellow !important;
 }
