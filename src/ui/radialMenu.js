@@ -19,6 +19,23 @@ let radialMenuConfig = {
 // Состояние меню
 let radialMenuVisible = false;
 let radialMenuElement = null;
+let radialMenuCenterX = 0;
+let radialMenuCenterY = 0;
+
+// Обработчик движения мыши для скрытия меню при выходе за пределы
+function handleRadialMenuMouseMove(e) {
+    if (!radialMenuVisible || !radialMenuElement) return;
+    
+    const distance = Math.sqrt(
+        Math.pow(e.clientX - radialMenuCenterX, 2) + 
+        Math.pow(e.clientY - radialMenuCenterY, 2)
+    );
+    
+    // Если курсор вышел за пределы меню (радиус + небольшой запас)
+    if (distance > radialMenuConfig.radius + 20) {
+        hideRadialMenu();
+    }
+}
 
 // Создание HTML элемента радиального меню
 function createRadialMenu() {
@@ -103,6 +120,10 @@ function showRadialMenu(x, y) {
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
     menu.style.display = 'block';
+
+    // Сохраняем центр меню для отслеживания выхода курсора
+    radialMenuCenterX = x;
+    radialMenuCenterY = y;
 
     radialMenuVisible = true;
 }
@@ -278,6 +299,7 @@ window.radialMenu = {
 window.showRadialMenu = showRadialMenu;
 window.hideRadialMenu = hideRadialMenu;
 window.handleCanvasContextMenu = handleCanvasContextMenu;
+window.handleRadialMenuMouseMove = handleRadialMenuMouseMove;
 
 // Автозагрузка конфигурации
 loadRadialMenuConfig();

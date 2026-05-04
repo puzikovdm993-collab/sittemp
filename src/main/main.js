@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Глобальные обработчики событий
         document.addEventListener('keydown', handleKeyDown);    // определяется в events.js
         document.addEventListener('wheel', handleWheel, { passive: false });
+        document.addEventListener('mousemove', handleRadialMenuMouseMove); // обработчик движения мыши для радиального меню
 
     // })
     // .catch(error => {
