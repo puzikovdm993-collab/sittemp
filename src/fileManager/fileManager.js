@@ -335,9 +335,9 @@ function attachCanvasEvents(cnv) {
     cnv.addEventListener('contextmenu', handleCanvasContextMenu);
 }
 
-// Добавляем обработчик контекстного меню на canvasHost для работы правого клика во всей области
+// Добавляем обработчик контекстного меню на canvasArea для работы правого клика во всей области
 function attachCanvasHostEvents() {
-    const host = document.getElementById('canvasHost');
+    const host = document.getElementById('canvasArea');
     if (host) {
         host.addEventListener('contextmenu', (e) => {
             // Если клик был по canvas, то событие уже обработано attachCanvasEvents
