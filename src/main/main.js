@@ -152,4 +152,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (helpBtn) {
         helpBtn.addEventListener('click', openHelp);
     }
+    
+    // Инициализация обработчика контекстного меню для canvasHost
+    if (typeof attachCanvasHostEvents === 'function') {
+        attachCanvasHostEvents();
+    }
 });

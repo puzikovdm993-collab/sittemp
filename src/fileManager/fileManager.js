@@ -335,6 +335,18 @@ function attachCanvasEvents(cnv) {
     cnv.addEventListener('contextmenu', handleCanvasContextMenu);
 }
 
+// Добавляем обработчик контекстного меню на canvasHost для работы правого клика во всей области
+function attachCanvasHostEvents() {
+    const host = document.getElementById('canvasHost');
+    if (host) {
+        host.addEventListener('contextmenu', (e) => {
+            // Если клик был по canvas, то событие уже обработано attachCanvasEvents
+            if (e.target.tagName === 'CANVAS') return;
+            handleCanvasContextMenu(e);
+        });
+    }
+}
+
 // function newImage()                         // создаёт новый пустой файл
 // function loadImage(event)                   // загружает изображение из файла
 // function clearCanvas()                      // очищает холст
