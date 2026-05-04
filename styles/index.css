@@ -1204,9 +1204,9 @@ input, textarea, select,
 
 .radial-menu-label {
     position: absolute;
-    top: -25px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     background: var(--color-surface);
     color: var(--color-text);
     padding: 2px 6px;
@@ -1223,6 +1223,47 @@ input, textarea, select,
 .radial-menu-item:hover .radial-menu-label {
     opacity: 1;
     visibility: visible;
+}
+
+/* Позиционирование подписей для кнопок радиального меню */
+.radial-menu-item:nth-child(2) .radial-menu-label {
+    /* Верхняя позиция (0°) */
+    transform: translate(-50%, -180%);
+}
+
+.radial-menu-item:nth-child(3) .radial-menu-label {
+    /* Верхний правый (45°) */
+    transform: translate(20%, -180%);
+}
+
+.radial-menu-item:nth-child(4) .radial-menu-label {
+    /* Правый (90°) */
+    transform: translate(120%, -50%);
+}
+
+.radial-menu-item:nth-child(5) .radial-menu-label {
+    /* Нижний правый (135°) */
+    transform: translate(20%, 80%);
+}
+
+.radial-menu-item:nth-child(6) .radial-menu-label {
+    /* Нижний (180°) */
+    transform: translate(-50%, 80%);
+}
+
+.radial-menu-item:nth-child(7) .radial-menu-label {
+    /* Нижний левый (225°) */
+    transform: translate(-120%, 80%);
+}
+
+.radial-menu-item:nth-child(8) .radial-menu-label {
+    /* Левый (270°) */
+    transform: translate(-120%, -50%);
+}
+
+.radial-menu-item:nth-child(9) .radial-menu-label {
+    /* Верхний левый (315°) */
+    transform: translate(-120%, -180%);
 }
 
 [data-theme="dark"] .radial-menu-label {
