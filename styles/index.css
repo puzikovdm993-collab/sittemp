@@ -1167,9 +1167,10 @@ input, textarea, select,
     position: fixed;
     z-index: 10000;
     pointer-events: none;
+    left: 0;
+    top: 0;
 }
 
-.radial-menu-center,
 .radial-menu-item {
     position: absolute;
     width: 40px;
@@ -1185,6 +1186,28 @@ input, textarea, select,
     transition: all 0.2s ease;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     pointer-events: auto;
+    transform: translate(-50%, -50%);
+}
+
+.radial-menu-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    pointer-events: auto;
+    transform: translate(-50%, -50%);
+    z-index: 2;
 }
 
 .radial-menu-center:hover,
@@ -1192,7 +1215,7 @@ input, textarea, select,
     background: var(--color-primary);
     border-color: var(--color-primary);
     color: white;
-    transform: scale(1.1);
+    transform: translate(-50%, -50%) scale(1.1);
 }
 
 .radial-menu-center svg,

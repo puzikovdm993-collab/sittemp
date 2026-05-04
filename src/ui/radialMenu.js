@@ -50,9 +50,12 @@ function renderRadialMenuItems(menu) {
     const oldItems = menu.querySelectorAll('.radial-menu-item');
     oldItems.forEach(item => item.remove());
 
-    radialMenuConfig.items.forEach((item, index) => {
-        if (!item.enabled) return;
+    const enabledItems = radialMenuConfig.items.filter(i => i.enabled);
+    const count = enabledItems.length;
+    const angleStep = count > 0 ? (2 * Math.PI) / count : 0;
+    const radius = radialMenuConfig.radius;
 
+    enabledItems.forEach((item, index) => {
         const btn = document.createElement('button');
         btn.className = 'radial-menu-item';
         btn.dataset.action = item.action;
@@ -68,6 +71,14 @@ function renderRadialMenuItems(menu) {
         
         btn.appendChild(icon);
         btn.appendChild(label);
+        
+        // Вычисляем позицию для элемента меню
+        const angle = index * angleStep - Math.PI / 2; // Начинаем сверху
+        const itemX = Math.cos(angle) * radius;
+        const itemY = Math.sin(angle) * radius;
+        
+        btn.style.left = `${itemX}px`;
+        btn.style.top = `${itemY}px`;
         
         btn.onclick = (e) => {
             e.stopPropagation();
@@ -85,33 +96,14 @@ function showRadialMenu(x, y) {
 
     const menu = createRadialMenu();
     const items = menu.querySelectorAll('.radial-menu-item');
-    const count = items.length;
-    const radius = radialMenuConfig.radius;
     
-    if (count === 0) return; // Нет элементов для отображения
+    if (items.length === 0) return; // Нет элементов для отображения
     
-    // Вычисляем угол между элементами
-    const angleStep = (2 * Math.PI) / count;
-    
-    // Позиционируем элементы по кругу
-    items.forEach((item, index) => {
-        const angle = index * angleStep - Math.PI / 2; // Начинаем сверху
-        const itemX = Math.cos(angle) * radius;
-        const itemY = Math.sin(angle) * radius;
-        
-        item.style.left = `${x + itemX - 20}px`; // 20 - половина ширины кнопки
-        item.style.top = `${y + itemY - 20}px`;
-    });
-
-    // Позиционируем центр меню
-    const centerBtn = menu.querySelector('.radial-menu-center');
-    centerBtn.style.left = `${x - 20}px`;
-    centerBtn.style.top = `${y - 20}px`;
-
+    // Позиционируем само меню в точке клика
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
     menu.style.display = 'block';
-    menu.style.left = '0';
-    menu.style.top = '0';
-    
+
     radialMenuVisible = true;
 }
 
