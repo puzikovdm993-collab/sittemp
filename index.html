@@ -7,61 +7,7 @@
 
     <script src="static/css/browser@4"></script>
     <script src="static/js/plotly-2.27.1.min.js"></script>
-    <script>
 
-        function loadProject(projectId) {
-            const API_BASE_URL = window.location.origin;
-            
-            return fetch(`${API_BASE_URL}/load_project/${projectId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Ошибка HTTP: ${response.status}`);
-                    }
-                    return response.json(); // Парсинг JSON
-                })
-                .then(projects => {
-                    return projects.data;
-                }) // Возвращаем данные проекта
-                .catch(error => {
-                    console.error("Ошибка загрузки проекта:", error);
-                    throw error; // Пробрасываем ошибку для обработки вызывающим кодом
-                });
-        }  
-        function applySettingsTheme(project) {
-            const html = document.documentElement;
-            if (project.settings.theme === 'dark') {
-                html.setAttribute('data-theme', 'dark');
-                localStorage.setItem('project-theme', 'dark');
-            }else {
-                html.removeAttribute('data-theme');
-                localStorage.setItem('project-theme', 'light');
-            }
-        } 
-        const savedTheme = localStorage.getItem('project-theme');
-        if (savedTheme !== null) {
-            if (savedTheme === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            }
-        }
-        else{
-            const urlParams = new URLSearchParams(window.location.search);
-            const projectId = urlParams.get('projectId');
-            
-            loadProject(projectId)
-            .then(projectData => {
-                //console.log("projectData:",projectData);
-                setTimeout(() => {
-                    project = Project.fromProjectData(projectData);
-                    console.log("Проект загружен:", project);
-                    applySettingsTheme(project);
-                }, 500); // 500 миллисекунд (0.5 секунды) — можно изменить по необходимости
-            })
-            .catch(error => {
-                console.error("Не удалось загрузить проект:", error);
-            });
-        }
-
-    </script>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="styles/indexnew.css">
     <!-- <link rel="stylesheet" href="styles/index.css"> -->
@@ -583,7 +529,7 @@
                         </button>
                         <button class="tab-action-btn" onclick="alert('Функция РЕЛЬЕФ находится в разработке');" title="Рельеф">
                             <!-- <svg><use href="#EmbossEffectIcon"/></svg> -->
-                            <img src="images/EmbossEffect.png" alt="">
+                            <!-- <img src="images/EmbossEffect.png" alt=""> -->
                         </button>
                         <button class="tab-action-btn" onclick="applySobelFilter()" title="Фильтр Edge">
                             <svg><use href="#SobelEffectPluginIcon" /></svg>

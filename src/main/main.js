@@ -57,14 +57,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // console.log("urlParams = " + urlParams);
     // console.log("projectId = " + projectId);
 
-    loadProject(projectId)
-    .then(projectData => {
+    // loadProject(projectId)
+    // .then(projectData => {
         //console.log("projectData:",projectData);
 
         // project = Project.fromProjectData(projectData);
-        project = createProjectFromData(projectData);
-        console.log("Проект загружен:", project);
-        applySettingsTheme(project);
+        // project = createProjectFromData(projectData);
+        // console.log("Проект загружен:", project);
+        // applySettingsTheme(project);
 
         initDomElements();
         // Инициализация при загрузке
@@ -97,10 +97,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keydown', handleKeyDown);    // определяется в events.js
         document.addEventListener('wheel', handleWheel, { passive: false });
 
-    })
-    .catch(error => {
-        console.error("Не удалось загрузить проект:", error);
-    });
+    // })
+    // .catch(error => {
+    //     console.error("Не удалось загрузить проект:", error);
+    // });
 
 
         // ============ Инициализация графика Plotly ============
