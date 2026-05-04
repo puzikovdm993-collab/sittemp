@@ -46,9 +46,8 @@ htmlcov/
 .mypy_cache/
 .pytest_cache/
 
-# Java/Gradle
+# Gradle
 .gradle/
-*.class
 
 # Compressed files
 *.zip

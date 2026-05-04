@@ -2029,7 +2029,7 @@ input, textarea, select,
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px #000;
     pointer-events: auto;
     transform: translate(-50%, -50%);
 }
@@ -2049,7 +2049,7 @@ input, textarea, select,
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px #000;
     pointer-events: auto;
     transform: translate(-50%, -50%);
     z-index: 2;
@@ -2104,7 +2104,7 @@ input, textarea, select,
     border-radius: 4px;
     font-size: 12px;
     white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px #000;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s, visibility 0.2s;
