@@ -1204,20 +1204,22 @@ input, textarea, select,
 
 .radial-menu-label {
     position: absolute;
-    top: -25px;
+    bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
     background: var(--color-surface);
     color: var(--color-text);
-    padding: 2px 6px;
+    padding: 4px 8px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, visibility 0.2s;
     pointer-events: none;
+    margin-bottom: 8px;
+    z-index: 10001;
 }
 
 .radial-menu-item:hover .radial-menu-label {
