@@ -1167,10 +1167,11 @@ input, textarea, select,
     position: fixed;
     z-index: 10000;
     pointer-events: none;
-    left: 0;
-    top: 0;
+    left: 0 !important;
+    top: 0 !important;
     width: 0;
     height: 0;
+    transform: translate(0, 0);
 }
 
 .radial-menu-item {
@@ -1256,3 +1257,5 @@ input, textarea, select,
     background: var(--color-surface);
     border: 1px solid var(--color-border);
 }
+
+/* === Конец стилей радиального меню === */
