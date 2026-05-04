@@ -2064,9 +2064,17 @@ input, textarea, select,
 }
 
 .radial-menu-center svg,
-.radial-menu-item svg {
-    width: 20px;
-    height: 20px;
+.radial-menu-item svg,
+.radial-menu-center .tool-icon,
+.radial-menu-item .tool-icon {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+    stroke: none;
+}
+
+.radial-menu-center .tool-icon use,
+.radial-menu-item .tool-icon use {
     fill: currentColor;
 }
 

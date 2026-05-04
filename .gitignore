@@ -1,5 +1,35 @@
-# Examples 1:
+```
+# Build artifacts
+dist/
+build/
+*.min.js
+*.bundle.js
+*.css.map
 
-# Example 2 (Project with artifacts):
+# Dependencies
+node_modules/
 
-# Final reminder: Output ONLY the .gitignore content. If nothing should be ignored, output NOTHING.
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Coverage
+coverage/
+htmlcov/
+*.coverage
+
+# OS
+.DS_Store
+Thumbs.db
+```

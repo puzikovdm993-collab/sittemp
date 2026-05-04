@@ -3,7 +3,7 @@
 // Конфигурация меню по умолчанию
 let radialMenuConfig = {
     enabled: true,
-    radius: 80,
+    radius: 90,
     items: [
         { id: 'undo', icon: 'icon-undo', label: 'Отменить', action: 'undo', enabled: true },
         { id: 'redo', icon: 'icon-redo', label: 'Повторить', action: 'redo', enabled: true },
@@ -12,7 +12,7 @@ let radialMenuConfig = {
         { id: 'cut', icon: 'icon-cut', label: 'Вырезать', action: 'cut', enabled: true },
         { id: 'zoom-in', icon: 'icon-zoom-in', label: 'Увеличить', action: 'zoomIn', enabled: true },
         { id: 'zoom-out', icon: 'icon-zoom-out', label: 'Уменьшить', action: 'zoomOut', enabled: true },
-        { id: 'rotate', icon: 'rotate-cw', label: 'Повернуть', action: 'rotate', enabled: true }
+        { id: 'rotate', icon: 'icon-rotate-right', label: 'Повернуть', action: 'rotate', enabled: true }
     ]
 };
 
