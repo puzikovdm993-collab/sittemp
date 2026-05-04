@@ -39,6 +39,9 @@ function getActiveFile() {
     return getFile(activeFileId);
 }
 
+// Экспорт функции для использования в других модулях
+window.getActiveFile = getActiveFile;
+
 // Переключение на файл
 function switchToFile(fileId) {
     const file = getFile(fileId);

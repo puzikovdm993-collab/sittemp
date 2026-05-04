@@ -274,5 +274,10 @@ window.radialMenu = {
     loadConfig: loadRadialMenuConfig
 };
 
+// Экспортируем функции напрямую для использования в других модулях
+window.showRadialMenu = showRadialMenu;
+window.hideRadialMenu = hideRadialMenu;
+window.handleCanvasContextMenu = handleCanvasContextMenu;
+
 // Автозагрузка конфигурации
 loadRadialMenuConfig();
