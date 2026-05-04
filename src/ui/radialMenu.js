@@ -100,8 +100,8 @@ function showRadialMenu(x, y) {
     if (items.length === 0) return; // Нет элементов для отображения
     
     // Позиционируем само меню в точке клика
-    menu.style.left = `${x}px !important`;
-    menu.style.top = `${y}px !important`;
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
     menu.style.display = 'block';
 
     radialMenuVisible = true;
