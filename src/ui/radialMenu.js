@@ -32,7 +32,8 @@ function handleRadialMenuMouseMove(e) {
     );
     
     // Если курсор вышел за пределы меню (радиус + запас для контура 80px + небольшой буфер 10px)
-    const menuBoundary = radialMenuConfig.radius + 40 + 10; // 40px = половина от 80px запаса контура
+    // 40px = половина от 80px запаса контура
+    const menuBoundary = radialMenuConfig.radius + 40 + 10;
     if (distance > menuBoundary) {
         hideRadialMenu();
     }
@@ -79,6 +80,10 @@ function renderRadialMenuItems(menu) {
         btn.dataset.action = item.action;
         btn.title = item.label;
         
+        // Создаем контейнер для содержимого
+        const content = document.createElement('div');
+        content.className = 'item-content';
+        
         const icon = document.createElement('svg');
         icon.className = 'tool-icon';
         icon.innerHTML = `<use href="#${item.icon}"></use>`;
@@ -87,16 +92,16 @@ function renderRadialMenuItems(menu) {
         label.className = 'radial-menu-label';
         label.textContent = item.label;
         
-        btn.appendChild(icon);
-        btn.appendChild(label);
+        content.appendChild(icon);
+        content.appendChild(label);
+        btn.appendChild(content);
         
-        // Вычисляем позицию для элемента меню
+        // Вычисляем угол для элемента меню
         const angle = index * angleStep - Math.PI / 2; // Начинаем сверху
-        const itemX = Math.cos(angle) * radius;
-        const itemY = Math.sin(angle) * radius;
         
-        btn.style.left = `${itemX}px`;
-        btn.style.top = `${itemY}px`;
+        // Поворачиваем сегмент вокруг центра
+        const rotation = angle * (180 / Math.PI); // Конвертируем в градусы
+        btn.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
         
         btn.onclick = (e) => {
             e.stopPropagation();
