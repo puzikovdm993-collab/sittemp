@@ -120,6 +120,10 @@ function showRadialMenu(x, y) {
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
     menu.style.display = 'block';
+    
+    // Устанавливаем CSS переменную для радиуса и добавляем класс active для отображения контура
+    menu.style.setProperty('--radial-menu-radius', `${radialMenuConfig.radius}px`);
+    menu.classList.add('active');
 
     // Сохраняем центр меню для отслеживания выхода курсора
     radialMenuCenterX = x;
@@ -132,6 +136,7 @@ function showRadialMenu(x, y) {
 function hideRadialMenu() {
     if (radialMenuElement) {
         radialMenuElement.style.display = 'none';
+        radialMenuElement.classList.remove('active');
     }
     radialMenuVisible = false;
 }

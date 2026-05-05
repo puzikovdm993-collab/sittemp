@@ -1172,6 +1172,26 @@ input, textarea, select,
     transform: translate(-50%, -50%);
 }
 
+/* Контур радиального меню - показывает границы меню */
+.radial-menu::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(var(--radial-menu-radius, 90px) * 2 + 50px);
+    height: calc(var(--radial-menu-radius, 90px) * 2 + 50px);
+    border-radius: 50%;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.radial-menu.active::before {
+    opacity: 1;
+}
+
 .radial-menu-item {
     position: absolute;
     width: 40px;
