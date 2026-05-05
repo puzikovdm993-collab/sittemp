@@ -1216,6 +1216,7 @@ input, textarea, select,
     clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
     /* Сдвигаем элемент так, чтобы его вершина была на расстоянии от центра */
     margin-top: 20px;
+    opacity: 1;
 }
 
 .radial-menu-item .item-content {
