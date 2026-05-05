@@ -7,61 +7,7 @@
 
     <script src="static/css/browser@4"></script>
     <script src="static/js/plotly-2.27.1.min.js"></script>
-    <script>
 
-        function loadProject(projectId) {
-            const API_BASE_URL = window.location.origin;
-            
-            return fetch(`${API_BASE_URL}/load_project/${projectId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Ошибка HTTP: ${response.status}`);
-                    }
-                    return response.json(); // Парсинг JSON
-                })
-                .then(projects => {
-                    return projects.data;
-                }) // Возвращаем данные проекта
-                .catch(error => {
-                    console.error("Ошибка загрузки проекта:", error);
-                    throw error; // Пробрасываем ошибку для обработки вызывающим кодом
-                });
-        }  
-        function applySettingsTheme(project) {
-            const html = document.documentElement;
-            if (project.settings.theme === 'dark') {
-                html.setAttribute('data-theme', 'dark');
-                localStorage.setItem('project-theme', 'dark');
-            }else {
-                html.removeAttribute('data-theme');
-                localStorage.setItem('project-theme', 'light');
-            }
-        } 
-        const savedTheme = localStorage.getItem('project-theme');
-        if (savedTheme !== null) {
-            if (savedTheme === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            }
-        }
-        else{
-            const urlParams = new URLSearchParams(window.location.search);
-            const projectId = urlParams.get('projectId');
-            
-            loadProject(projectId)
-            .then(projectData => {
-                //console.log("projectData:",projectData);
-                setTimeout(() => {
-                    project = Project.fromProjectData(projectData);
-                    console.log("Проект загружен:", project);
-                    applySettingsTheme(project);
-                }, 500); // 500 миллисекунд (0.5 секунды) — можно изменить по необходимости
-            })
-            .catch(error => {
-                console.error("Не удалось загрузить проект:", error);
-            });
-        }
-
-    </script>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="styles/indexnew.css">
     <!-- <link rel="stylesheet" href="styles/index.css"> -->
@@ -583,7 +529,7 @@
                         </button>
                         <button class="tab-action-btn" onclick="alert('Функция РЕЛЬЕФ находится в разработке');" title="Рельеф">
                             <!-- <svg><use href="#EmbossEffectIcon"/></svg> -->
-                            <img src="images/EmbossEffect.png" alt="">
+                            <!-- <img src="images/EmbossEffect.png" alt=""> -->
                         </button>
                         <button class="tab-action-btn" onclick="applySobelFilter()" title="Фильтр Edge">
                             <svg><use href="#SobelEffectPluginIcon" /></svg>
@@ -793,6 +739,15 @@
                             <option value="rainbow">Rainbow</option>
                             <option value="coolwarm">Сoolwarm</option>
                         </select>
+                    </div>
+                </div>
+                <div class="tab-section">
+                    <h4>Контекстное меню</h4>
+                    <div class="tab-buttons">
+                        <button class="tab-action-btn" onclick="showRadialMenuSettings()" title="Настроить радиальное меню">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+                            <span>Настройка меню</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1796,8 +1751,36 @@
     </div>
 </div>
 
+<!-- Модальное окно настройки радиального меню -->
+<div class="modal" id="radialMenuSettingsModal">
+    <div class="modal-content" style="width: 600px; max-width: 90vw;">
+        <div class="modal-title">
+            <span>Настройка радиального меню</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;" onclick="closeRadialMenuSettingsModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-row">
+                <p>Выберите инструменты для отображения в радиальном меню:</p>
+            </div>
+            <div class="modal-row" style="display: flex; flex-wrap: wrap; gap: 10px; max-height: 400px; overflow-y: auto;">
+                <div id="radialMenuItemsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            </div>
+            <div class="modal-row" style="margin-top: 15px;">
+                <label for="radialMenuRadius">Радиус меню (px):</label>
+                <input type="number" id="radialMenuRadius" min="50" max="200" value="80" style="width: 80px; margin-left: 10px;">
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="saveRadialMenuSettings()">Сохранить</button>
+            <button class="modal-btn" onclick="closeRadialMenuSettingsModal()">Отмена</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
 <script src="src/globals/globals.js"></script>
 <script src="src/tools/tools.js"></script>
+<script src="src/ui/radialMenu.js"></script>
 <script src="src/fileManager/fileManager.js"></script>
 <script src="src/history/history.js"></script>
 <!-- <script src="src/color/color.js"></script> -->

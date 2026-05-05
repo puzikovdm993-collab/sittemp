@@ -39,6 +39,9 @@ function getActiveFile() {
     return getFile(activeFileId);
 }
 
+// Экспорт функции для использования в других модулях
+window.getActiveFile = getActiveFile;
+
 // Переключение на файл
 function switchToFile(fileId) {
     const file = getFile(fileId);
@@ -329,7 +332,19 @@ function attachCanvasEvents(cnv) {
     cnv.addEventListener('mouseup', handleMouseUp);
     cnv.addEventListener('mouseleave', handleMouseUp);
     cnv.addEventListener('dblclick', handleDoubleClick);
-    cnv.addEventListener('contextmenu', (e) => e.preventDefault());
+    cnv.addEventListener('contextmenu', handleCanvasContextMenu);
+}
+
+// Добавляем обработчик контекстного меню на main-container для работы правого клика во всей области
+function attachCanvasHostEvents() {
+    const host = document.querySelector('.main-container');
+    if (host) {
+        host.addEventListener('contextmenu', (e) => {
+            // Если клик был по canvas, то событие уже обработано attachCanvasEvents
+            if (e.target.tagName === 'CANVAS') return;
+            handleCanvasContextMenu(e);
+        });
+    }
 }
 
 // function newImage()                         // создаёт новый пустой файл

@@ -2006,3 +2006,120 @@ input, textarea, select,
     grid-row: 3; /* Третья строка (низ) */
     transform: rotate(180deg); /* Оставляем MIN перевернутым (если нужно) */
 }
+/* === Радиальное контекстное меню === */
+.radial-menu {
+    position: fixed;
+    z-index: 10000;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+    transform: translate(-50%, -50%);
+}
+
+.radial-menu-item {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    background: orange;
+    color: var(--color-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px #000;
+    pointer-events: auto;
+    transform: translate(-50%, -50%);
+}
+
+.radial-menu-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    background: orange;
+    color: var(--color-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px #000;
+    pointer-events: auto;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+.radial-menu-center:hover,
+.radial-menu-item:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.radial-menu-center svg,
+.radial-menu-item svg,
+.radial-menu-center .tool-icon,
+.radial-menu-item .tool-icon {
+    width: 24px;
+    height: 24px;
+    fill: yellow !important;
+    stroke: yellow !important;
+}
+
+.radial-menu-center svg path,
+.radial-menu-item svg path,
+.radial-menu-center .tool-icon path,
+.radial-menu-item .tool-icon path {
+    fill: yellow !important;
+    stroke: yellow !important;
+}
+
+.radial-menu-center .tool-icon use,
+.radial-menu-item .tool-icon use {
+    fill: yellow !important;
+    stroke: yellow !important;
+}
+
+.radial-menu-center svg *,
+.radial-menu-item svg * {
+    fill: yellow !important;
+    stroke: yellow !important;
+}
+
+.radial-menu-label {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-surface);
+    color: var(--color-text);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px #000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+    margin-bottom: 8px;
+    z-index: 10001;
+}
+
+.radial-menu-item:hover .radial-menu-label {
+    opacity: 1;
+    visibility: visible;
+}
+
+[data-theme="dark"] .radial-menu-label {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+}
+/* === Конец стилей радиального меню === */

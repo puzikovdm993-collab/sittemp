@@ -379,3 +379,48 @@ function createProjectFromData(projectData) {
 //         });
 //     }
 // };
+
+
+
+// Создание экземпляра project с тестовыми данными
+project ={
+    id: 42,
+    type: 'Графический редактор',
+    owner: 'Анна Иванова',
+    settings: {
+        theme: 'dark',
+        defaultView: 'grid',
+        notifications: true
+    },
+    files: [
+        {
+            id: 101,
+            filename: 'canvas_main.png',
+            matrix: { data: new Uint8Array(100) }, // имитация матрицы пикселей
+            width: 1920,
+            height: 1080,
+            dpi: 300,
+            autoscale: true,
+            colormap: 'sRGB',
+            history: ['заливка', 'кисть', 'фильтр', 'кадрирование'],
+            historyIndex: 2,   // последний шаг — 'фильтр'
+            selection: [{ x: 10, y: 10, w: 50, h: 50 }]
+        },
+        {
+            id: 102,
+            filename: 'icon.svg',
+            matrix: null,   // нет матрицы для векторного файла
+            width: 64,
+            height: 64,
+            dpi: 72,
+            autoscale: false,
+            colormap: null,
+            history: ['создание контура', 'заливка'],
+            historyIndex: 1,
+            selection: []
+        }
+    ]
+};
+
+// Теперь можно вызвать logProject(project);
+// logProject(project);

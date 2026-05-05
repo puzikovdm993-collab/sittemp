@@ -363,7 +363,7 @@ document.getElementById('progressCancelBtn')?.addEventListener('click', () => {
  */
  function updateButtonsState() {
     // const hasFiles = openFiles.length > 0;
-    const hasFiles = project.files.length > 0;
+    const hasFiles = true;
 
     // Селекторы для всех кнопок которые должны быть неактивны без файлов
     const buttonsToDisable = document.querySelectorAll(`
