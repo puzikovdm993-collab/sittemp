@@ -5,14 +5,14 @@ let radialMenuConfig = {
     enabled: true,
     radius: 90,
     items: [
-        { id: 'undo', icon: 'icon-undo', label: 'Отменить', action: 'undo', enabled: true },
-        { id: 'redo', icon: 'icon-redo', label: 'Повторить', action: 'redo', enabled: true },
-        { id: 'copy', icon: 'icon-copy', label: 'Копировать', action: 'copy', enabled: true },
-        { id: 'paste', icon: 'icon-paste', label: 'Вставить', action: 'paste', enabled: true },
-        { id: 'cut', icon: 'icon-cut', label: 'Вырезать', action: 'cut', enabled: true },
-        { id: 'zoom-in', icon: 'icon-zoom-in', label: 'Увеличить', action: 'zoomIn', enabled: true },
-        { id: 'zoom-out', icon: 'icon-zoom-out', label: 'Уменьшить', action: 'zoomOut', enabled: true },
-        { id: 'rotate', icon: 'icon-rotate-right', label: 'Повернуть', action: 'rotate', enabled: true }
+        { id: 'undo', icon: 'icon-undo', label: 'Отменить', action: 'undo', enabled: true, row: 1 },
+        { id: 'redo', icon: 'icon-redo', label: 'Повторить', action: 'redo', enabled: true, row: 1 },
+        { id: 'copy', icon: 'icon-copy', label: 'Копировать', action: 'copy', enabled: true, row: 1 },
+        { id: 'paste', icon: 'icon-paste', label: 'Вставить', action: 'paste', enabled: true, row: 1 },
+        { id: 'cut', icon: 'icon-cut', label: 'Вырезать', action: 'cut', enabled: true, row: 2 },
+        { id: 'zoom-in', icon: 'icon-zoom-in', label: 'Увеличить', action: 'zoomIn', enabled: true, row: 2 },
+        { id: 'zoom-out', icon: 'icon-zoom-out', label: 'Уменьшить', action: 'zoomOut', enabled: true, row: 2 },
+        { id: 'rotate', icon: 'icon-rotate-right', label: 'Повернуть', action: 'rotate', enabled: true, row: 2 }
     ]
 };
 
@@ -77,6 +77,12 @@ function renderRadialMenuItems(menu) {
     enabledItems.forEach((item, index) => {
         const btn = document.createElement('button');
         btn.className = 'radial-menu-item';
+        
+        // Добавляем класс для второго ряда, если элемент имеет row=2
+        if (item.row === 2) {
+            btn.classList.add('row-2');
+        }
+        
         btn.dataset.action = item.action;
         btn.title = item.label;
         

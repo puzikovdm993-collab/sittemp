@@ -1565,7 +1565,7 @@ input, textarea, select,
 
 .radial-menu-item  {
     position: absolute;
-    width: 60px;
+    width: 40px;
     height: calc(var(--radial-menu-radius, 90px) + 30px);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
@@ -1582,11 +1582,19 @@ input, textarea, select,
     left: 50%;
     top: 50%;
     transform-origin: top center;
-    /* Форма обрезанного сектора (кольцевой сектор) с r1=40 до r2=120 */
-    clip-path: path('M 20 40 L 40 40 A 40 40 0 0 1 60 40 L 60 120 A 120 120 0 0 0 0 120 Z');
+    /* Форма обрезанного сектора (кольцевой сектор) с r1=30 до r2=70 */
+    clip-path: path('M 10 30 L 30 30 A 30 30 0 0 1 50 30 L 50 70 A 70 70 0 0 0 -10 70 Z');
     /* Сдвигаем элемент так, чтобы его вершина была в центре */
     margin-top: 50px;
     opacity: 1;
+}
+
+/* Второй ряд кольцевых секторов */
+.radial-menu-item.row-2  {
+    /* Форма обрезанного сектора для второго ряда с r1=75 до r2=115 */
+    clip-path: path('M 10 75 L 30 75 A 75 75 0 0 1 50 75 L 50 115 A 115 115 0 0 0 -10 115 Z');
+    margin-top: 95px;
+    z-index: 1;
 }
 
 .radial-menu-item .item-content  {
@@ -3072,7 +3080,7 @@ return  {
 
 .radial-menu-item  {
     position: absolute;
-    width: 60px;
+    width: 40px;
     height: calc(var(--radial-menu-radius, 90px) + 30px);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
@@ -3088,9 +3096,17 @@ return  {
     left: 50%;
     top: 50%;
     transform-origin: top center;
-    /* Форма обрезанного сектора (кольцевой сектор) с r1=40 до r2=120 */
-    clip-path: path('M 20 40 L 40 40 A 40 40 0 0 1 60 40 L 60 120 A 120 120 0 0 0 0 120 Z');
+    /* Форма обрезанного сектора (кольцевой сектор) с r1=30 до r2=70 */
+    clip-path: path('M 10 30 L 30 30 A 30 30 0 0 1 50 30 L 50 70 A 70 70 0 0 0 -10 70 Z');
     margin-top: 20px;
+}
+
+/* Второй ряд кольцевых секторов */
+.radial-menu-item.row-2  {
+    /* Форма обрезанного сектора для второго ряда с r1=75 до r2=115 */
+    clip-path: path('M 10 75 L 30 75 A 75 75 0 0 1 50 75 L 50 115 A 115 115 0 0 0 -10 115 Z');
+    margin-top: 65px;
+    z-index: 1;
 }
 
 .radial-menu-center  {
