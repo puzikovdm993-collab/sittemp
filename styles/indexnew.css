@@ -2023,10 +2023,11 @@ input, textarea, select,
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: calc(var(--radial-menu-radius, 90px) * 2 + 50px);
-    height: calc(var(--radial-menu-radius, 90px) * 2 + 50px);
+    width: calc(var(--radial-menu-radius, 90px) * 2 + 80px);
+    height: calc(var(--radial-menu-radius, 90px) * 2 + 80px);
     border-radius: 50%;
-    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border: 3px solid rgba(100, 150, 255, 0.7);
+    background: rgba(100, 150, 255, 0.1);
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.2s ease;
