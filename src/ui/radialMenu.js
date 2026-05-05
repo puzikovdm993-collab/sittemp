@@ -5,14 +5,14 @@ let radialMenuConfig = {
     enabled: true,
     radius: 90,
     items: [
-        { id: 'undo', icon: 'icon-undo', label: 'Отменить', action: 'undo', enabled: true, row: 1 },
-        { id: 'redo', icon: 'icon-redo', label: 'Повторить', action: 'redo', enabled: true, row: 1 },
-        { id: 'copy', icon: 'icon-copy', label: 'Копировать', action: 'copy', enabled: true, row: 1 },
-        { id: 'paste', icon: 'icon-paste', label: 'Вставить', action: 'paste', enabled: true, row: 1 },
-        { id: 'cut', icon: 'icon-cut', label: 'Вырезать', action: 'cut', enabled: true, row: 2 },
-        { id: 'zoom-in', icon: 'icon-zoom-in', label: 'Увеличить', action: 'zoomIn', enabled: true, row: 2 },
-        { id: 'zoom-out', icon: 'icon-zoom-out', label: 'Уменьшить', action: 'zoomOut', enabled: true, row: 2 },
-        { id: 'rotate', icon: 'icon-rotate-right', label: 'Повернуть', action: 'rotate', enabled: true, row: 2 }
+        { id: 'undo', icon: 'icon-undo', label: 'Отменить', action: 'undo', enabled: true },
+        { id: 'redo', icon: 'icon-redo', label: 'Повторить', action: 'redo', enabled: true },
+        { id: 'copy', icon: 'icon-copy', label: 'Копировать', action: 'copy', enabled: true },
+        { id: 'paste', icon: 'icon-paste', label: 'Вставить', action: 'paste', enabled: true },
+        { id: 'cut', icon: 'icon-cut', label: 'Вырезать', action: 'cut', enabled: true },
+        { id: 'zoom-in', icon: 'icon-zoom-in', label: 'Увеличить', action: 'zoomIn', enabled: true },
+        { id: 'zoom-out', icon: 'icon-zoom-out', label: 'Уменьшить', action: 'zoomOut', enabled: true },
+        { id: 'rotate', icon: 'icon-rotate-right', label: 'Повернуть', action: 'rotate', enabled: true }
     ]
 };
 
@@ -71,21 +71,14 @@ function renderRadialMenuItems(menu) {
 
     const radius = radialMenuConfig.radius;
     
-    // Разделяем элементы по рядам
-    const row1Items = radialMenuConfig.items.filter(i => i.enabled && i.row === 1);
-    const row2Items = radialMenuConfig.items.filter(i => i.enabled && i.row === 2);
+    // Получаем все активные элементы
+    const allItems = radialMenuConfig.items.filter(i => i.enabled);
+    const itemCount = allItems.length;
     
-    const row1Count = row1Items.length;
-    const row2Count = row2Items.length;
-    
-    const row1AngleStep = row1Count > 0 ? (2 * Math.PI) / row1Count : 0;
-    const row2AngleStep = row2Count > 0 ? (2 * Math.PI) / row2Count : 0;
-    
-    // Смещение для второго ряда (на половину шага, чтобы элементы были в шахматном порядке)
-    const row2Offset = row2Count > 0 ? row2AngleStep / 2 : 0;
+    const angleStep = itemCount > 0 ? (2 * Math.PI) / itemCount : 0;
 
-    // Отрисовка элементов первого ряда
-    row1Items.forEach((item, index) => {
+    // Отрисовка всех элементов в одном ряду
+    allItems.forEach((item, index) => {
         const btn = document.createElement('button');
         btn.className = 'radial-menu-item';
         btn.dataset.action = item.action;
@@ -107,47 +100,8 @@ function renderRadialMenuItems(menu) {
         content.appendChild(label);
         btn.appendChild(content);
         
-        // Вычисляем угол для элемента меню первого ряда
-        const angle = index * row1AngleStep - Math.PI / 2; // Начинаем сверху
-        
-        // Поворачиваем сегмент вокруг центра
-        const rotation = angle * (180 / Math.PI); // Конвертируем в градусы
-        btn.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
-        
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            handleRadialMenuAction(item.action);
-            hideRadialMenu();
-        };
-        
-        menu.appendChild(btn);
-    });
-    
-    // Отрисовка элементов второго ряда
-    row2Items.forEach((item, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'radial-menu-item row-2';
-        btn.dataset.action = item.action;
-        btn.title = item.label;
-        
-        // Создаем контейнер для содержимого
-        const content = document.createElement('div');
-        content.className = 'item-content';
-        
-        const icon = document.createElement('svg');
-        icon.className = 'tool-icon';
-        icon.innerHTML = `<use href="#${item.icon}"></use>`;
-        
-        const label = document.createElement('span');
-        label.className = 'radial-menu-label';
-        label.textContent = item.label;
-        
-        content.appendChild(icon);
-        content.appendChild(label);
-        btn.appendChild(content);
-        
-        // Вычисляем угол для элемента меню второго ряда со смещением
-        const angle = index * row2AngleStep + row2Offset - Math.PI / 2; // Начинаем сверху со смещением
+        // Вычисляем угол для элемента меню
+        const angle = index * angleStep - Math.PI / 2; // Начинаем сверху
         
         // Поворачиваем сегмент вокруг центра
         const rotation = angle * (180 / Math.PI); // Конвертируем в градусы

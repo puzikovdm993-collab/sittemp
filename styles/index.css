@@ -1589,14 +1589,6 @@ input, textarea, select,
     opacity: 1;
 }
 
-/* Второй ряд кольцевых секторов */
-.radial-menu-item.row-2  {
-    /* Форма обрезанного сектора для второго ряда с r1=75 до r2=115 */
-    clip-path: path('M 10 75 L 30 75 A 75 75 0 0 1 50 75 L 50 115 A 115 115 0 0 0 -10 115 Z');
-    margin-top: 95px;
-    z-index: 1;
-}
-
 .radial-menu-item .item-content  {
     position: absolute;
     top: 20px;
@@ -3099,14 +3091,6 @@ return  {
     /* Форма обрезанного сектора (кольцевой сектор) с r1=30 до r2=70 */
     clip-path: path('M 10 30 L 30 30 A 30 30 0 0 1 50 30 L 50 70 A 70 70 0 0 0 -10 70 Z');
     margin-top: 20px;
-}
-
-/* Второй ряд кольцевых секторов */
-.radial-menu-item.row-2  {
-    /* Форма обрезанного сектора для второго ряда с r1=75 до r2=115 */
-    clip-path: path('M 10 75 L 30 75 A 75 75 0 0 1 50 75 L 50 115 A 115 115 0 0 0 -10 115 Z');
-    margin-top: 65px;
-    z-index: 1;
 }
 
 .radial-menu-center  {
