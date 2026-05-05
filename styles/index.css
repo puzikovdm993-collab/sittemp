@@ -1195,8 +1195,8 @@ input, textarea, select,
 
 .radial-menu-item {
     position: absolute;
-    width: 80px;
-    height: calc(var(--radial-menu-radius, 90px) - 20px);
+    width: 60px;
+    height: calc(var(--radial-menu-radius, 90px) + 30px);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-text);
@@ -1211,8 +1211,9 @@ input, textarea, select,
     left: 50%;
     top: 50%;
     transform-origin: top center;
+    /* Форма сектора - треугольник с основанием внизу */
     clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-    /* Сдвигаем элемент так, чтобы его вершина (transform-origin) была на расстоянии 20px от центра */
+    /* Сдвигаем элемент так, чтобы его вершина была на расстоянии от центра */
     margin-top: 20px;
 }
 

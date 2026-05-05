@@ -101,7 +101,7 @@ function renderRadialMenuItems(menu) {
         
         // Поворачиваем сегмент вокруг центра и сдвигаем на радиус от центра
         const rotation = angle * (180 / Math.PI); // Конвертируем в градусы
-        btn.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) translateY(20px)`;
+        btn.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) translateY(100px)`;
         
         btn.onclick = (e) => {
             e.stopPropagation();
