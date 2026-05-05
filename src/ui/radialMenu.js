@@ -99,9 +99,9 @@ function renderRadialMenuItems(menu) {
         // Вычисляем угол для элемента меню
         const angle = index * angleStep - Math.PI / 2; // Начинаем сверху
         
-        // Поворачиваем сегмент вокруг центра и сдвигаем на радиус от центра
+        // Поворачиваем сегмент вокруг центра
         const rotation = angle * (180 / Math.PI); // Конвертируем в градусы
-        btn.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) translateY(100px)`;
+        btn.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
         
         btn.onclick = (e) => {
             e.stopPropagation();

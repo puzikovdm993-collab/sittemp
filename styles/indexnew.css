@@ -2039,31 +2039,46 @@ input, textarea, select,
 
 .radial-menu-item {
     position: absolute;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid var(--color-border);
-    background: orange;
+    width: 60px;
+    height: calc(var(--radial-menu-radius, 90px) + 30px);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
     color: var(--color-text);
     cursor: pointer;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding-top: 15px;
     transition: all 0.2s ease;
     box-shadow: 0 2px 8px #000;
     pointer-events: auto;
-    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    transform-origin: top center;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    margin-top: 20px;
+}
+
+.radial-menu-item .item-content {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 
 .radial-menu-center {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: 2px solid var(--color-border);
-    background: orange;
+    background: var(--color-surface);
     color: var(--color-text);
     cursor: pointer;
     display: flex;
@@ -2081,7 +2096,10 @@ input, textarea, select,
     background: var(--color-primary);
     border-color: var(--color-primary);
     color: white;
-    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.radial-menu-item:hover {
+    filter: brightness(1.2);
 }
 
 .radial-menu-center svg,
@@ -2090,33 +2108,33 @@ input, textarea, select,
 .radial-menu-item .tool-icon {
     width: 24px;
     height: 24px;
-    fill: yellow !important;
-    stroke: yellow !important;
+    fill: currentColor;
+    stroke: none;
 }
 
 .radial-menu-center svg path,
 .radial-menu-item svg path,
 .radial-menu-center .tool-icon path,
 .radial-menu-item .tool-icon path {
-    fill: yellow !important;
-    stroke: yellow !important;
+    fill: currentColor;
+    stroke: none;
 }
 
 .radial-menu-center .tool-icon use,
 .radial-menu-item .tool-icon use {
-    fill: yellow !important;
-    stroke: yellow !important;
+    fill: currentColor;
+    stroke: none;
 }
 
 .radial-menu-center svg *,
 .radial-menu-item svg * {
-    fill: yellow !important;
-    stroke: yellow !important;
+    fill: currentColor;
+    stroke: none;
 }
 
 .radial-menu-label {
     position: absolute;
-    bottom: 100%;
+    top: 50px;
     left: 50%;
     transform: translateX(-50%);
     background: var(--color-surface);
@@ -2130,7 +2148,7 @@ input, textarea, select,
     visibility: hidden;
     transition: opacity 0.2s, visibility 0.2s;
     pointer-events: none;
-    margin-bottom: 8px;
+    margin-top: 8px;
     z-index: 10001;
 }
 

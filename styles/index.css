@@ -1202,8 +1202,9 @@ input, textarea, select,
     color: var(--color-text);
     cursor: pointer;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding-top: 15px;
     transition: all 0.2s ease;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     pointer-events: auto;
