@@ -31,8 +31,9 @@ function handleRadialMenuMouseMove(e) {
         Math.pow(e.clientY - radialMenuCenterY, 2)
     );
     
-    // Если курсор вышел за пределы меню (радиус + небольшой запас)
-    if (distance > radialMenuConfig.radius + 20) {
+    // Если курсор вышел за пределы меню (радиус + запас для контура 80px + небольшой буфер 10px)
+    const menuBoundary = radialMenuConfig.radius + 40 + 10; // 40px = половина от 80px запаса контура
+    if (distance > menuBoundary) {
         hideRadialMenu();
     }
 }
