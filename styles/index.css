@@ -1172,6 +1172,23 @@ input, textarea, select,
     transform: translate(-50%, -50%);
 }
 
+/* Фоновое выделение сектора */
+.radial-menu-sector {
+    position: absolute;
+    width: 0;
+    height: 0;
+    background: transparent;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    transform-origin: center center;
+    border-radius: 50%;
+}
+
+.radial-menu-sector.active {
+    opacity: 0.3;
+}
+
 .radial-menu-item {
     position: absolute;
     width: 40px;
@@ -1188,6 +1205,7 @@ input, textarea, select,
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     pointer-events: auto;
     transform: translate(-50%, -50%);
+    z-index: 3;
 }
 
 .radial-menu-center {
