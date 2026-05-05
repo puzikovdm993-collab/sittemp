@@ -31,8 +31,10 @@ function handleRadialMenuMouseMove(e) {
         Math.pow(e.clientY - radialMenuCenterY, 2)
     );
     
-    // Если курсор вышел за пределы меню (радиус + небольшой запас)
-    if (distance > radialMenuConfig.radius + 20) {
+    // Если курсор вышел за пределы меню (радиус + запас для контура 80px + небольшой буфер 10px)
+    // 40px = половина от 80px запаса контура
+    const menuBoundary = radialMenuConfig.radius + 40 + 10;
+    if (distance > menuBoundary) {
         hideRadialMenu();
     }
 }
@@ -78,6 +80,10 @@ function renderRadialMenuItems(menu) {
         btn.dataset.action = item.action;
         btn.title = item.label;
         
+        // Создаем контейнер для содержимого
+        const content = document.createElement('div');
+        content.className = 'item-content';
+        
         const icon = document.createElement('svg');
         icon.className = 'tool-icon';
         icon.innerHTML = `<use href="#${item.icon}"></use>`;
@@ -86,16 +92,16 @@ function renderRadialMenuItems(menu) {
         label.className = 'radial-menu-label';
         label.textContent = item.label;
         
-        btn.appendChild(icon);
-        btn.appendChild(label);
+        content.appendChild(icon);
+        content.appendChild(label);
+        btn.appendChild(content);
         
-        // Вычисляем позицию для элемента меню
+        // Вычисляем угол для элемента меню
         const angle = index * angleStep - Math.PI / 2; // Начинаем сверху
-        const itemX = Math.cos(angle) * radius;
-        const itemY = Math.sin(angle) * radius;
         
-        btn.style.left = `${itemX}px`;
-        btn.style.top = `${itemY}px`;
+        // Поворачиваем сегмент вокруг центра
+        const rotation = angle * (180 / Math.PI); // Конвертируем в градусы
+        btn.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
         
         btn.onclick = (e) => {
             e.stopPropagation();
@@ -120,6 +126,10 @@ function showRadialMenu(x, y) {
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
     menu.style.display = 'block';
+    
+    // Устанавливаем CSS переменную для радиуса и добавляем класс active для отображения контура
+    menu.style.setProperty('--radial-menu-radius', `${radialMenuConfig.radius}px`);
+    menu.classList.add('active');
 
     // Сохраняем центр меню для отслеживания выхода курсора
     radialMenuCenterX = x;
@@ -132,6 +142,7 @@ function showRadialMenu(x, y) {
 function hideRadialMenu() {
     if (radialMenuElement) {
         radialMenuElement.style.display = 'none';
+        radialMenuElement.classList.remove('active');
     }
     radialMenuVisible = false;
 }
