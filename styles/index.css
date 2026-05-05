@@ -1230,7 +1230,8 @@ input, textarea, select,
 }
 
 .radial-menu-center:hover,
-.radial-menu-item:hover {
+.radial-menu-item:hover,
+.radial-menu-item.active {
     background: var(--color-primary);
     border-color: var(--color-primary);
     color: white;

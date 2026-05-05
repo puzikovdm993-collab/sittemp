@@ -99,81 +99,38 @@ function renderRadialMenuItems(menu) {
 function handleRadialMenuMouseMove(e) {
     if (!radialMenuElement) return;
     
-    const rect = radialMenuElement.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    
-    const mouseX = e.clientX - centerX;
-    const mouseY = e.clientY - centerY;
-    
-    // Вычисляем угол в радианах (-PI до PI)
-    let angle = Math.atan2(mouseY, mouseX);
-    
-    // Преобразуем угол: начинаем с верха (-PI/2) и идем по часовой стрелке
-    angle = angle + Math.PI / 2;
-    if (angle < 0) angle += 2 * Math.PI;
-    
-    const enabledItems = radialMenuConfig.items.filter(i => i.enabled);
-    const count = enabledItems.length;
-    if (count === 0) return;
-    
-    const sectorAngle = (2 * Math.PI) / count;
-    
-    // Определяем индекс сектора под мышью
-    let hoveredIndex = Math.floor(angle / sectorAngle);
-    if (hoveredIndex >= count) hoveredIndex = count - 1;
-    if (hoveredIndex < 0) hoveredIndex = 0;
-    
-    // Подсвечиваем соответствующий сектор
-    highlightSector(hoveredIndex, sectorAngle);
+    // Сбрасываем предыдущее выделение
+    clearSectorHighlight();
+
+    // Находим элемент кнопки под курсором
+    const elements = document.elementsFromPoint(e.clientX, e.clientY);
+    const button = elements.find(el => 
+        el.classList.contains('radial-menu-item') || 
+        el.closest('.radial-menu-item')
+    );
+
+    if (button) {
+        const btnElement = button.classList.contains('radial-menu-item') 
+            ? button 
+            : button.closest('.radial-menu-item');
+        
+        btnElement.classList.add('active');
+    }
 }
 
-// Подсветка сектора
+// Подсветка сектора - теперь просто заглушка, т.к. выделение делается через CSS класс на кнопке
 function highlightSector(index, sectorAngle) {
-    // Удаляем старое выделение
-    clearSectorHighlight();
-    
-    if (!radialMenuElement) return;
-    
-    const enabledItems = radialMenuConfig.items.filter(i => i.enabled);
-    if (index >= enabledItems.length) return;
-    
-    // Создаем элемент выделения сектора
-    const sector = document.createElement('div');
-    sector.className = 'radial-menu-sector active';
-    sector.dataset.sectorIndex = index;
-    
-    // Параметры для клиновидного сектора
-    const radius = radialMenuConfig.radius;
-    const startAngle = index * sectorAngle - Math.PI / 2; // Начинаем сверху
-    
-    // Используем conic-gradient для создания сектора
-    const startDeg = (startAngle * 180 / Math.PI + 360) % 360;
-    
-    sector.style.cssText = `
-        width: ${radius * 2}px;
-        height: ${radius * 2}px;
-        left: ${-radius}px;
-        top: ${-radius}px;
-        background: conic-gradient(
-            from ${startDeg}deg,
-            var(--color-primary) 0deg ${sectorAngle * 180 / Math.PI}deg,
-            transparent ${sectorAngle * 180 / Math.PI}deg 360deg
-        );
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 1;
-    `;
-    
-    radialMenuElement.appendChild(sector);
+    // Не используется, выделение делается через добавление класса .active на кнопку
 }
 
 // Очистка выделения сектора
 function clearSectorHighlight() {
     if (!radialMenuElement) return;
     
-    const sectors = radialMenuElement.querySelectorAll('.radial-menu-sector');
-    sectors.forEach(sector => sector.remove());
+    const activeBtn = radialMenuElement.querySelector('.radial-menu-item.active');
+    if (activeBtn) {
+        activeBtn.classList.remove('active');
+    }
 }
 
 // Показ меню в указанных координатах
