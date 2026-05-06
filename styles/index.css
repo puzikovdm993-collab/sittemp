@@ -1628,8 +1628,17 @@ input, textarea, select,
     color: white;
 }
 
+.radial-menu-item.hovered,
 .radial-menu-item:hover  {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
     filter: brightness(1.2);
+}
+
+.radial-menu-item.hovered .radial-menu-label {
+    opacity: 1;
+    visibility: visible;
 }
 
 .radial-menu-center svg,

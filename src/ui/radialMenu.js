@@ -21,8 +21,10 @@ let radialMenuVisible = false;
 let radialMenuElement = null;
 let radialMenuCenterX = 0;
 let radialMenuCenterY = 0;
+let radialMenuActive = false; // Флаг: меню активно (правая кнопка зажата)
+let hoveredItemIndex = -1; // Индекс текущего подсвеченного элемента
 
-// Обработчик движения мыши для скрытия меню при выходе за пределы
+// Обработчик движения мыши для скрытия меню при выходе за пределы и подсветки элементов
 function handleRadialMenuMouseMove(e) {
     if (!radialMenuVisible || !radialMenuElement) return;
     
@@ -36,7 +38,69 @@ function handleRadialMenuMouseMove(e) {
     const menuBoundary = radialMenuConfig.radius + 40 + 10;
     if (distance > menuBoundary) {
         hideRadialMenu();
+        return;
     }
+    
+    // Если меню активно (правая кнопка зажата), определяем подсвеченный элемент
+    if (radialMenuActive) {
+        const newIndex = getHoveredItemIndex(e.clientX, e.clientY);
+        if (newIndex !== hoveredItemIndex) {
+            hoveredItemIndex = newIndex;
+            highlightMenuItem(newIndex);
+        }
+    }
+}
+
+// Определение индекса элемента, над которым находится курсор
+function getHoveredItemIndex(mouseX, mouseY) {
+    const allItems = radialMenuConfig.items.filter(i => i.enabled);
+    const itemCount = allItems.length;
+    if (itemCount === 0) return -1;
+    
+    // Вычисляем угол курсора относительно центра меню
+    const dx = mouseX - radialMenuCenterX;
+    const dy = mouseY - radialMenuCenterY;
+    let angle = Math.atan2(dy, dx) + Math.PI / 2; // Смещаем, чтобы 0 был сверху
+    if (angle < 0) angle += 2 * Math.PI;
+    
+    // Угол одного сектора
+    const angleStep = (2 * Math.PI) / itemCount;
+    
+    // Определяем индекс элемента
+    const index = Math.floor(angle / angleStep);
+    
+    // Проверяем расстояние до центра (должно быть в пределах радиуса)
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance > radialMenuConfig.radius) {
+        return -1;
+    }
+    
+    return index % itemCount;
+}
+
+// Подсветка элемента меню
+function highlightMenuItem(index) {
+    if (!radialMenuElement) return;
+    
+    const items = radialMenuElement.querySelectorAll('.radial-menu-item');
+    items.forEach((item, i) => {
+        if (i === index) {
+            item.classList.add('hovered');
+        } else {
+            item.classList.remove('hovered');
+        }
+    });
+}
+
+// Выполнение действия выбранного элемента
+function executeMenuItemAction(index) {
+    if (index < 0 || index >= radialMenuConfig.items.length) return;
+    
+    const allItems = radialMenuConfig.items.filter(i => i.enabled);
+    if (index >= allItems.length) return;
+    
+    const item = allItems[index];
+    handleRadialMenuAction(item.action);
 }
 
 // Создание HTML элемента радиального меню
@@ -186,21 +250,46 @@ function handleRadialMenuAction(action) {
     }
 }
 
-// Обработчик контекстного меню на canvas
+// Обработчик контекстного меню на canvas - теперь показывает меню при зажатии правой кнопки
 function handleCanvasContextMenu(e) {
     e.preventDefault();
     
     const file = getActiveFile();
     if (!file || !file.canvas) return;
     
-    
     const x = e.clientX;
     const y = e.clientY;
     
-    if (radialMenuVisible) {
+    // Показываем меню и активируем режим выбора
+    radialMenuActive = true;
+    hoveredItemIndex = -1;
+    showRadialMenu(x, y);
+}
+
+// Обработчик отпускания правой кнопки мыши
+function handleRadialMenuMouseUp(e) {
+    if (!radialMenuVisible || !radialMenuActive) return;
+    
+    // Выполняем действие над выбранным элементом
+    if (hoveredItemIndex >= 0) {
+        executeMenuItemAction(hoveredItemIndex);
+    }
+    
+    // Скрываем меню и сбрасываем состояние
+    hideRadialMenu();
+    radialMenuActive = false;
+    hoveredItemIndex = -1;
+}
+
+// Обработчик нажатия кнопки мыши для отмены меню при левой кнопке
+function handleRadialMenuMouseDown(e) {
+    if (!radialMenuVisible) return;
+    
+    // Если нажата левая кнопка вне меню - скрываем меню без выполнения действия
+    if (e.button === 0 && !e.target.closest('#radialMenu')) {
         hideRadialMenu();
-    } else {
-        showRadialMenu(x, y);
+        radialMenuActive = false;
+        hoveredItemIndex = -1;
     }
 }
 
@@ -313,6 +402,8 @@ window.showRadialMenu = showRadialMenu;
 window.hideRadialMenu = hideRadialMenu;
 window.handleCanvasContextMenu = handleCanvasContextMenu;
 window.handleRadialMenuMouseMove = handleRadialMenuMouseMove;
+window.handleRadialMenuMouseUp = handleRadialMenuMouseUp;
+window.handleRadialMenuMouseDown = handleRadialMenuMouseDown;
 
 // Автозагрузка конфигурации
 loadRadialMenuConfig();

@@ -332,18 +332,36 @@ function attachCanvasEvents(cnv) {
     cnv.addEventListener('mouseup', handleMouseUp);
     cnv.addEventListener('mouseleave', handleMouseUp);
     cnv.addEventListener('dblclick', handleDoubleClick);
-    cnv.addEventListener('contextmenu', handleCanvasContextMenu);
+    // Обработчик правой кнопки мыши для радиального меню
+    cnv.addEventListener('mousedown', (e) => {
+        if (e.button === 2) { // Правая кнопка мыши
+            e.preventDefault();
+            handleCanvasContextMenu(e);
+        }
+    });
 }
 
 // Добавляем обработчик контекстного меню на main-container для работы правого клика во всей области
+// Также добавляем обработчики mouseup и mousedown для радиального меню
 function attachCanvasHostEvents() {
     const host = document.querySelector('.main-container');
     if (host) {
-        host.addEventListener('contextmenu', (e) => {
-            // Если клик был по canvas, то событие уже обработано attachCanvasEvents
-            if (e.target.tagName === 'CANVAS') return;
-            handleCanvasContextMenu(e);
+        // Обработчик правой кнопки мыши для радиального меню
+        host.addEventListener('mousedown', (e) => {
+            if (e.button === 2 && e.target.tagName !== 'CANVAS') {
+                e.preventDefault();
+                handleCanvasContextMenu(e);
+            }
         });
+        
+        // Глобальный обработчик отпускания кнопки мыши для выполнения действия
+        window.addEventListener('mouseup', handleRadialMenuMouseUp);
+        
+        // Глобальный обработчик нажатия кнопки мыши для отмены меню
+        window.addEventListener('mousedown', handleRadialMenuMouseDown);
+        
+        // Глобальный обработчик движения мыши для подсветки элементов
+        window.addEventListener('mousemove', handleRadialMenuMouseMove);
     }
 }
 
