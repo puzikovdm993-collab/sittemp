@@ -241,7 +241,6 @@ document.addEventListener('contextmenu', function(e) {
 function showRadialMenuOnMouseDown(x, y) {
     if (!radialMenuConfig.enabled) return;
     
-    rightMouseDown = true;
     selectedItem = null;
     
     const menu = createRadialMenu();
@@ -407,6 +406,8 @@ function handleRadialMenuMouseDown(e) {
     
     e.preventDefault();
     e.stopPropagation();
+    rightMouseDown = true;
+    selectedItem = null;
     showRadialMenuOnMouseDown(e.clientX, e.clientY);
 }
 
