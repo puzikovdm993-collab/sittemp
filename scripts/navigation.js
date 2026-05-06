@@ -184,15 +184,22 @@ function positionIcons(icons, iconDistance) {
 // Правый клик - показать меню
 document.addEventListener('contextmenu', function(e) {
   e.preventDefault();
+  return false;
+}, false);
+
+// Правый клик - показать меню
+document.addEventListener('mousedown', function(e) {
+  if (e.button !== 2) return; // Только правая кнопка мыши
+  
   var mousePosX = e.clientX;
   var mousePosY = e.clientY;
-
+  
   container.classList.remove('is-hidden');
   container.classList.add('is-active');
-
+  
   container.style.top = mousePosY + 'px';
   container.style.left = mousePosX + 'px';
-
+  
   return false;
 }, false);
 
