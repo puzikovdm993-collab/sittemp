@@ -231,12 +231,10 @@ function handleCanvasContextMenu(e) {
 
 // Глобальный обработчик для предотвращения контекстного меню браузера при любом правом клике
 document.addEventListener('contextmenu', function(e) {
-    // Всегда предотвращаем контекстное меню браузера если зажата правая кнопка и есть активное радиальное меню
-    if (radialMenuVisible || rightMouseDown) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
+    // Всегда предотвращаем контекстное меню браузера при правом клике
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
 }, true);
 
 // Показ меню при зажатии правой кнопки мыши
@@ -407,6 +405,7 @@ function handleRadialMenuMouseDown(e) {
     if (e.button !== 2) return;
     
     e.preventDefault();
+    e.stopPropagation();
     showRadialMenuOnMouseDown(e.clientX, e.clientY);
 }
 
@@ -415,6 +414,7 @@ function handleRadialMenuMouseUp(e) {
     if (e.button !== 2) return;
     
     e.preventDefault();
+    e.stopPropagation();
     hideRadialMenuOnMouseUp();
 }
 
