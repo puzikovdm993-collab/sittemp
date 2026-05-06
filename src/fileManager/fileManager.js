@@ -342,6 +342,7 @@ function attachCanvasEvents(cnv) {
     cnv.addEventListener('mousedown', handleRadialMenuMouseDown);
     cnv.addEventListener('mouseup', handleRadialMenuMouseUp);
     cnv.addEventListener('mousemove', handleRadialMenuMouseMove);
+    cnv.addEventListener('mouseleave', handleRadialMenuMouseLeave);
 }
 
 // Добавляем обработчик контекстного меню на main-container для работы правого клика во всей области
@@ -360,6 +361,7 @@ function attachCanvasHostEvents() {
         host.addEventListener('mousedown', handleRadialMenuMouseDown);
         host.addEventListener('mouseup', handleRadialMenuMouseUp);
         host.addEventListener('mousemove', handleRadialMenuMouseMove);
+        host.addEventListener('mouseleave', handleRadialMenuMouseLeave);
     }
 }
 

@@ -398,6 +398,7 @@ window.showRadialMenuOnMouseDown = showRadialMenuOnMouseDown;
 window.hideRadialMenuOnMouseUp = hideRadialMenuOnMouseUp;
 window.handleRadialMenuMouseDown = handleRadialMenuMouseDown;
 window.handleRadialMenuMouseUp = handleRadialMenuMouseUp;
+window.handleRadialMenuMouseLeave = handleRadialMenuMouseLeave;
 
 // Обработчики для радиального меню на правую кнопку мыши
 function handleRadialMenuMouseDown(e) {
@@ -416,6 +417,13 @@ function handleRadialMenuMouseUp(e) {
     e.preventDefault();
     e.stopPropagation();
     hideRadialMenuOnMouseUp();
+}
+
+// Дополнительный обработчик для случая когда мышь уходит с окна во время зажатой кнопки
+function handleRadialMenuMouseLeave() {
+    if (rightMouseDown && radialMenuVisible) {
+        hideRadialMenuOnMouseUp();
+    }
 }
 
 // Автозагрузка конфигурации
