@@ -229,6 +229,16 @@ function handleCanvasContextMenu(e) {
     return false;
 }
 
+// Глобальный обработчик для предотвращения контекстного меню браузера при любом правом клике
+document.addEventListener('contextmenu', function(e) {
+    // Всегда предотвращаем контекстное меню браузера если зажата правая кнопка и есть активное радиальное меню
+    if (radialMenuVisible || rightMouseDown) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }
+}, true);
+
 // Показ меню при зажатии правой кнопки мыши
 function showRadialMenuOnMouseDown(x, y) {
     if (!radialMenuConfig.enabled) return;
@@ -261,12 +271,12 @@ function showRadialMenuOnMouseDown(x, y) {
 function hideRadialMenuOnMouseUp() {
     if (!rightMouseDown || !radialMenuVisible) return;
     
-    rightMouseDown = false;
-    
     // Выполняем действие для выбранного элемента
     if (selectedItem) {
         handleRadialMenuAction(selectedItem.action);
     }
+    
+    rightMouseDown = false;
     
     // Скрываем меню
     if (radialMenuElement) {
@@ -388,14 +398,13 @@ window.handleCanvasContextMenu = handleCanvasContextMenu;
 window.handleRadialMenuMouseMove = handleRadialMenuMouseMove;
 window.showRadialMenuOnMouseDown = showRadialMenuOnMouseDown;
 window.hideRadialMenuOnMouseUp = hideRadialMenuOnMouseUp;
+window.handleRadialMenuMouseDown = handleRadialMenuMouseDown;
+window.handleRadialMenuMouseUp = handleRadialMenuMouseUp;
 
 // Обработчики для радиального меню на правую кнопку мыши
 function handleRadialMenuMouseDown(e) {
     // Проверяем, что это правая кнопка мыши (button 2)
     if (e.button !== 2) return;
-    
-    const file = getActiveFile();
-    if (!file || !file.canvas) return;
     
     e.preventDefault();
     showRadialMenuOnMouseDown(e.clientX, e.clientY);

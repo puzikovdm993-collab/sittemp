@@ -332,7 +332,11 @@ function attachCanvasEvents(cnv) {
     cnv.addEventListener('mouseup', handleMouseUp);
     cnv.addEventListener('mouseleave', handleMouseUp);
     cnv.addEventListener('dblclick', handleDoubleClick);
-    cnv.addEventListener('contextmenu', handleCanvasContextMenu);
+    cnv.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
     
     // Обработчики для радиального меню на правую кнопку мыши
     cnv.addEventListener('mousedown', handleRadialMenuMouseDown);
@@ -347,7 +351,9 @@ function attachCanvasHostEvents() {
         host.addEventListener('contextmenu', (e) => {
             // Если клик был по canvas, то событие уже обработано attachCanvasEvents
             if (e.target.tagName === 'CANVAS') return;
-            handleCanvasContextMenu(e);
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
         });
         
         // Обработчики для радиального меню на правую кнопку мыши на контейнере
