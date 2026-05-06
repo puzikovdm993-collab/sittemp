@@ -181,9 +181,16 @@ function positionIcons(icons, iconDistance) {
   }
 }
 
-// Правый клик - показать меню
+// Отключаем контекстное меню браузера для правой кнопки мыши
+window.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  return false;
+}, true);
+
 document.addEventListener('contextmenu', function(e) {
   e.preventDefault();
+  e.stopPropagation();
   return false;
 }, false);
 
