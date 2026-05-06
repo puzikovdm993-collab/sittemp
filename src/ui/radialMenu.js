@@ -21,8 +21,10 @@ let radialMenuVisible = false;
 let radialMenuElement = null;
 let radialMenuCenterX = 0;
 let radialMenuCenterY = 0;
+let rightMouseDown = false;
+let selectedItem = null;
 
-// Обработчик движения мыши для скрытия меню при выходе за пределы
+// Обработчик движения мыши для скрытия меню при выходе за пределы и подсветки элементов
 function handleRadialMenuMouseMove(e) {
     if (!radialMenuVisible || !radialMenuElement) return;
     
@@ -35,8 +37,42 @@ function handleRadialMenuMouseMove(e) {
     // 40px = половина от 80px запаса контура
     const menuBoundary = radialMenuConfig.radius + 40 + 10;
     if (distance > menuBoundary) {
-        hideRadialMenu();
+        selectedItem = null;
+        clearAllItemHighlights();
+        return;
     }
+    
+    // Определяем, над каким элементом находится курсор
+    const angle = Math.atan2(e.clientY - radialMenuCenterY, e.clientX - radialMenuCenterX);
+    let normalizedAngle = angle * (180 / Math.PI) + 90; // Поворачиваем чтобы 0 был сверху
+    if (normalizedAngle < 0) normalizedAngle += 360;
+    
+    const allItems = radialMenuConfig.items.filter(i => i.enabled);
+    const itemCount = allItems.length;
+    const angleStep = 360 / itemCount;
+    
+    const itemIndex = Math.floor(normalizedAngle / angleStep);
+    const hoveredItem = allItems[itemIndex];
+    
+    if (hoveredItem && hoveredItem !== selectedItem) {
+        selectedItem = hoveredItem;
+        highlightItem(hoveredItem);
+    }
+}
+
+// Подсветка элемента меню
+function highlightItem(item) {
+    clearAllItemHighlights();
+    const btn = radialMenuElement.querySelector(`[data-action="${item.action}"]`);
+    if (btn) {
+        btn.classList.add('highlighted');
+    }
+}
+
+// Очистка всех подсветок
+function clearAllItemHighlights() {
+    const items = radialMenuElement.querySelectorAll('.radial-menu-item');
+    items.forEach(item => item.classList.remove('highlighted'));
 }
 
 // Создание HTML элемента радиального меню
@@ -186,22 +222,59 @@ function handleRadialMenuAction(action) {
     }
 }
 
-// Обработчик контекстного меню на canvas
+// Обработчик контекстного меню на canvas - теперь только предотвращает стандартное меню
 function handleCanvasContextMenu(e) {
     e.preventDefault();
+    e.stopPropagation();
+    return false;
+}
+
+// Показ меню при зажатии правой кнопки мыши
+function showRadialMenuOnMouseDown(x, y) {
+    if (!radialMenuConfig.enabled) return;
     
-    const file = getActiveFile();
-    if (!file || !file.canvas) return;
+    rightMouseDown = true;
+    selectedItem = null;
     
+    const menu = createRadialMenu();
+    const items = menu.querySelectorAll('.radial-menu-item');
     
-    const x = e.clientX;
-    const y = e.clientY;
+    if (items.length === 0) return; // Нет элементов для отображения
     
-    if (radialMenuVisible) {
-        hideRadialMenu();
-    } else {
-        showRadialMenu(x, y);
+    // Позиционируем само меню в точке клика
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+    menu.style.display = 'block';
+    
+    // Устанавливаем CSS переменную для радиуса и добавляем класс active для отображения контура
+    menu.style.setProperty('--radial-menu-radius', `${radialMenuConfig.radius}px`);
+    menu.classList.add('active');
+
+    // Сохраняем центр меню для отслеживания выхода курсора
+    radialMenuCenterX = x;
+    radialMenuCenterY = y;
+
+    radialMenuVisible = true;
+}
+
+// Скрытие меню и выполнение действия при отпускании правой кнопки
+function hideRadialMenuOnMouseUp() {
+    if (!rightMouseDown || !radialMenuVisible) return;
+    
+    rightMouseDown = false;
+    
+    // Выполняем действие для выбранного элемента
+    if (selectedItem) {
+        handleRadialMenuAction(selectedItem.action);
     }
+    
+    // Скрываем меню
+    if (radialMenuElement) {
+        radialMenuElement.style.display = 'none';
+        radialMenuElement.classList.remove('active');
+    }
+    radialMenuVisible = false;
+    selectedItem = null;
 }
 
 // Показать модальное окно настройки радиального меню
@@ -296,9 +369,9 @@ function loadRadialMenuConfig() {
 
 // Экспорт функций
 window.radialMenu = {
-    show: showRadialMenu,
+    show: showRadialMenuOnMouseDown,
     hide: hideRadialMenu,
-    toggle: (x, y) => radialMenuVisible ? hideRadialMenu() : showRadialMenu(x, y),
+    toggle: (x, y) => radialMenuVisible ? hideRadialMenu() : showRadialMenuOnMouseDown(x, y),
     getConfig: () => radialMenuConfig,
     setConfig: (config) => {
         radialMenuConfig = { ...radialMenuConfig, ...config };
@@ -309,10 +382,32 @@ window.radialMenu = {
 };
 
 // Экспортируем функции напрямую для использования в других модулях
-window.showRadialMenu = showRadialMenu;
+window.showRadialMenu = showRadialMenuOnMouseDown;
 window.hideRadialMenu = hideRadialMenu;
 window.handleCanvasContextMenu = handleCanvasContextMenu;
 window.handleRadialMenuMouseMove = handleRadialMenuMouseMove;
+window.showRadialMenuOnMouseDown = showRadialMenuOnMouseDown;
+window.hideRadialMenuOnMouseUp = hideRadialMenuOnMouseUp;
+
+// Обработчики для радиального меню на правую кнопку мыши
+function handleRadialMenuMouseDown(e) {
+    // Проверяем, что это правая кнопка мыши (button 2)
+    if (e.button !== 2) return;
+    
+    const file = getActiveFile();
+    if (!file || !file.canvas) return;
+    
+    e.preventDefault();
+    showRadialMenuOnMouseDown(e.clientX, e.clientY);
+}
+
+function handleRadialMenuMouseUp(e) {
+    // Проверяем, что это правая кнопка мыши (button 2)
+    if (e.button !== 2) return;
+    
+    e.preventDefault();
+    hideRadialMenuOnMouseUp();
+}
 
 // Автозагрузка конфигурации
 loadRadialMenuConfig();

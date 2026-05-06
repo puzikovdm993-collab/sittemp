@@ -1632,6 +1632,14 @@ input, textarea, select,
     filter: brightness(1.2);
 }
 
+/* Подсветка элемента при наведении через JS */
+.radial-menu-item.highlighted  {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+    filter: brightness(1.2);
+}
+
 .radial-menu-center svg,
 .radial-menu-item svg,
 .radial-menu-center .tool-icon,
