@@ -4002,7 +4002,7 @@ body:not(.light-theme) .tour-highlighted  {
     max-width: 95vw;
     max-height: 95vh;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
 }
 
 .radial-menu-config-body {
