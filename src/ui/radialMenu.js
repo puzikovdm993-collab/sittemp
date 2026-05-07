@@ -433,8 +433,8 @@ function validateAndEnableSave() {
     const errors = validateConfig();
     modalState.validationErrors = errors;
     
-    const hasEnabledItems = modalState.currentConfig.items.some(item => item.enabled);
-    const isValid = errors.length === 0 && hasEnabledItems;
+    // Кнопка активна только если нет ошибок валидации
+    const isValid = errors.length === 0;
     
     saveButton.disabled = !isValid;
     saveButton.style.opacity = isValid ? '1' : '0.5';
@@ -457,7 +457,9 @@ function validateConfig() {
     
     // Проверка количества включенных элементов
     const enabledCount = config.items.filter(item => item.enabled).length;
-    if (enabledCount > MAX_MENU_ITEMS) {
+    if (enabledCount === 0) {
+        errors.push('Выберите хотя бы один элемент для отображения в меню');
+    } else if (enabledCount > MAX_MENU_ITEMS) {
         errors.push(`Превышен лимит элементов: максимально ${MAX_MENU_ITEMS}, выбрано ${enabledCount}`);
     }
     
@@ -529,7 +531,7 @@ function createToolItem(item, index, type) {
 function toggleItemEnabled(itemId, enabled) {
     const item = modalState.currentConfig.items.find(i => i.id === itemId);
     if (item) {
-        // Если пытаемся включить элемент, проверяем лимит
+        // Если пытаемся включить элемент, проверяем лимит ПЕРЕД изменением состояния
         if (enabled) {
             // Считаем количество уже включенных элементов (исключая текущий, если он был выключен)
             const currentlyEnabledCount = modalState.currentConfig.items.filter(i => i.enabled && i.id !== itemId).length;
@@ -544,6 +546,7 @@ function toggleItemEnabled(itemId, enabled) {
             }
         }
         
+        // Только после успешной проверки меняем состояние
         item.enabled = enabled;
         markAsDirty();
         updatePreview();
@@ -744,12 +747,6 @@ function saveRadialMenuConfigFromModal() {
         return;
     }
     
-    const hasEnabledItems = modalState.currentConfig.items.some(item => item.enabled);
-    if (!hasEnabledItems) {
-        alert('Выберите хотя бы один элемент для отображения в меню');
-        return;
-    }
-    
     // Применяем конфигурацию к радиальному меню
     if (window.radialMenu && window.radialMenu.setConfig) {
         window.radialMenu.setConfig(modalState.currentConfig);
@@ -849,6 +846,8 @@ window.hideRadialMenu = hideRadialMenu;
 window.handleCanvasContextMenu = handleCanvasContextMenu;
 window.handleRadialMenuMouseMove = handleRadialMenuMouseMove;
 window.showRadialMenuSettings = showRadialMenuSettings;
+window.closeRadialMenuSettingsModal = closeRadialMenuSettingsModal;
+window.saveRadialMenuSettings = saveRadialMenuSettings;
 window.closeRadialMenuConfigModal = closeRadialMenuConfigModal;
 window.saveRadialMenuConfigFromModal = saveRadialMenuConfigFromModal;
 
