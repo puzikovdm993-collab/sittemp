@@ -4002,7 +4002,11 @@ body:not(.light-theme) .tour-highlighted  {
     max-width: 95vw;
     max-height: 95vh;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+}
+
+.modal-title {
+    flex-shrink: 0;
 }
 
 .radial-menu-config-body {
@@ -4011,6 +4015,7 @@ body:not(.light-theme) .tour-highlighted  {
     min-height: 0;
     padding: 0 !important;
     overflow: hidden;
+    flex-direction: row;
 }
 
 /* Левая панель: Конфигурация */
