@@ -531,7 +531,8 @@ function toggleItemEnabled(itemId, enabled) {
     if (item) {
         // Если пытаемся включить элемент, проверяем лимит
         if (enabled) {
-            const currentlyEnabledCount = modalState.currentConfig.items.filter(i => i.enabled).length;
+            // Считаем количество уже включенных элементов (исключая текущий, если он был выключен)
+            const currentlyEnabledCount = modalState.currentConfig.items.filter(i => i.enabled && i.id !== itemId).length;
             if (currentlyEnabledCount >= MAX_MENU_ITEMS) {
                 alert(`Достигнут лимит: в радиальном меню может быть не более ${MAX_MENU_ITEMS} элементов`);
                 // Отключаем чекбокс обратно
