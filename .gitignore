@@ -1,1 +1,1 @@
-Nothing needs to be added to the .gitignore file based on the provided changes. The only modified file is a JavaScript source file (`src/modals/radialMenuConfigModal.js`), which should not be ignored.
+(src/modals/radialMenuConfigModal.js, src/ui/radialMenu.js)

@@ -122,6 +122,10 @@ function showRadialMenu(x, y) {
     if (!radialMenuConfig.enabled) return;
 
     const menu = createRadialMenu();
+    
+    // Перерисовываем элементы меню с текущей конфигурацией
+    renderRadialMenuItems(menu);
+    
     const items = menu.querySelectorAll('.radial-menu-item');
     
     if (items.length === 0) return; // Нет элементов для отображения
@@ -303,6 +307,10 @@ window.radialMenu = {
     setConfig: (config) => {
         radialMenuConfig = { ...radialMenuConfig, ...config };
         saveRadialMenuConfig();
+        // Перерисовываем меню если оно открыто
+        if (radialMenuElement && radialMenuVisible) {
+            renderRadialMenuItems(radialMenuElement);
+        }
     },
     saveConfig: saveRadialMenuConfig,
     loadConfig: loadRadialMenuConfig

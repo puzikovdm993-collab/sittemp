@@ -18,9 +18,9 @@
     const defaultTools = [
         { id: 'undo', icon: 'icon-undo', label: 'Отменить', action: 'undo', enabled: true },
         { id: 'redo', icon: 'icon-redo', label: 'Повторить', action: 'redo', enabled: true },
-        { id: 'copy', icon: 'icon-copy', label: 'Копировать', action: 'copy', enabled: false },
-        { id: 'paste', icon: 'icon-paste', label: 'Вставить', action: 'paste', enabled: false },
-        { id: 'cut', icon: 'icon-cut', label: 'Вырезать', action: 'cut', enabled: false },
+        { id: 'copy', icon: 'icon-copy', label: 'Копировать', action: 'copy', enabled: true },
+        { id: 'paste', icon: 'icon-paste', label: 'Вставить', action: 'paste', enabled: true },
+        { id: 'cut', icon: 'icon-cut', label: 'Вырезать', action: 'cut', enabled: true },
         { id: 'zoom-in', icon: 'icon-zoom-in', label: 'Увеличить', action: 'zoomIn', enabled: true },
         { id: 'zoom-out', icon: 'icon-zoom-out', label: 'Уменьшить', action: 'zoomOut', enabled: true },
         { id: 'rotate', icon: 'icon-rotate-right', label: 'Повернуть', action: 'rotate', enabled: true }
@@ -407,18 +407,27 @@
             modalState.isDirty = false;
             modalState.validationErrors = [];
             
-            // Загрузка конфигурации
+            // Загрузка конфигурации из радиального меню если не передана
             if (existingConfig) {
                 modalState.originalConfig = JSON.parse(JSON.stringify(existingConfig));
                 modalState.currentConfig = JSON.parse(JSON.stringify(existingConfig));
             } else {
-                // Новая конфигурация
-                modalState.originalConfig = {
-                    enabled: true,
-                    radius: 90,
-                    items: [...defaultTools, ...defaultFilters]
-                };
-                modalState.currentConfig = JSON.parse(JSON.stringify(modalState.originalConfig));
+                // Получаем текущую конфигурацию из радиального меню
+                const currentRadialConfig = window.radialMenu && window.radialMenu.getConfig ? 
+                    window.radialMenu.getConfig() : null;
+                    
+                if (currentRadialConfig) {
+                    modalState.originalConfig = JSON.parse(JSON.stringify(currentRadialConfig));
+                    modalState.currentConfig = JSON.parse(JSON.stringify(currentRadialConfig));
+                } else {
+                    // Новая конфигурация по умолчанию
+                    modalState.originalConfig = {
+                        enabled: true,
+                        radius: 90,
+                        items: [...defaultTools, ...defaultFilters]
+                    };
+                    modalState.currentConfig = JSON.parse(JSON.stringify(modalState.originalConfig));
+                }
             }
             
             // Заполнение формы
