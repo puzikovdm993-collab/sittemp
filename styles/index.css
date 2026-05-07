@@ -3166,6 +3166,10 @@ return  {
     --modal-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
     --modal-radius: 0;
     --modal-overlay: rgba(0, 0, 0, 0.3);
+    --vscode-accent: #0066b8;
+    --vscode-accent-hover: #005a9e;
+    --vscode-input-bg: #ffffff;
+    --vscode-bg-hover: #e0e0e0;
 }
 
 /* Темная тема для модальных окон - более темные тона */
@@ -3174,10 +3178,14 @@ return  {
     --modal-border: #3c3c3c;
     --modal-header-bg: #333333;
     --modal-text: #ffffff;
-    --modal-text-muted: #ffffff;
+    --modal-text-muted: #aaaaaa;
     --modal-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     --modal-radius: 0;
     --modal-overlay: rgba(0, 0, 0, 0.5);
+    --vscode-accent: #007acc;
+    --vscode-accent-hover: #0062a3;
+    --vscode-input-bg: #3c3c3c;
+    --vscode-bg-hover: #2a2d2e;
 }
 
 /* Overlay for modals */
