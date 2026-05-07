@@ -261,6 +261,16 @@ function showRadialMenuSettings() {
         checkbox.id = `menu-item-${index}`;
         checkbox.checked = item.enabled;
         checkbox.onchange = () => {
+            // Проверяем лимит при попытке включить элемент
+            if (checkbox.checked) {
+                const enabledCount = radialMenuConfig.items.filter(i => i.enabled).length;
+                if (enabledCount >= 10) {
+                    alert('Достигнут лимит: в радиальном меню может быть не более 10 элементов.');
+                    checkbox.checked = false;
+                    item.enabled = false;
+                    return;
+                }
+            }
             item.enabled = checkbox.checked;
         };
         
