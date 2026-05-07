@@ -13,6 +13,9 @@
         resolvePromise: null,
         rejectPromise: null
     };
+    
+    // Максимальное количество элементов в радиальном меню
+    const MAX_MENU_ITEMS = 10;
 
     // Конфигурация инструментов по умолчанию
     const defaultTools = [
@@ -216,6 +219,12 @@
             errors.push('Радиус должен быть от 50 до 200 px');
         }
         
+        // Проверка количества включенных элементов
+        const enabledCount = config.items.filter(item => item.enabled).length;
+        if (enabledCount > MAX_MENU_ITEMS) {
+            errors.push(`Превышен лимит элементов: максимально ${MAX_MENU_ITEMS}, выбрано ${enabledCount}`);
+        }
+        
         return errors;
     }
 
@@ -284,6 +293,20 @@
     function toggleItemEnabled(itemId, enabled) {
         const item = modalState.currentConfig.items.find(i => i.id === itemId);
         if (item) {
+            // Если пытаемся включить элемент, проверяем лимит
+            if (enabled) {
+                const currentlyEnabledCount = modalState.currentConfig.items.filter(i => i.enabled).length;
+                if (currentlyEnabledCount >= MAX_MENU_ITEMS) {
+                    alert(`Достигнут лимит: в радиальном меню может быть не более ${MAX_MENU_ITEMS} элементов`);
+                    // Отключаем чекбокс обратно
+                    const checkbox = document.getElementById(`item-${itemId}`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                    }
+                    return;
+                }
+            }
+            
             item.enabled = enabled;
             markAsDirty();
             updatePreview();
