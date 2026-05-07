@@ -33,7 +33,9 @@
         { id: 'approximation', icon: 'ApproximationEffectPluginIcon', label: 'Аппроксимация', action: 'approximation', enabled: false },
         { id: 'logarithm', icon: 'PrelimProcessIcon', label: 'Предобработка', action: 'logarithm', enabled: false },
         { id: 'contour', icon: 'KONTUREffectPluginIcon', label: 'Контур', action: 'contour', enabled: false },
-        { id: 'edge-detect', icon: 'EdgeDetectEffectIcon', label: 'Определение границ', action: 'edgeDetect', enabled: false }
+        { id: 'edge-detect', icon: 'EdgeDetectEffectIcon', label: 'Определение границ', action: 'edgeDetect', enabled: false },
+        { id: 'normalization', icon: 'NormalizEffectPluginIcon', label: 'Нормализация', action: 'normalization', enabled: false },
+        { id: 'round-search', icon: 'RoundSearchingIcon', label: 'Поиск кругов', action: 'roundSearch', enabled: false }
     ];
 
     // Инициализация модального окна

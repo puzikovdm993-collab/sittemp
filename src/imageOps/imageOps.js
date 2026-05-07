@@ -1652,3 +1652,11 @@ function _detectBoundary(imageData, width, height, maxValue) {
 // function lassoDelete()
 // function lassoFill()
 // function lassoFeather()
+// Экспорт функций для использования в других модулях (например, radialMenu.js)
+window.applyMedianFilter = applyMedianFilter;
+window.applySobelFilter = applySobelFilter;
+window.applyApproximationFilter = applyApproximationFilter;
+window.applyLogorifmFilter = applyLogorifmFilter;
+window.applyNormalisatioFilter = applyNormalisatioFilter;
+window.applyRoundSearchingFilter = applyRoundSearchingFilter;
+window.showLogorifmModal = showLogorifmModal;

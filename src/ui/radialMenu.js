@@ -12,7 +12,16 @@ let radialMenuConfig = {
         { id: 'cut', icon: 'icon-cut', label: 'Вырезать', action: 'cut', enabled: true },
         { id: 'zoom-in', icon: 'icon-zoom-in', label: 'Увеличить', action: 'zoomIn', enabled: true },
         { id: 'zoom-out', icon: 'icon-zoom-out', label: 'Уменьшить', action: 'zoomOut', enabled: true },
-        { id: 'rotate', icon: 'icon-rotate-right', label: 'Повернуть', action: 'rotate', enabled: true }
+        { id: 'rotate', icon: 'icon-rotate-right', label: 'Повернуть', action: 'rotate', enabled: true },
+        // Фильтры
+        { id: 'sobel', icon: 'SobelEffectPluginIcon', label: 'Edge фильтр', action: 'sobel', enabled: false },
+        { id: 'median', icon: 'MedianEffectPluginIcon', label: 'Медианный', action: 'median', enabled: false },
+        { id: 'approximation', icon: 'ApproximationEffectPluginIcon', label: 'Аппроксимация', action: 'approximation', enabled: false },
+        { id: 'logarithm', icon: 'PrelimProcessIcon', label: 'Предобработка', action: 'logarithm', enabled: false },
+        { id: 'contour', icon: 'KONTUREffectPluginIcon', label: 'Контур', action: 'contour', enabled: false },
+        { id: 'edge-detect', icon: 'EdgeDetectEffectIcon', label: 'Определение границ', action: 'edgeDetect', enabled: false },
+        { id: 'normalization', icon: 'NormalizEffectPluginIcon', label: 'Нормализация', action: 'normalization', enabled: false },
+        { id: 'round-search', icon: 'RoundSearchingIcon', label: 'Поиск кругов', action: 'roundSearch', enabled: false }
     ]
 };
 
@@ -184,6 +193,31 @@ function handleRadialMenuAction(action) {
             break;
         case 'rotate':
             if (typeof rotateCanvas === 'function') rotateCanvas(90);
+            break;
+        // Фильтры
+        case 'sobel':
+            if (typeof applySobelFilter === 'function') applySobelFilter();
+            break;
+        case 'median':
+            if (typeof applyMedianFilter === 'function') applyMedianFilter();
+            break;
+        case 'approximation':
+            if (typeof applyApproximationFilter === 'function') applyApproximationFilter();
+            break;
+        case 'logarithm':
+            if (typeof applyLogorifmFilter === 'function') applyLogorifmFilter();
+            break;
+        case 'contour':
+            if (typeof applyRoundSearchingFilter === 'function') applyRoundSearchingFilter();
+            break;
+        case 'edgeDetect':
+            if (typeof applySobelFilter === 'function') applySobelFilter();
+            break;
+        case 'normalization':
+            if (typeof applyNormalisatioFilter === 'function') applyNormalisatioFilter();
+            break;
+        case 'roundSearch':
+            if (typeof applyRoundSearchingFilter === 'function') applyRoundSearchingFilter();
             break;
         default:
             console.log('Действие не назначено:', action);
