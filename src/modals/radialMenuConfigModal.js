@@ -9,7 +9,9 @@
         isDirty: false,
         originalConfig: null,
         currentConfig: null,
-        validationErrors: []
+        validationErrors: [],
+        resolvePromise: null,
+        rejectPromise: null
     };
 
     // Конфигурация инструментов по умолчанию
@@ -389,43 +391,52 @@
 
     // Открытие модального окна
     function open(existingConfig = null) {
-        const modal = document.getElementById('radialMenuConfigModal');
-        if (!modal) return;
-        
-        // Инициализация состояния
-        modalState.isOpen = true;
-        modalState.isDirty = false;
-        modalState.validationErrors = [];
-        
-        // Загрузка конфигурации
-        if (existingConfig) {
-            modalState.originalConfig = JSON.parse(JSON.stringify(existingConfig));
-            modalState.currentConfig = JSON.parse(JSON.stringify(existingConfig));
-        } else {
-            // Новая конфигурация
-            modalState.originalConfig = {
-                enabled: true,
-                radius: 90,
-                items: [...defaultTools, ...defaultFilters]
-            };
-            modalState.currentConfig = JSON.parse(JSON.stringify(modalState.originalConfig));
-        }
-        
-        // Заполнение формы
-        populateForm();
-        
-        // Обновление превью
-        updatePreview();
-        
-        // Обновление индикаторов
-        updateDirtyIndicator();
-        validateAndEnableSave();
-        
-        // Показ модалки
-        modal.classList.add('active');
-        
-        // Поднятие на передний план
-        bringToFront(modal);
+        return new Promise((resolve, reject) => {
+            const modal = document.getElementById('radialMenuConfigModal');
+            if (!modal) {
+                reject(new Error('Модальное окно не найдено'));
+                return;
+            }
+            
+            // Сохраняем промисы для разрешения позже
+            modalState.resolvePromise = resolve;
+            modalState.rejectPromise = reject;
+            
+            // Инициализация состояния
+            modalState.isOpen = true;
+            modalState.isDirty = false;
+            modalState.validationErrors = [];
+            
+            // Загрузка конфигурации
+            if (existingConfig) {
+                modalState.originalConfig = JSON.parse(JSON.stringify(existingConfig));
+                modalState.currentConfig = JSON.parse(JSON.stringify(existingConfig));
+            } else {
+                // Новая конфигурация
+                modalState.originalConfig = {
+                    enabled: true,
+                    radius: 90,
+                    items: [...defaultTools, ...defaultFilters]
+                };
+                modalState.currentConfig = JSON.parse(JSON.stringify(modalState.originalConfig));
+            }
+            
+            // Заполнение формы
+            populateForm();
+            
+            // Обновление превью
+            updatePreview();
+            
+            // Обновление индикаторов
+            updateDirtyIndicator();
+            validateAndEnableSave();
+            
+            // Показ модалки
+            modal.classList.add('active');
+            
+            // Поднятие на передний план
+            bringToFront(modal);
+        });
     }
 
     // Заполнение формы данными
@@ -450,6 +461,10 @@
         if (modal) {
             modal.classList.remove('active');
         }
+        
+        // Сбрасываем промисы
+        modalState.resolvePromise = null;
+        modalState.rejectPromise = null;
         
         modalState.isOpen = false;
         modalState.isDirty = false;
@@ -481,6 +496,11 @@
             window.radialMenu.saveConfig();
         }
         
+        // Разрешаем промис с новой конфигурацией
+        if (modalState.resolvePromise) {
+            modalState.resolvePromise(JSON.parse(JSON.stringify(modalState.currentConfig)));
+        }
+        
         // Закрываем окно
         close();
         
@@ -492,6 +512,11 @@
         if (modalState.isDirty) {
             const confirmed = confirm('У вас есть несохраненные изменения. Закрыть без сохранения?');
             if (!confirmed) return;
+        }
+        
+        // Отклоняем промис (отмена изменений)
+        if (modalState.rejectPromise) {
+            modalState.rejectPromise(new Error('Изменения отменены'));
         }
         
         close();
