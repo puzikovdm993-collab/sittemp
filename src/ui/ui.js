@@ -87,17 +87,32 @@ function zoomReset() {
     // Получаем текущий активный файл (предположительно, объект с данными изображения)
     const file = getActiveFile();
 
-    // Проверяем, что файл существует и содержит элемент canvas
-    if (!file || !file.canvas){
+    // Проверяем, что файл существует
+    if (!file){
         // Если условий нет, выходим из функции (зум не применим)
         return;
     }
 
-    // Масштабируем ширину холста, умножая его исходное значение на коэффициент zoom
-    file.canvas.style.width = `${file.canvas.width * zoom}px`;
+    // Получаем ссылки на видимые canvas элементы
+    const imageCanvas = document.getElementById('imageCanvas');
+    const overlayCanvas = document.getElementById('overlayCanvas');
 
-    // Масштабируем высоту холста аналогично
-    file.canvas.style.height = `${file.canvas.height * zoom}px`;
+    // Применяем масштабирование к обоим canvas
+    if (imageCanvas) {
+        imageCanvas.style.width = `${file.width * zoom}px`;
+        imageCanvas.style.height = `${file.height * zoom}px`;
+    }
+
+    if (overlayCanvas) {
+        overlayCanvas.style.width = `${file.width * zoom}px`;
+        overlayCanvas.style.height = `${file.height * zoom}px`;
+    }
+
+    // Также масштабируем скрытый file.canvas для совместимости
+    if (file.canvas) {
+        file.canvas.style.width = `${file.width * zoom}px`;
+        file.canvas.style.height = `${file.height * zoom}px`;
+    }
 
     // Проверяем, существует ли элемент интерфейса для отображения уровня зума
     if (dom.zoomLevel) {

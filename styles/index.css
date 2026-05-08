@@ -895,17 +895,15 @@ svg.active  {
 
 #canvasHost  {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
+    width: auto;
+    height: auto;
 }
 
-#imageCanvas  {
+#imageCanvas, #overlayCanvas {
     background: #1e1e1e;
     border: 1px solid var(--color-border);
     image-rendering: pixelated;
-    max-width: 100%;
-    max-height: 100%;
     display: block;
 }
 
@@ -1748,6 +1746,7 @@ input, textarea, select,
     display: block;
     image-rendering: pixelated;
     pointer-events: none; /* События мыши проходят сквозь изображение */
+    z-index: 1;
 }
 
 /* Верхний слой: рисование, выделения, инструменты */
@@ -1758,7 +1757,7 @@ input, textarea, select,
     display: block;
     image-rendering: pixelated;
     cursor: crosshair;
-    z-index: 10; /* Поверх изображения */
+    z-index: 2; /* Поверх изображения */
 }
 
 /* Выпадающие меню */

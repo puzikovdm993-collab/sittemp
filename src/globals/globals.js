@@ -285,7 +285,7 @@ function createProjectFromData(projectData) {
                 }
             }
             file.canvas = cnv;
-            file.canvas = cnv.getContext('2d', { willReadFrequently: true });
+            file.ctx = cnv.getContext('2d', { willReadFrequently: true });
             const imageData = new ImageData(data, file.width, file.height);
             file.ctx.putImageData(imageData, 0, 0);
 
