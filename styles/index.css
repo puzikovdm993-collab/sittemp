@@ -922,6 +922,16 @@ svg.active { width: 48px; height: 48px; stroke: #f703ff; stroke-width: 2; fill: 
     justify-content: center;
 }
 
+/* Слой для инструментов (профиль, выделение) - накладывается поверх основного canvas */
+#toolsCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Пропускает события мыши сквозь себя */
+    z-index: 10;
+    display: block;
+}
+
 #imageCanvas {
     background: #1e1e1e;
     border: 1px solid var(--color-border);

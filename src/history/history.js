@@ -87,6 +87,17 @@ function redrawFromHistory() {
     console.log(2);
 
     file.ctx.putImageData(state.ctx, 0, 0);
+    
+    // Очищаем toolsCanvas при восстановлении из истории
+    clearToolsCanvas();
+}
+
+// Очистка toolsCanvas
+function clearToolsCanvas() {
+    const toolsCanvas = dom.toolsCanvas;
+    if (!toolsCanvas) return;
+    const ctx = toolsCanvas.getContext('2d');
+    ctx.clearRect(0, 0, toolsCanvas.width, toolsCanvas.height);
 }
 
 // Отмена последнего действия

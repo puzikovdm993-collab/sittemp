@@ -8,6 +8,7 @@ function initDomElements()                     // заполняет объек�
         windowTitle: document.getElementById('windowTitle'),
         canvasHost: document.getElementById('canvasHost'),
         canvasWrapper: document.getElementById('canvasWrapper'),
+        toolsCanvas: document.getElementById('toolsCanvas'),
         cursorPos: document.getElementById('cursorPos'),
         canvasSize: document.getElementById('canvasSize'),
         zoomLevel: document.getElementById('zoomLevel'),

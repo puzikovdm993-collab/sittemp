@@ -114,13 +114,15 @@ function updateGraph(x1, y1, x2, y2) {
 // function drawStar(cx, cy, spikes, outerR, innerR)
 
 // // Лассо
-
 const LASSO_COLOR = '#0078d7';
 const LASSO_FILL_OPACITY = 0.15; // для готового выделения
 function drawLasso(points, currentX, currentY) {
-    const file = getActiveFile();
-    if (!file || points.length === 0) return;
-    const ctx = file.ctx;
+    const toolsCanvas = dom.toolsCanvas;
+    if (!toolsCanvas || points.length === 0) return;
+    const ctx = toolsCanvas.getContext('2d');
+
+    // Очищаем toolsCanvas перед рисованием
+    ctx.clearRect(0, 0, toolsCanvas.width, toolsCanvas.height);
 
     ctx.strokeStyle = LASSO_COLOR;
     ctx.lineWidth = 1;
@@ -138,9 +140,12 @@ function drawLasso(points, currentX, currentY) {
     ctx.setLineDash([]);
 }
 function drawLassoSelection(points) {
-    const file = getActiveFile();
-    if (!file || points.length < 2) return;
-    const ctx = file.ctx;
+    const toolsCanvas = dom.toolsCanvas;
+    if (!toolsCanvas || points.length < 2) return;
+    const ctx = toolsCanvas.getContext('2d');
+
+    // Очищаем toolsCanvas перед рисованием
+    ctx.clearRect(0, 0, toolsCanvas.width, toolsCanvas.height);
 
     ctx.strokeStyle = '#ef4444';
     ctx.fillStyle = `rgba(0, 120, 215, ${LASSO_FILL_OPACITY})`;
@@ -158,9 +163,12 @@ function drawLassoSelection(points) {
     ctx.setLineDash([]);
 }
 function drawLassoSelectionRED(points) {
-    const file = getActiveFile();
-    if (!file || points.length < 2) return;
-    const ctx = file.ctx;
+    const toolsCanvas = dom.toolsCanvas;
+    if (!toolsCanvas || points.length < 2) return;
+    const ctx = toolsCanvas.getContext('2d');
+
+    // Очищаем toolsCanvas перед рисованием
+    ctx.clearRect(0, 0, toolsCanvas.width, toolsCanvas.height);
 
     ctx.strokeStyle = LASSO_COLOR;
     ctx.fillStyle = `rgba(0, 120, 215, ${LASSO_FILL_OPACITY})`;
@@ -277,9 +285,12 @@ function distanceToSegment(px, py, x1, y1, x2, y2) {
 // Отрисовка профиля и маркеров
 function drawProfile(profile) {
     if (!profile) return;
-    const file = getActiveFile();
-    if (!file) return;
-    const ctx = file.ctx;
+    const toolsCanvas = dom.toolsCanvas;
+    if (!toolsCanvas) return;
+    const ctx = toolsCanvas.getContext('2d');
+
+    // Очищаем toolsCanvas перед рисованием
+    ctx.clearRect(0, 0, toolsCanvas.width, toolsCanvas.height);
 
     // Рисуем линию профиля
     ctx.strokeStyle = '#ff0000';
@@ -303,9 +314,12 @@ function drawProfile(profile) {
 }
 // Отрисовка линии профиля во время создания (красная линия + синие маркеры)
 function drawProfileInProgress(x1, y1, x2, y2) {
-    const file = getActiveFile();
-    if (!file) return;
-    const ctx = file.ctx;
+    const toolsCanvas = dom.toolsCanvas;
+    if (!toolsCanvas) return;
+    const ctx = toolsCanvas.getContext('2d');
+
+    // Очищаем toolsCanvas перед рисованием
+    ctx.clearRect(0, 0, toolsCanvas.width, toolsCanvas.height);
 
     // Линия красным цветом
     ctx.strokeStyle = '#ff0000';
