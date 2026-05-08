@@ -196,7 +196,7 @@ function handleMouseMove(e) {
             } else {
                 // Рисование нового профиля
                 redrawFromHistory();
-                drawProfileInProgress(startX, startY, coords.x, coords.y);
+                 drawProfileInProgress(startX, startY, coords.x, coords.y);
                 updateGraph(startX, startY, coords.x, coords.y); // сразу обновляем график
             }
             break;

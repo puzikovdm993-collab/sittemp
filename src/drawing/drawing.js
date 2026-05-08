@@ -303,7 +303,7 @@ function drawProfile(profile) {
 }
 // Отрисовка линии профиля во время создания (красная линия + синие маркеры)
 function drawProfileInProgress(x1, y1, x2, y2) {
-    const file = getActiveFile();
+     const file = getActiveFile();
     if (!file) return;
     const ctx = file.ctx;
 
@@ -323,4 +323,8 @@ function drawProfileInProgress(x1, y1, x2, y2) {
     ctx.beginPath();
     ctx.arc(x2, y2, 5, 0, 2 * Math.PI);
     ctx.fill();
+    
+
+
+
 }

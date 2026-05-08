@@ -27,16 +27,15 @@ function questionProject() {
 function setTool(tool) {
     currentTool = tool;
 
-        // Обновление UI кнопок
-        document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
-        const toolBtn = document.querySelector(`[data-tool="${tool}"]`);
-        if (toolBtn) toolBtn.classList.add('active');
-        updateToolInfo();
-        setCanvasCursor();
+    // Обновление UI кнопок
+    document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+    const toolBtn = document.querySelector(`[data-tool="${tool}"]`);
+    if (toolBtn) toolBtn.classList.add('active');
+    updateToolInfo();
+    setCanvasCursor();
 
 
     // #region [Профиль] (VS Code)
-
     // Показываем график только для профиля
     if (tool == 'profile') {
         document.getElementById('graphModal').classList.add('active');
@@ -53,8 +52,9 @@ function setTool(tool) {
         currentProfile = null;
         dragMode = 'none';
     }
-
     // #endregion
+
+
 
     // #region [Лассо] (VS Code)
     // Сброс лассо при переключении с него
