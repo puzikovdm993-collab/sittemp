@@ -119,8 +119,6 @@ function handleMouseDown(e) {
             // Если не попали в существующий профиль, начинаем новый
             startX = coords.x;
             startY = coords.y;
-            lassoPoints = [{x: startX, y: startY}];
-            isLassoClosed = false;
             isDrawing = true;
             break;
         }
@@ -175,7 +173,7 @@ function handleMouseMove(e) {
 
             if (dragMode !== 'none') {
                 // Режим перетаскивания существующего профиля
-                redrawFromHistory(); // восстанавливаем основное изображение
+                matrixToImage(); // восстанавливаем основное изображение
 
                 if (dragMode === 'start') {
                     currentProfile.x1 = coords.x;
@@ -195,7 +193,7 @@ function handleMouseMove(e) {
                 updateGraph(currentProfile.x1, currentProfile.y1, currentProfile.x2, currentProfile.y2);
             } else {
                 // Рисование нового профиля
-                redrawFromHistory();
+                matrixToImage();
                 drawProfileInProgress(startX, startY, coords.x, coords.y);
                 updateGraph(startX, startY, coords.x, coords.y); // сразу обновляем график
             }
@@ -272,7 +270,7 @@ function handleMouseUp(e) {
                     y2: lastY
                 };
                 // Перерисовываем основное изображение из истории
-                redrawFromHistory();
+                matrixToImage();
                 // Рисуем профиль поверх
                 drawProfile(currentProfile);
             }
