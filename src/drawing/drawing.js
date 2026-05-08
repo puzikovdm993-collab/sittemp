@@ -318,8 +318,8 @@ function drawProfileInProgress(x1, y1, x2, y2) {
     if (!toolsCanvas) return;
     const ctx = toolsCanvas.getContext('2d');
 
-    // НЕ очищаем toolsCanvas - это позволяет сохранять ранее нарисованный профиль
-    // ctx.clearRect(0, 0, toolsCanvas.width, toolsCanvas.height);
+    // Очищаем toolsCanvas перед рисованием
+    ctx.clearRect(0, 0, toolsCanvas.width, toolsCanvas.height);
 
     // Линия красным цветом
     ctx.strokeStyle = '#ff0000';

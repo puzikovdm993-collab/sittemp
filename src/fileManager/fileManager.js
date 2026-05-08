@@ -754,6 +754,20 @@ function matrixToImage(){
             ctx = file.ctx;
             applyZoom();
             updateCanvasSize();
+            
+            // Сохраняем текущий профиль перед очисткой toolsCanvas
+            const savedProfile = currentProfile ? {...currentProfile} : null;
+            
+            // Очищаем toolsCanvas только если нет активного профиля
+            if (!savedProfile && dom.toolsCanvas) {
+                const toolsCtx = dom.toolsCanvas.getContext('2d');
+                toolsCtx.clearRect(0, 0, dom.toolsCanvas.width, dom.toolsCanvas.height);
+            } else if (savedProfile && dom.toolsCanvas) {
+                // Перерисовываем профиль после очистки
+                const toolsCtx = dom.toolsCanvas.getContext('2d');
+                toolsCtx.clearRect(0, 0, dom.toolsCanvas.width, dom.toolsCanvas.height);
+                drawProfile(savedProfile);
+            }
         }
 
     //saveState();

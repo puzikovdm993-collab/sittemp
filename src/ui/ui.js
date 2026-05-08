@@ -22,13 +22,17 @@ function updateCanvasSize() {
 function syncToolsCanvasSize(mainCanvas) {
     if (!dom.toolsCanvas || !mainCanvas) return;
     
-    // Устанавливаем размеры toolsCanvas равными размерам основного канваса
+    // Устанавливаем внутренние размеры toolsCanvas равными размерам основного канваса
     dom.toolsCanvas.width = mainCanvas.width;
     dom.toolsCanvas.height = mainCanvas.height;
     
-    // Убеждаемся, что styles совпадают с основным канвасом
+    // Синхронизируем CSS-размеры для правильного отображения при зуме
     dom.toolsCanvas.style.width = mainCanvas.style.width;
     dom.toolsCanvas.style.height = mainCanvas.style.height;
+    
+    // Принудительно обновляем контекст после изменения размеров
+    const ctx = dom.toolsCanvas.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Сбрасываем любые трансформации
 }
 
 function updateActiveFilePreviewLocal(fileId) {
