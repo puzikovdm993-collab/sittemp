@@ -54,17 +54,56 @@ const ProjectDB = {
                 const transaction = this.db.transaction([this.STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(this.STORE_NAME);
                 
+                // Нормализуем структуру проекта, убирая дублирующиеся поля
+                let normalizedProject = { ...projectData };
+                
+                // Если есть вложенный объект project, извлекаем данные из него
+                if (normalizedProject.project && typeof normalizedProject.project === 'object') {
+                    const innerProject = normalizedProject.project;
+                    
+                    // Копируем поля из вложенного project только если их нет на верхнем уровне
+                    if (!normalizedProject.id && innerProject.id) {
+                        normalizedProject.id = innerProject.id;
+                    }
+                    if (!normalizedProject.name && innerProject.name) {
+                        normalizedProject.name = innerProject.name;
+                    }
+                    if (!normalizedProject.createdAt && innerProject.createdAt) {
+                        normalizedProject.createdAt = innerProject.createdAt;
+                    }
+                    if (!normalizedProject.lastUpdate && innerProject.lastUpdate) {
+                        normalizedProject.lastUpdate = innerProject.lastUpdate;
+                    }
+                    if (!normalizedProject.owner && innerProject.owner !== undefined) {
+                        normalizedProject.owner = innerProject.owner;
+                    }
+                    if (!normalizedProject.type && innerProject.type) {
+                        normalizedProject.type = innerProject.type;
+                    }
+                    if (!normalizedProject.order && innerProject.order !== undefined) {
+                        normalizedProject.order = innerProject.order;
+                    }
+                    // Объединяем settings, отдавая приоритет верхнему уровню
+                    if (innerProject.settings) {
+                        normalizedProject.settings = {
+                            ...innerProject.settings,
+                            ...(normalizedProject.settings || {})
+                        };
+                    }
+                    
+                    // Удаляем вложенный объект project чтобы избежать дублирования
+                    delete normalizedProject.project;
+                }
+                
                 // Убеждаемся, что у проекта есть поле id для keyPath
-                const projectWithId = { ...projectData };
-                if (!projectWithId.id) {
+                if (!normalizedProject.id) {
                     console.warn('У проекта отсутствует поле id, используем projectId из метаданных или генерируем');
-                    // Пытаемся найти id в других полях или используем projectId
-                    projectWithId.id = projectData.projectId || projectData._id || `unknown_${Date.now()}`;
+                    normalizedProject.id = normalizedProject.projectId || normalizedProject._id || `unknown_${Date.now()}`;
                 }
                 
                 // Добавляем метку времени обновления
                 const projectWithTimestamp = {
-                    ...projectWithId,
+                    ...normalizedProject,
                     lastUpdated: Date.now(),
                     cachedAt: new Date().toISOString()
                 };
@@ -72,7 +111,7 @@ const ProjectDB = {
                 const request = store.put(projectWithTimestamp);
 
                 request.onsuccess = () => {
-                    console.log('Проект сохранён в IndexedDB:', projectWithId.id);
+                    console.log('Проект сохранён в IndexedDB:', projectWithTimestamp.id);
                     resolve(projectWithTimestamp);
                 };
 
