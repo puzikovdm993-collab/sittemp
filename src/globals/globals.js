@@ -218,9 +218,11 @@ function createProjectFromData(projectData) {
         files: []
     };
 
-    // Восстанавливаем файлы (если есть)
-    if (projectData.project.files && Array.isArray(projectData.project.files)) {
-        projectData.project.files.forEach(fileData => {
+    // Восстанавливаем файлы из кэша IndexedDB (openedFiles) или из projectData.project.files
+    const filesToRestore = projectData.openedFiles || (projectData.project?.files && Array.isArray(projectData.project.files) ? projectData.project.files : []);
+    
+    if (filesToRestore && filesToRestore.length > 0) {
+        filesToRestore.forEach(fileData => {
             const file = {
                 id: fileData.id,
                 filename: fileData.filename || 'UnownName',
@@ -261,7 +263,7 @@ function createProjectFromData(projectData) {
                 'color-bar-coolwarm': 'coolwarm'       
             };
             const colorBar = document.getElementById('colorBar');
-            const colormap = colorBarNames[colorBar.classList[1]];
+            const colormap = colorBarNames[colorBar.classList[1]] || 'gray';
             //console.log(colormap);
             const colorMap = getColormap(colormap);
             const data = new Uint8ClampedArray(file.width * file.height * 4);
@@ -280,14 +282,28 @@ function createProjectFromData(projectData) {
                     data[dataIndex++] = 255;
                 }
             }
-            file.canvas = cnv;
-            file.canvas = cnv.getContext('2d', { willReadFrequently: true });
+            file.ctx = cnv.getContext('2d', { willReadFrequently: true });
             const imageData = new ImageData(data, file.width, file.height);
             file.ctx.putImageData(imageData, 0, 0);
+            file.canvas = cnv;
 
             project.files.push(file);
 
         });
+        
+        // Восстанавливаем активный файл
+        if (projectData.activeFileId && project.files.find(f => f.id === projectData.activeFileId)) {
+            window.activeFileId = projectData.activeFileId;
+        } else if (project.files.length > 0) {
+            window.activeFileId = project.files[0].id;
+        }
+        
+        // Переключаемся на активный файл после небольшой задержки для завершения инициализации DOM
+        setTimeout(() => {
+            if (typeof switchToFile === 'function' && window.activeFileId) {
+                switchToFile(window.activeFileId);
+            }
+        }, 100);
     }
 
     return project;

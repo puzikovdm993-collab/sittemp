@@ -101,12 +101,33 @@ const ProjectDB = {
                     normalizedProject.id = normalizedProject.projectId || normalizedProject._id || `unknown_${Date.now()}`;
                 }
                 
-                // Сохраняем проект без лишних служебных полей
-                const request = store.put(normalizedProject);
+                // Сохраняем проект без лишних служебных полей и с историей файлов
+                const projectToSave = { ...normalizedProject };
+                
+                // Добавляем информацию об открытых файлах и их истории
+                if (window.project && window.project.files) {
+                    projectToSave.openedFiles = window.project.files.map(file => ({
+                        id: file.id,
+                        filename: file.filename,
+                        width: file.width,
+                        height: file.height,
+                        dpi: file.dpi,
+                        minValue: file.minValue,
+                        maxValue: file.maxValue,
+                        autoscale: file.autoscale,
+                        colormap: file.colormap,
+                        matrix: file.matrix,
+                        history: file.history || [],
+                        historyIndex: file.historyIndex || -1
+                    }));
+                    projectToSave.activeFileId = window.activeFileId;
+                }
+                
+                const request = store.put(projectToSave);
 
                 request.onsuccess = () => {
                     console.log('Проект сохранён в IndexedDB:', normalizedProject.id);
-                    resolve(normalizedProject);
+                    resolve(projectToSave);
                 };
 
                 request.onerror = () => {
