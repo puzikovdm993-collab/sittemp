@@ -54,9 +54,17 @@ const ProjectDB = {
                 const transaction = this.db.transaction([this.STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(this.STORE_NAME);
                 
+                // Убеждаемся, что у проекта есть поле id для keyPath
+                const projectWithId = { ...projectData };
+                if (!projectWithId.id) {
+                    console.warn('У проекта отсутствует поле id, используем projectId из метаданных или генерируем');
+                    // Пытаемся найти id в других полях или используем projectId
+                    projectWithId.id = projectData.projectId || projectData._id || `unknown_${Date.now()}`;
+                }
+                
                 // Добавляем метку времени обновления
                 const projectWithTimestamp = {
-                    ...projectData,
+                    ...projectWithId,
                     lastUpdated: Date.now(),
                     cachedAt: new Date().toISOString()
                 };
@@ -64,7 +72,7 @@ const ProjectDB = {
                 const request = store.put(projectWithTimestamp);
 
                 request.onsuccess = () => {
-                    console.log('Проект сохранён в IndexedDB:', projectData.id);
+                    console.log('Проект сохранён в IndexedDB:', projectWithId.id);
                     resolve(projectWithTimestamp);
                 };
 
