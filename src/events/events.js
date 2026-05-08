@@ -173,8 +173,7 @@ function handleMouseMove(e) {
 
             if (dragMode !== 'none') {
                 // Режим перетаскивания существующего профиля
-                const profileToRestore = currentProfile ? {...currentProfile} : null;
-                matrixToImage(); // восстанавливаем основное изображение
+                redrawFromHistory(false); // восстанавливаем основное изображение, НЕ очищая toolsCanvas
 
                 if (dragMode === 'start') {
                     currentProfile.x1 = coords.x;
@@ -194,13 +193,7 @@ function handleMouseMove(e) {
                 updateGraph(currentProfile.x1, currentProfile.y1, currentProfile.x2, currentProfile.y2);
             } else {
                 // Рисование нового профиля
-                const profileToRestore = currentProfile ? {...currentProfile} : null;
-                matrixToImage();
-                // Восстанавливаем профиль если он был
-                if (profileToRestore) {
-                    currentProfile = profileToRestore;
-                    drawProfile(currentProfile);
-                }
+                redrawFromHistory(false); // НЕ очищаем toolsCanvas
                 drawProfileInProgress(startX, startY, coords.x, coords.y);
                 updateGraph(startX, startY, coords.x, coords.y); // сразу обновляем график
             }
@@ -276,8 +269,8 @@ function handleMouseUp(e) {
                     x2: lastX,
                     y2: lastY
                 };
-                // Перерисовываем основное изображение из истории
-                matrixToImage();
+                // Перерисовываем основное изображение из истории и очищаем toolsCanvas для финальной отрисовки
+                redrawFromHistory(true);
                 // Рисуем профиль поверх
                 drawProfile(currentProfile);
             }

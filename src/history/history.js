@@ -71,7 +71,7 @@ function saveState() {
 }
 
 // Перерисовка canvas из последнего состояния истории
-function redrawFromHistory() {
+function redrawFromHistory(clearTools = true) {
     const file = getActiveFile();
     if (!file) return;
     
@@ -88,8 +88,10 @@ function redrawFromHistory() {
 
     file.ctx.putImageData(state.ctx, 0, 0);
     
-    // Очищаем toolsCanvas при восстановлении из истории
-    clearToolsCanvas();
+    // Очищаем toolsCanvas при восстановлении из истории (если не указано иное)
+    if (clearTools) {
+        clearToolsCanvas();
+    }
 }
 
 // Очистка toolsCanvas
