@@ -8,7 +8,27 @@ function updateCanvasSize() {
     if (dom.canvasSize) {
         dom.canvasSize.textContent = `${file.canvas.width} × ${file.canvas.height} пикселей`;
     }
+    
+    // Синхронизируем размеры toolsCanvas с основным канвасом
+    syncToolsCanvasSize(file.canvas);
+    
     updateActiveFilePreviewLocal(file.id);
+}
+
+/**
+ * Синхронизирует размеры toolsCanvas с основным канвасом
+ * @param {HTMLCanvasElement} mainCanvas - основной канвас
+ */
+function syncToolsCanvasSize(mainCanvas) {
+    if (!dom.toolsCanvas || !mainCanvas) return;
+    
+    // Устанавливаем размеры toolsCanvas равными размерам основного канваса
+    dom.toolsCanvas.width = mainCanvas.width;
+    dom.toolsCanvas.height = mainCanvas.height;
+    
+    // Убеждаемся, что styles совпадают с основным канвасом
+    dom.toolsCanvas.style.width = mainCanvas.style.width;
+    dom.toolsCanvas.style.height = mainCanvas.style.height;
 }
 
 function updateActiveFilePreviewLocal(fileId) {
@@ -98,6 +118,12 @@ function zoomReset() {
 
     // Масштабируем высоту холста аналогично
     file.canvas.style.height = `${file.canvas.height * zoom}px`;
+
+    // Применяем тот же масштаб к toolsCanvas
+    if (dom.toolsCanvas) {
+        dom.toolsCanvas.style.width = file.canvas.style.width;
+        dom.toolsCanvas.style.height = file.canvas.style.height;
+    }
 
     // Проверяем, существует ли элемент интерфейса для отображения уровня зума
     if (dom.zoomLevel) {
