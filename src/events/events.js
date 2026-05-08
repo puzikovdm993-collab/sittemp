@@ -257,20 +257,24 @@ function handleMouseUp(e) {
                 // Завершаем перетаскивание – ничего не сохраняем, просто выходим
                 dragMode = 'none';
                 originalProfile = null;
-            } else {
-                // Завершаем создание нового профиля
-                if (lassoPoints.length > 0) {
-                    // Сохраняем координаты
-                    currentProfile = {
-                        x1: startX,
-                        y1: startY,
-                        x2: lastX,
-                        y2: lastY
-                    };
-                    // Перерисовываем финальную версию
-                    redrawFromHistory();
+                // После перетаскивания профиль уже нарисован через drawProfile в mouseMove
+                // Убедимся, что он остаётся видимым
+                if (currentProfile) {
                     drawProfile(currentProfile);
                 }
+            } else {
+                // Завершаем создание нового профиля
+                // Сохраняем координаты
+                currentProfile = {
+                    x1: startX,
+                    y1: startY,
+                    x2: lastX,
+                    y2: lastY
+                };
+                // Перерисовываем основное изображение из истории
+                redrawFromHistory();
+                // Рисуем профиль поверх
+                drawProfile(currentProfile);
             }
             isDrawing = false;
             break;
