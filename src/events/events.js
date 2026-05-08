@@ -173,6 +173,7 @@ function handleMouseMove(e) {
 
             if (dragMode !== 'none') {
                 // Режим перетаскивания существующего профиля
+                const profileToRestore = currentProfile ? {...currentProfile} : null;
                 matrixToImage(); // восстанавливаем основное изображение
 
                 if (dragMode === 'start') {
@@ -193,7 +194,13 @@ function handleMouseMove(e) {
                 updateGraph(currentProfile.x1, currentProfile.y1, currentProfile.x2, currentProfile.y2);
             } else {
                 // Рисование нового профиля
+                const profileToRestore = currentProfile ? {...currentProfile} : null;
                 matrixToImage();
+                // Восстанавливаем профиль если он был
+                if (profileToRestore) {
+                    currentProfile = profileToRestore;
+                    drawProfile(currentProfile);
+                }
                 drawProfileInProgress(startX, startY, coords.x, coords.y);
                 updateGraph(startX, startY, coords.x, coords.y); // сразу обновляем график
             }
