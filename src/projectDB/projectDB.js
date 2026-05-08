@@ -101,18 +101,12 @@ const ProjectDB = {
                     normalizedProject.id = normalizedProject.projectId || normalizedProject._id || `unknown_${Date.now()}`;
                 }
                 
-                // Добавляем метку времени обновления
-                const projectWithTimestamp = {
-                    ...normalizedProject,
-                    lastUpdated: Date.now(),
-                    cachedAt: new Date().toISOString()
-                };
-
-                const request = store.put(projectWithTimestamp);
+                // Сохраняем проект без лишних служебных полей
+                const request = store.put(normalizedProject);
 
                 request.onsuccess = () => {
-                    console.log('Проект сохранён в IndexedDB:', projectWithTimestamp.id);
-                    resolve(projectWithTimestamp);
+                    console.log('Проект сохранён в IndexedDB:', normalizedProject.id);
+                    resolve(normalizedProject);
                 };
 
                 request.onerror = () => {
