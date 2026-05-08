@@ -53,15 +53,8 @@ function switchToFile(fileId) {
         }
     });
     
-    // Показываем активный canvas
-    if (file.canvas) {
-        file.canvas.style.display = 'block';
-    }
-    
     // Устанавливаем активный файл
     activeFileId = fileId;
-
-
 
     const max = document.getElementById('color_bar_label_max');
     const median = document.getElementById('color_bar_label_median');
@@ -71,8 +64,34 @@ function switchToFile(fileId) {
     median.textContent = ((file.maxValue+file.minValue)/2).toFixed(5);
     min.textContent = file.minValue;
 
-    canvas = file.canvas;
-    ctx = file.ctx;
+    // Настраиваем canvas для изображения и overlay
+    imageCanvas = document.getElementById('imageCanvas');
+    overlayCanvas = document.getElementById('overlayCanvas');
+    
+    if (!imageCanvas || !overlayCanvas) {
+        console.error('Canvas элементы не найдены!');
+        return;
+    }
+    
+    // Устанавливаем размеры canvas под размер изображения
+    imageCanvas.width = file.width;
+    imageCanvas.height = file.height;
+    overlayCanvas.width = file.width;
+    overlayCanvas.height = file.height;
+    
+    imageCtx = imageCanvas.getContext('2d', { willReadFrequently: true });
+    overlayCtx = overlayCanvas.getContext('2d', { willReadFrequently: true });
+    
+    // Копируем изображение из скрытого canvas файла на imageCanvas
+    imageCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+    imageCtx.drawImage(file.canvas, 0, 0);
+    
+    // Очищаем overlay
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    
+    // Обновляем глобальные ссылки для совместимости
+    canvas = overlayCanvas;
+    ctx = overlayCtx;
     
     // Обновляем интерфейс
     updateWindowTitle();        // Функция для обновления заголовка окна

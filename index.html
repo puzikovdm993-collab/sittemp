@@ -807,7 +807,12 @@
         <div class="canvas-area" id="canvasArea">
             <div class="canvas-wrapper" id="canvasWrapper">
                 <!-- Контейнер для canvas элементов -->
-                <div id="canvasHost"></div>
+                <div id="canvasHost">
+                    <!-- Нижний слой: изображение -->
+                    <canvas id="imageCanvas" class="image-canvas"></canvas>
+                    <!-- Верхний слой: рисование, выделения, инструменты -->
+                    <canvas id="overlayCanvas" class="overlay-canvas"></canvas>
+                </div>
                 <!-- Overlay для ввода текста -->
                 <div class="text-input-overlay" id="textInputOverlay">
                     <textarea id="textInput" placeholder="Введите текст..."></textarea>

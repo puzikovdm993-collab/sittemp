@@ -1740,6 +1740,27 @@ input, textarea, select,
     cursor: crosshair;
 }
 
+/* Нижний слой: изображение */
+.image-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    image-rendering: pixelated;
+    pointer-events: none; /* События мыши проходят сквозь изображение */
+}
+
+/* Верхний слой: рисование, выделения, инструменты */
+.overlay-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    image-rendering: pixelated;
+    cursor: crosshair;
+    z-index: 10; /* Поверх изображения */
+}
+
 /* Выпадающие меню */
 .dropdown  {
     position: relative;
