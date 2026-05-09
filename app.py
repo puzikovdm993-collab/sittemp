@@ -1172,6 +1172,12 @@ def load_project(project_id):
         # Парсим JSON
         project_data = json.loads(json_str)
         
+        # Убеждаемся, что у проекта есть поле id для корректного сохранения в IndexedDB
+        if 'id' not in project_data or not project_data['id']:
+            app_logger.info(f"Добавляем поле id в проект {project_id}")
+            project_data['id'] = project_id
+            project_data['projectId'] = project_id
+        
         app_logger.info(f"Проект {project_id} успешно загружен из MinIO")
 
         return jsonify({
