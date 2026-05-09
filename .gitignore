@@ -1,5 +1,1 @@
-```
-# Logs
-*.log
-logs/
-```
+(src/globals/globals.js)
