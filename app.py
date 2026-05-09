@@ -1078,14 +1078,15 @@ def endpointtest():
 
 # ==================== Project Management Endpoints ====================
 
-@app.route('/save_project', methods=['POST'])
+@app.route('/save_project/<project_id>', methods=['POST'])
 @handle_minio_errors
-def save_project():
+def save_project(project_id):
     """
     Сохраняет проект в MinIO в формате JSON.
     Ожидает JSON с структурой проекта.
+    project_id берётся из URL пути.
     """
-    app_logger.info("Запрос на сохранение проекта в MinIO")
+    app_logger.info(f"Запрос на сохранение проекта {project_id} в MinIO")
     
     # Получаем данные проекта из запроса
     data = request.get_json()
@@ -1095,16 +1096,16 @@ def save_project():
 
 
     app_logger.error(data)
-    # Проверяем наличие обязательных полей
+    # Используем project_id из URL, но также проверяем наличие в данных
     if 'project' not in data:
         app_logger.error(f"error: Missing 'project' field  400 ")
         return jsonify({'error': 'Missing "project" field'}), 400
     
 
-    project_id = data['project'].get('id')
-    if not project_id:
-        app_logger.error(f"error': 'Missing project id,  400")
-        return jsonify({'error': 'Missing project id'}), 400
+    # Проверяем, что ID в данных совпадает с ID в URL (если есть в данных)
+    data_project_id = data['project'].get('id')
+    if data_project_id and data_project_id != project_id:
+        app_logger.warning(f"Несоответствие project_id: в URL={project_id}, в данных={data_project_id}")
     
     # Формируем имя объекта в MinIO
     object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.json"
