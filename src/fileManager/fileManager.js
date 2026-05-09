@@ -61,8 +61,6 @@ function switchToFile(fileId) {
     // Устанавливаем активный файл
     activeFileId = fileId;
 
-
-
     const max = document.getElementById('color_bar_label_max');
     const median = document.getElementById('color_bar_label_median');
     const min = document.getElementById('color_bar_label_min');
@@ -84,6 +82,18 @@ function switchToFile(fileId) {
     // Обновляем список открытых файлов
     updateOpenFilesList();              // Обновление списка открытых файлов в выпадающем списке
     updateActiveFilePreview(fileId);
+    
+    // Сохраняем состояние проекта в IndexedDB после переключения файла
+    if (window.project && window.project.id) {
+        const projectId = window.project.id;
+        setTimeout(() => {
+            if (typeof ProjectDB !== 'undefined') {
+                ProjectDB.saveProjectState(projectId).catch(err => {
+                    console.error('⚠️ Не удалось сохранить состояние в IndexedDB:', err);
+                });
+            }
+        }, 50);
+    }
 }
 
 // Закрытие файла

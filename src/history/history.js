@@ -25,7 +25,7 @@ function pushState(file) {
     file.history = file.history.slice(0, file.historyIndex);
     file.history.push(captureState(file));
 
-    console.log(file.history);
+    console.log('📜 История обновлена:', file.history.length, 'шагов, текущий индекс:', file.historyIndex);
 
     if (file.history.length > maxHistory) {
         file.history.shift();
@@ -38,6 +38,19 @@ function pushState(file) {
     // Обновляем окно истории, если оно открыто
     if (typeof isHistoryModalOpen === 'function' && isHistoryModalOpen()) {
         updateHistoryModal();
+    }
+    
+    // Сохраняем состояние проекта в IndexedDB после каждого изменения
+    if (window.project && window.project.id) {
+        const projectId = window.project.id;
+        // Используем setTimeout чтобы не блокировать основной поток
+        setTimeout(() => {
+            if (typeof ProjectDB !== 'undefined') {
+                ProjectDB.saveProjectState(projectId).catch(err => {
+                    console.error('⚠️ Не удалось сохранить состояние в IndexedDB:', err);
+                });
+            }
+        }, 50);
     }
 }
 

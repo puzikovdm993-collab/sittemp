@@ -34,12 +34,27 @@ async function loadProject(projectId) {
     const API_BASE_URL = window.location.origin;
     
     try {
+        console.log(`🚀 Начало загрузки проекта ${projectId}...`);
+        
         // Используем умную загрузку с кэшированием через IndexedDB
         // Схема: minio <=> indexeddb <=> браузер клиента
         const projectData = await ProjectDB.loadProjectWithCache(projectId, API_BASE_URL, true);
-        return projectData;
+        
+        console.log('✅ Проект загружен:', projectData);
+        
+        // Восстанавливаем проект из данных (с учётом openedFiles из IndexedDB)
+        const restoredProject = createProjectFromData(projectData);
+        window.project = restoredProject;
+        
+        console.log(`📂 Восстановлено файлов: ${restoredProject.files.length}`);
+        if (restoredProject.files.length > 0) {
+            console.log('📋 Открытые файлы:', restoredProject.files.map(f => f.filename));
+            console.log('🎯 Активный файл:', window.activeFileId);
+        }
+        
+        return restoredProject;
     } catch (error) {
-        console.error("Ошибка загрузки проекта:", error);
+        console.error("❌ Ошибка загрузки проекта:", error);
         throw error;
     }
 }
@@ -65,13 +80,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Загружаем проект если указан projectId
     if (projectId) {
         loadProject(projectId)
-            .then(projectData => {
-                console.log("projectData:", projectData);
-
-                // project = Project.fromProjectData(projectData);
-                // project = createProjectFromData(projectData);
-                console.log("Проект загружен:", projectData);
-                // applySettingsTheme(project);
+            .then(restoredProject => {
+                console.log("📄 restoredProject:", restoredProject);
+                console.log("✅ Проект успешно восстановлен и готов к работе");
 
                 initDomElements();
                 
@@ -80,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 updateButtonsState();
             })
             .catch(error => {
-                console.error("Не удалось загрузить проект:", error);
+                console.error("❌ Не удалось загрузить проект:", error);
             });
     } else {
         // Если projectId не указан, просто инициализируем интерфейс
