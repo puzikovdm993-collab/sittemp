@@ -1083,7 +1083,7 @@ def endpointtest():
 def save_project(project_id):
     """
     Сохраняет проект в MinIO в формате JSON.
-    Ожидает JSON с структурой проекта.
+    Ожидает JSON с данными проекта (напрямую или в поле 'project').
     project_id берётся из URL пути.
     """
     app_logger.info(f"Запрос на сохранение проекта {project_id} в MinIO")
@@ -1094,25 +1094,23 @@ def save_project(project_id):
         app_logger.error(f"error: No JSON data provided  400")
         return jsonify({'error': 'No JSON data provided'}), 400
 
-
-    app_logger.error(data)
-    # Используем project_id из URL, но также проверяем наличие в данных
-    if 'project' not in data:
-        app_logger.error(f"error: Missing 'project' field  400 ")
-        return jsonify({'error': 'Missing "project" field'}), 400
-    
+    # Данные проекта могут приходить напрямую или в поле 'project'
+    if 'project' in data:
+        project_data = data['project']
+    else:
+        project_data = data
 
     # Проверяем, что ID в данных совпадает с ID в URL (если есть в данных)
-    data_project_id = data['project'].get('id')
+    data_project_id = project_data.get('id')
     if data_project_id and data_project_id != project_id:
         app_logger.warning(f"Несоответствие project_id: в URL={project_id}, в данных={data_project_id}")
     
     # Формируем имя объекта в MinIO
     object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.json"
     
-    # Преобразуем данные в JSON
+    # Преобразуем данные в JSON (используем project_data)
     try:
-        json_str = json.dumps(data, ensure_ascii=False, indent=2)
+        json_str = json.dumps(project_data, ensure_ascii=False, indent=2)
         json_bytes = json_str.encode('utf-8')
         app_logger.debug(f"Проект {project_id} сериализован в JSON (размер={len(json_bytes)} байт)")
     except Exception as e:
