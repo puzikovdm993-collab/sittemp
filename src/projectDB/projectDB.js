@@ -56,97 +56,123 @@ const ProjectDB = {
                 const transaction = this.db.transaction([this.STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(this.STORE_NAME);
                 
-                // Нормализуем структуру проекта, убирая дублирующиеся поля
-                let normalizedProject = { ...projectData };
+                // Сначала получаем существующий проект из кэша (если есть)
+                const existingRequest = store.get(projectData.id || projectData.projectId);
                 
-                // Если есть вложенный объект project, извлекаем данные из него
-                if (normalizedProject.project && typeof normalizedProject.project === 'object') {
-                    const innerProject = normalizedProject.project;
+                // Ж завершения запроса получения существующего проекта
+                existingRequest.onsuccess = () => {
+                    const existingProject = existingRequest.result;
                     
-                    // Копируем поля из вложенного project только если их нет на верхнем уровне
-                    if (!normalizedProject.id && innerProject.id) {
-                        normalizedProject.id = innerProject.id;
-                    }
-                    if (!normalizedProject.name && innerProject.name) {
-                        normalizedProject.name = innerProject.name;
-                    }
-                    if (!normalizedProject.createdAt && innerProject.createdAt) {
-                        normalizedProject.createdAt = innerProject.createdAt;
-                    }
-                    if (!normalizedProject.lastUpdate && innerProject.lastUpdate) {
-                        normalizedProject.lastUpdate = innerProject.lastUpdate;
-                    }
-                    if (!normalizedProject.owner && innerProject.owner !== undefined) {
-                        normalizedProject.owner = innerProject.owner;
-                    }
-                    if (!normalizedProject.type && innerProject.type) {
-                        normalizedProject.type = innerProject.type;
-                    }
-                    if (!normalizedProject.order && innerProject.order !== undefined) {
-                        normalizedProject.order = innerProject.order;
-                    }
-                    // Объединяем settings, отдавая приоритет верхнему уровню
-                    if (innerProject.settings) {
-                        normalizedProject.settings = {
-                            ...innerProject.settings,
-                            ...(normalizedProject.settings || {})
-                        };
+                    // Нормализуем структуру проекта, убирая дублирующиеся поля
+                    let normalizedProject = { ...projectData };
+                    
+                    // Если есть вложенный объект project, извлекаем данные из него
+                    if (normalizedProject.project && typeof normalizedProject.project === 'object') {
+                        const innerProject = normalizedProject.project;
+                        
+                        // Копируем поля из вложенного project только если их нет на верхнем уровне
+                        if (!normalizedProject.id && innerProject.id) {
+                            normalizedProject.id = innerProject.id;
+                        }
+                        if (!normalizedProject.name && innerProject.name) {
+                            normalizedProject.name = innerProject.name;
+                        }
+                        if (!normalizedProject.createdAt && innerProject.createdAt) {
+                            normalizedProject.createdAt = innerProject.createdAt;
+                        }
+                        if (!normalizedProject.lastUpdate && innerProject.lastUpdate) {
+                            normalizedProject.lastUpdate = innerProject.lastUpdate;
+                        }
+                        if (!normalizedProject.owner && innerProject.owner !== undefined) {
+                            normalizedProject.owner = innerProject.owner;
+                        }
+                        if (!normalizedProject.type && innerProject.type) {
+                            normalizedProject.type = innerProject.type;
+                        }
+                        if (!normalizedProject.order && innerProject.order !== undefined) {
+                            normalizedProject.order = innerProject.order;
+                        }
+                        // Объединяем settings, отдавая приоритет верхнему уровню
+                        if (innerProject.settings) {
+                            normalizedProject.settings = {
+                                ...innerProject.settings,
+                                ...(normalizedProject.settings || {})
+                            };
+                        }
+                        
+                        // Удаляем вложенный объект project чтобы избежать дублирования
+                        delete normalizedProject.project;
                     }
                     
-                    // Удаляем вложенный объект project чтобы избежать дублирования
-                    delete normalizedProject.project;
-                }
-                
-                // Убеждаемся, что у проекта есть поле id для keyPath
-                if (!normalizedProject.id) {
-                    console.warn('⚠️ У проекта отсутствует поле id, используем projectId из метаданных или генерируем');
-                    normalizedProject.id = normalizedProject.projectId || normalizedProject._id || `unknown_${Date.now()}`;
-                }
-                
-                // Сохраняем проект без лишних служебных полей и с историей файлов
-                const projectToSave = { ...normalizedProject };
-                
-                // Добавляем информацию об открытых файлах и их истории
-                if (window.project && window.project.files) {
-                    projectToSave.openedFiles = window.project.files.map(file => ({
-                        id: file.id,
-                        filename: file.filename,
-                        width: file.width,
-                        height: file.height,
-                        dpi: file.dpi,
-                        minValue: file.minValue,
-                        maxValue: file.maxValue,
-                        autoscale: file.autoscale,
-                        colormap: file.colormap,
-                        matrix: file.matrix,
-                        history: file.history || [],
-                        historyIndex: file.historyIndex || -1
-                    }));
-                    projectToSave.activeFileId = window.activeFileId;
-                }
-                
-                const request = store.put(projectToSave);
-
-                request.onsuccess = () => {
-                    if (!skipLog) {
-                        console.log('💾 Проект сохранён в IndexedDB:', normalizedProject.id);
+                    // Убеждаемся, что у проекта есть поле id для keyPath
+                    if (!normalizedProject.id) {
+                        console.warn('⚠️ У проекта отсутствует поле id, используем projectId из метаданных или генерируем');
+                        normalizedProject.id = normalizedProject.projectId || normalizedProject._id || `unknown_${Date.now()}`;
                     }
-                    resolve(projectToSave);
-                };
-
-                request.onerror = () => {
-                    console.error('❌ Ошибка сохранения в IndexedDB:', request.error);
-                    reject(request.error);
-                };
-
-                transaction.oncomplete = () => {
-                    if (!skipLog) {
-                        console.log('✅ Транзакция записи завершена');
+                    
+                    // Сохраняем проект без лишних служебных полей и с историей файлов
+                    const projectToSave = { ...normalizedProject };
+                    
+                    // ВАЖНО: Сохраняем openedFiles и activeFileId из существующего кэша,
+                    // если window.project ещё не инициализирован (например, при фоновой синхронизации)
+                    if (existingProject && existingProject.openedFiles && existingProject.openedFiles.length > 0) {
+                        if (!window.project || !window.project.files || window.project.files.length === 0) {
+                            // Используем закэшированные openedFiles если текущий проект пуст
+                            projectToSave.openedFiles = existingProject.openedFiles;
+                            projectToSave.activeFileId = existingProject.activeFileId;
+                            if (!skipLog) {
+                                console.log('💾 Сохранены openedFiles из кэша для', normalizedProject.id);
+                            }
+                        }
                     }
-                };
+                    
+                    // Добавляем информацию об открытых файлах и их истории из текущего состояния
+                    if (window.project && window.project.files && window.project.files.length > 0) {
+                        projectToSave.openedFiles = window.project.files.map(file => ({
+                            id: file.id,
+                            filename: file.filename,
+                            width: file.width,
+                            height: file.height,
+                            dpi: file.dpi,
+                            minValue: file.minValue,
+                            maxValue: file.maxValue,
+                            autoscale: file.autoscale,
+                            colormap: file.colormap,
+                            matrix: file.matrix,
+                            history: file.history || [],
+                            historyIndex: file.historyIndex || -1
+                        }));
+                        projectToSave.activeFileId = window.activeFileId;
+                    }
+                    
+                    const putRequest = store.put(projectToSave);
 
-                transaction.onerror = () => {
-                    console.error('❌ Ошибка транзакции:', transaction.error);
+                    putRequest.onsuccess = () => {
+                        if (!skipLog) {
+                            console.log('💾 Проект сохранён в IndexedDB:', normalizedProject.id);
+                        }
+                        resolve(projectToSave);
+                    };
+
+                    putRequest.onerror = () => {
+                        console.error('❌ Ошибка сохранения в IndexedDB:', putRequest.error);
+                        reject(putRequest.error);
+                    };
+
+                    transaction.oncomplete = () => {
+                        if (!skipLog) {
+                            console.log('✅ Транзакция записи завершена');
+                        }
+                    };
+
+                    transaction.onerror = () => {
+                        console.error('❌ Ошибка транзакции:', transaction.error);
+                    };
+                };
+                
+                existingRequest.onerror = () => {
+                    console.error('❌ Ошибка получения существующего проекта:', existingRequest.error);
+                    reject(existingRequest.error);
                 };
             } catch (error) {
                 console.error('❌ Исключение при сохранении в IndexedDB:', error);
