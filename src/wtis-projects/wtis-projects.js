@@ -219,7 +219,7 @@ async function loadlogin() {
 
 async function saveProjectToMinIO(project) {
     try {
-        const res = await fetch(`${API_BASE_URL}/save_project`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ project }) });
+        const res = await fetch(`${API_BASE_URL}/save_project/${project.id}`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ project }) });
         const data = await res.json();
         return data.success;
     } catch(e) { return false; }

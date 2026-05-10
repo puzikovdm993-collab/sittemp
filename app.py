@@ -140,7 +140,7 @@ def set_minio_client():
     Если `.env` не содержит необходимых переменных, применяются значения по умолчанию.
     
     Возвращает:
-        Minio: клиент MinIO с параметрами из окружения
+        Minio: клиент MinIO с параметрами из окружения или None если подключение не удалось
     
     Исключения:
         ValueError: если не найдены обязательные параметры
@@ -174,23 +174,25 @@ def set_minio_client():
     MINIO_SECURE = secure
     MINIO_BUCKET = bucket
     
-    # Создаём новый клиент
-    minio_client = Minio(
-        endpoint=endpoint,
-        access_key=access_key,
-        secret_key=secret_key,
-        region=region,
-        secure=secure
-    )
-    
-    # Проверяем подключение
     try:
+        # Создаём новый клиент
+        minio_client = Minio(
+            endpoint=endpoint,
+            access_key=access_key,
+            secret_key=secret_key,
+            region=region,
+            secure=secure
+        )
+        
+        # Проверяем подключение
         minio_client.list_buckets()
         print("✅ MinIO клиент успешно инициализирован из .env!")
+        return minio_client
     except Exception as e:
-        raise ConnectionError(f"❌ Ошибка подключения к MinIO: {e}") from e
-    
-    return minio_client
+        print(f"⚠️ Не удалось подключиться к MinIO: {e}")
+        print("Приложение будет работать в режиме только с IndexedDB (без синхронизации с MinIO)")
+        minio_client = None
+        return None
 
 
 
@@ -1078,14 +1080,24 @@ def endpointtest():
 
 # ==================== Project Management Endpoints ====================
 
-@app.route('/save_project', methods=['POST'])
-@handle_minio_errors
-def save_project():
+@app.route('/save_project/<project_id>', methods=['POST'])
+def save_project(project_id):
     """
     Сохраняет проект в MinIO в формате JSON.
-    Ожидает JSON с структурой проекта.
+    Ожидает JSON с данными проекта (напрямую или в поле 'project').
+    project_id берётся из URL пути.
     """
-    app_logger.info("Запрос на сохранение проекта в MinIO")
+    # Проверяем доступность MinIO
+    if minio_client is None:
+        app_logger.warning(f"MinIO недоступен. Проект {project_id} сохранён только в IndexedDB")
+        return jsonify({
+            'success': True,
+            'project_id': project_id,
+            'message': 'Project saved to IndexedDB only (MinIO unavailable)',
+            'minio_available': False
+        }), 200
+    
+    app_logger.info(f"Запрос на сохранение проекта {project_id} в MinIO")
     
     # Получаем данные проекта из запроса
     data = request.get_json()
@@ -1093,25 +1105,23 @@ def save_project():
         app_logger.error(f"error: No JSON data provided  400")
         return jsonify({'error': 'No JSON data provided'}), 400
 
+    # Данные проекта могут приходить напрямую или в поле 'project'
+    if 'project' in data:
+        project_data = data['project']
+    else:
+        project_data = data
 
-    app_logger.error(data)
-    # Проверяем наличие обязательных полей
-    if 'project' not in data:
-        app_logger.error(f"error: Missing 'project' field  400 ")
-        return jsonify({'error': 'Missing "project" field'}), 400
-    
-
-    project_id = data['project'].get('id')
-    if not project_id:
-        app_logger.error(f"error': 'Missing project id,  400")
-        return jsonify({'error': 'Missing project id'}), 400
+    # Проверяем, что ID в данных совпадает с ID в URL (если есть в данных)
+    data_project_id = project_data.get('id')
+    if data_project_id and data_project_id != project_id:
+        app_logger.warning(f"Несоответствие project_id: в URL={project_id}, в данных={data_project_id}")
     
     # Формируем имя объекта в MinIO
     object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.json"
     
-    # Преобразуем данные в JSON
+    # Преобразуем данные в JSON (используем project_data)
     try:
-        json_str = json.dumps(data, ensure_ascii=False, indent=2)
+        json_str = json.dumps(project_data, ensure_ascii=False, indent=2)
         json_bytes = json_str.encode('utf-8')
         app_logger.debug(f"Проект {project_id} сериализован в JSON (размер={len(json_bytes)} байт)")
     except Exception as e:
@@ -1140,7 +1150,8 @@ def save_project():
             'success': True,
             'project_id': project_id,
             'object_name': object_name,
-            'message': f'Project saved successfully'
+            'message': f'Project saved successfully',
+            'minio_available': True
         }), 201
     except S3Error as e:
         app_logger.error(f"Ошибка сохранения проекта в MinIO: {e}", exc_info=True)

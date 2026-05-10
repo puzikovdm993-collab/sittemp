@@ -203,23 +203,50 @@ function createProjectFromData(projectData) {
     }
 
     // Базовые свойства проекта
+
+    // Нормализация данных: если проект в "плоском" формате (без вложенного project)
+    let normalizedData = projectData;
+    if (!projectData.project && projectData.id) {
+        // Преобразуем плоский формат в ожидаемую структуру
+        normalizedData = {
+            project: {
+                id: projectData.id,
+                name: projectData.name,
+                type: projectData.type,
+                createdAt: projectData.createdAt,
+                lastUpdate: projectData.lastUpdate,
+                owner: projectData.owner,
+                settings: projectData.settings,
+                files: projectData.files || []
+            },
+            openedFiles: projectData.openedFiles || [],
+            activeFileId: projectData.activeFileId
+        };
+    }
+    
+    // Проверка наличия проекта
+    if (!normalizedData.project) {
+        throw new Error('Неверная структура projectData: отсутствует project');
+    }
+    
+    // Базовые свойства проекта
     const project = {
-        id: projectData.project.id,
-        name: projectData.project.name,
-        type: projectData.project.type,
-        createdAt: projectData.project.createdAt,
-        lastUpdate: projectData.project.lastUpdate,
-        owner: projectData.project.owner,
+        id: normalizedData.project.id,
+        name: normalizedData.project.name,
+        type: normalizedData.project.type,
+        createdAt: normalizedData.project.createdAt,
+        lastUpdate: normalizedData.project.lastUpdate,
+        owner: normalizedData.project.owner,
         settings: {
-            theme: projectData.project.settings?.theme || 'light',
-            defaultView: projectData.project.settings?.defaultView || 'list',
-            notifications: projectData.project.settings?.notifications || false
+            theme: normalizedData.project.settings?.theme || 'light',
+            defaultView: normalizedData.project.settings?.defaultView || 'list',
+            notifications: normalizedData.project.settings?.notifications || false
         },
         files: []
     };
-
-    // Восстанавливаем файлы из кэша IndexedDB (openedFiles) или из projectData.project.files
-    const filesToRestore = projectData.openedFiles || (projectData.project?.files && Array.isArray(projectData.project.files) ? projectData.project.files : []);
+    
+    // Восстанавливаем файлы из кэша IndexedDB (openedFiles) или из normalizedData.project.files
+    const filesToRestore = normalizedData.openedFiles || (normalizedData.project?.files && Array.isArray(normalizedData.project.files) ? normalizedData.project.files : []);
     
     if (filesToRestore && filesToRestore.length > 0) {
         filesToRestore.forEach(fileData => {
