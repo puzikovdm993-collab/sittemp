@@ -1417,6 +1417,291 @@ def save_modal_states():
         return jsonify({'error': str(e)}), 500
 
 
+# ==================== НОВЫЙ API ПРОЕКТОВ (v2.0) ====================
+
+@app.route('/api/projects/save', methods=['POST'])
+@handle_minio_errors
+def api_save_project():
+    """
+    Сохраняет проект в новом формате v2.0
+    Ожидает JSON с структурой: { meta: {...}, project: {...}, content: {...}, checksum: '...' }
+    """
+    app_logger.info("Запрос на сохранение проекта (API v2.0)")
+    
+    data = request.get_json()
+    if not data:
+        app_logger.error("Нет JSON данных в запросе")
+        return jsonify({'error': 'No JSON data provided', 'success': False}), 400
+    
+    # Проверка версии формата
+    format_version = data.get('meta', {}).get('formatVersion', '1.0')
+    app_logger.info(f"Версия формата проекта: {format_version}")
+    
+    # Проверяем наличие обязательных полей
+    if 'project' not in data:
+        return jsonify({'error': 'Missing "project" field', 'success': False}), 400
+    
+    project_id = data['project'].get('id')
+    if not project_id:
+        return jsonify({'error': 'Missing project id', 'success': False}), 400
+    
+    # Формируем имя объекта в MinIO
+    object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.json"
+    
+    # Сериализуем данные в JSON
+    try:
+        json_str = json.dumps(data, ensure_ascii=False, indent=2)
+        json_bytes = json_str.encode('utf-8')
+        app_logger.debug(f"Проект {project_id} сериализован (размер={len(json_bytes)} байт)")
+    except Exception as e:
+        app_logger.error(f"Ошибка сериализации: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to serialize project data', 'success': False}), 500
+    
+    # Гарантируем существование бакета
+    ensure_bucket(minio_client, MINIO_BUCKET)
+    
+    # Загружаем в MinIO
+    try:
+        minio_client.put_object(
+            bucket_name=MINIO_BUCKET,
+            object_name=object_name,
+            data=io.BytesIO(json_bytes),
+            length=len(json_bytes),
+            content_type='application/json'
+        )
+        app_logger.info(f"Проект {project_id} успешно сохранён: {object_name}")
+        
+        return jsonify({
+            'success': True,
+            'project_id': project_id,
+            'object_name': object_name,
+            'format_version': format_version,
+            'message': 'Project saved successfully'
+        }), 201
+    except S3Error as e:
+        app_logger.error(f"Ошибка сохранения в MinIO: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+@app.route('/api/projects/load/<project_id>', methods=['GET'])
+@handle_minio_errors
+def api_load_project(project_id):
+    """
+    Загружает проект из MinIO в новом формате v2.0
+    Параметры: includeContent (true/false), includeHistory (true/false)
+    """
+    app_logger.info(f"Загрузка проекта {project_id} (API v2.0)")
+    
+    # Получаем параметры запроса
+    include_content = request.args.get('includeContent', 'true').lower() == 'true'
+    include_history = request.args.get('includeHistory', 'true').lower() == 'true'
+    
+    object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.json"
+    
+    try:
+        response = minio_client.get_object(MINIO_BUCKET, object_name)
+        json_str = response.read().decode('utf-8')
+        response.close()
+        response.release_conn()
+        
+        project_data = json.loads(json_str)
+        
+        # Если контент не нужен, удаляем его из ответа
+        if not include_content and 'content' in project_data:
+            del project_data['content']
+        
+        # Если история не нужна, очищаем её
+        if not include_history and 'content' in project_data and project_data['content']:
+            for file_content in project_data['content'].get('files', []):
+                file_content['history'] = []
+        
+        app_logger.info(f"Проект {project_id} успешно загружен")
+        
+        return jsonify({
+            'success': True,
+            **project_data
+        }), 200
+        
+    except S3Error as e:
+        if e.code == 'NoSuchKey':
+            app_logger.warning(f"Проект {project_id} не найден")
+            return jsonify({'error': f'Project {project_id} not found', 'success': False}), 404
+        app_logger.error(f"Ошибка загрузки: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+@app.route('/api/projects/list', methods=['GET'])
+@handle_minio_errors
+def api_list_projects():
+    """
+    Возвращает список проектов с расширенной фильтрацией (API v2.0)
+    Параметры: type, status, category, owner, limit, offset, search
+    """
+    app_logger.info("Запрос списка проектов (API v2.0)")
+    
+    # Параметры фильтрации
+    filters = {
+        'type': request.args.get('type'),
+        'status': request.args.get('status'),
+        'category': request.args.get('category'),
+        'owner': request.args.get('owner'),
+        'search': request.args.get('search')
+    }
+    
+    limit = int(request.args.get('limit', 100))
+    offset = int(request.args.get('offset', 0))
+    
+    try:
+        objects = minio_client.list_objects(MINIO_BUCKET, prefix=MINIO_PROJECTS_PREFIX, recursive=True)
+        
+        projects = []
+        for obj in objects:
+            if obj.object_name.endswith('/'):
+                continue
+            
+            filename = obj.object_name.split('/')[-1]
+            if not filename.endswith('.json'):
+                continue
+            
+            project_id = filename[:-5]
+            
+            try:
+                response = minio_client.get_object(MINIO_BUCKET, obj.object_name)
+                json_data = response.read().decode('utf-8')
+                response.close()
+                response.release_conn()
+                
+                project_data = json.loads(json_data)
+                
+                # Извлекаем метаданные проекта
+                if 'project' in project_data:
+                    project_info = project_data['project']
+                else:
+                    project_info = project_data
+                
+                # Применяем фильтры
+                skip = False
+                for key, value in filters.items():
+                    if value and project_info.get(key) != value:
+                        skip = True
+                        break
+                
+                # Поиск по названию и описанию
+                if filters['search']:
+                    search_lower = filters['search'].lower()
+                    name = project_info.get('name', '').lower()
+                    desc = project_info.get('description', '').lower()
+                    if search_lower not in name and search_lower not in desc:
+                        skip = True
+                
+                if not skip:
+                    # Добавляем только необходимые поля для списка
+                    projects.append({
+                        'id': project_info.get('id', project_id),
+                        'name': project_info.get('name', 'Без названия'),
+                        'type': project_info.get('type', ''),
+                        'status': project_info.get('status', 'draft'),
+                        'category': project_info.get('category', ''),
+                        'owner': project_info.get('owner', ''),
+                        'createdAt': project_info.get('createdAt', ''),
+                        'updatedAt': project_info.get('updatedAt', project_info.get('lastUpdate', '')),
+                        'tags': project_info.get('tags', []),
+                        'fileCount': len(project_info.get('files', []))
+                    })
+                    
+            except Exception as e:
+                app_logger.warning(f"Не удалось загрузить проект {project_id}: {e}")
+                continue
+        
+        # Сортировка по дате обновления (новые сначала)
+        projects.sort(key=lambda x: x.get('updatedAt', ''), reverse=True)
+        
+        # Пагинация
+        total_count = len(projects)
+        projects = projects[offset:offset + limit]
+        
+        app_logger.info(f"Найдено {total_count} проектов, возвращаем {len(projects)}")
+        
+        return jsonify({
+            'success': True,
+            'projects': projects,
+            'count': len(projects),
+            'total': total_count,
+            'limit': limit,
+            'offset': offset
+        }), 200
+        
+    except S3Error as e:
+        app_logger.error(f"Ошибка получения списка: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+@app.route('/api/projects/delete/<project_id>', methods=['DELETE'])
+@handle_minio_errors
+def api_delete_project(project_id):
+    """
+    Удаляет проект из MinIO (API v2.0)
+    """
+    app_logger.info(f"Удаление проекта {project_id} (API v2.0)")
+    
+    object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.json"
+    
+    try:
+        minio_client.remove_object(MINIO_BUCKET, object_name)
+        app_logger.info(f"Проект {project_id} успешно удалён")
+        
+        return jsonify({
+            'success': True,
+            'project_id': project_id,
+            'message': 'Project deleted successfully'
+        }), 200
+        
+    except S3Error as e:
+        if e.code == 'NoSuchKey':
+            app_logger.warning(f"Проект {project_id} не найден для удаления")
+            return jsonify({'error': f'Project {project_id} not found', 'success': False}), 404
+        app_logger.error(f"Ошибка удаления: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+@app.route('/api/projects/export/<project_id>', methods=['GET'])
+@handle_minio_errors
+def api_export_project(project_id):
+    """
+    Экспортирует проект в файл (JSON или ZIP) (API v2.0)
+    """
+    app_logger.info(f"Экспорт проекта {project_id}")
+    
+    export_format = request.args.get('format', 'json').lower()
+    object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.json"
+    
+    try:
+        response = minio_client.get_object(MINIO_BUCKET, object_name)
+        json_str = response.read().decode('utf-8')
+        response.close()
+        response.release_conn()
+        
+        if export_format == 'json':
+            # Возвращаем JSON файл
+            return send_file(
+                io.BytesIO(json_str.encode('utf-8')),
+                mimetype='application/json',
+                as_attachment=True,
+                download_name=f'project_{project_id}.json'
+            )
+        else:
+            # Для других форматов можно добавить конвертацию
+            return jsonify({'error': f'Unsupported format: {export_format}', 'success': False}), 400
+            
+    except S3Error as e:
+        if e.code == 'NoSuchKey':
+            return jsonify({'error': f'Project {project_id} not found', 'success': False}), 404
+        app_logger.error(f"Ошибка экспорта: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+# ==================== СТАРЫЕ ENDPOINTS (для обратной совместимости) ====================
+
 if __name__ == '__main__':
 
     # Запускаем сервер
