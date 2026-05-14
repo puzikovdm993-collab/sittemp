@@ -1082,49 +1082,78 @@ def endpointtest():
 @handle_minio_errors
 def save_project():
     """
-    Сохраняет проект в MinIO в формате JSON.
-    Ожидает JSON с структурой проекта.
+    Сохраняет проект в MinIO в формате TPEP (TIS Project Exchange Protocol).
+    Поддерживает как старый формат, так и новый TPF формат.
     """
     app_logger.info("Запрос на сохранение проекта в MinIO")
-    
+
     # Получаем данные проекта из запроса
     data = request.get_json()
     if not data:
-        app_logger.error(f"error: No JSON data provided  400")
+        app_logger.error("error: No JSON data provided 400")
         return jsonify({'error': 'No JSON data provided'}), 400
 
+    app_logger.debug(f"Получены данные проекта: {json.dumps(data, ensure_ascii=False)[:500]}...")
 
-    app_logger.error(data)
-    # Проверяем наличие обязательных полей
-    if 'project' not in data:
-        app_logger.error(f"error: Missing 'project' field  400 ")
-        return jsonify({'error': 'Missing "project" field'}), 400
+    # Определяем формат данных (TPF или старый формат)
+    is_tpf_format = 'tpf' in data
     
+    if is_tpf_format:
+        # Новый формат TPEP/TPF
+        tpf_data = data['tpf']
+        
+        # Проверяем версию TPF
+        tpf_version = tpf_data.get('version', '1.0.0')
+        app_logger.info(f"Сохранение проекта в формате TPF версии {tpf_version}")
+        
+        project_id = tpf_data.get('projectId')
+        if not project_id:
+            app_logger.error("error: Missing project id in TPF format, 400")
+            return jsonify({'error': 'Missing projectId in TPF format'}), 400
+        
+        # Формируем имя объекта в MinIO
+        object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.tpf"
+        
+        # Преобразуем данные в JSON
+        try:
+            json_str = json.dumps(data, ensure_ascii=False, indent=2)
+            json_bytes = json_str.encode('utf-8')
+            app_logger.debug(f"Проект {project_id} сериализован в TPF JSON (размер={len(json_bytes)} байт)")
+        except Exception as e:
+            app_logger.error(f"Ошибка сериализации проекта: {e}", exc_info=True)
+            return jsonify({'error': 'Failed to serialize TPF project data'}), 500
+            
+    else:
+        # Старый формат (обратная совместимость)
+        # Проверяем наличие обязательных полей
+        if 'project' not in data:
+            app_logger.error("error: Missing 'project' field 400")
+            return jsonify({'error': 'Missing "project" field'}), 400
 
-    project_id = data['project'].get('id')
-    if not project_id:
-        app_logger.error(f"error': 'Missing project id,  400")
-        return jsonify({'error': 'Missing project id'}), 400
-    
-    # Формируем имя объекта в MinIO
-    object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.json"
-    
-    # Преобразуем данные в JSON
-    try:
-        json_str = json.dumps(data, ensure_ascii=False, indent=2)
-        json_bytes = json_str.encode('utf-8')
-        app_logger.debug(f"Проект {project_id} сериализован в JSON (размер={len(json_bytes)} байт)")
-    except Exception as e:
-        app_logger.error(f"Ошибка сериализации проекта: {e}", exc_info=True)
-        return jsonify({'error': 'Failed to serialize project data'}), 500
-    
+        project_id = data['project'].get('id')
+        if not project_id:
+            app_logger.error("error: Missing project id, 400")
+            return jsonify({'error': 'Missing project id'}), 400
+
+        # Формируем имя объекта в MinIO
+        object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.json"
+
+        # Преобразуем данные в JSON
+        try:
+            json_str = json.dumps(data, ensure_ascii=False, indent=2)
+            json_bytes = json_str.encode('utf-8')
+            app_logger.debug(f"Проект {project_id} сериализован в JSON (размер={len(json_bytes)} байт)")
+        except Exception as e:
+            app_logger.error(f"Ошибка сериализации проекта: {e}", exc_info=True)
+            return jsonify({'error': 'Failed to serialize project data'}), 500
+
     # Гарантируем существование бакета
     try:
         ensure_bucket(minio_client, MINIO_BUCKET)
     except Exception as e:
         app_logger.error(f"Ошибка создания бакета: {e}", exc_info=True)
         return jsonify({'error': 'Failed to ensure bucket exists'}), 500
-    
+
     # Загружаем в MinIO
     try:
         minio_client.put_object(
@@ -1135,55 +1164,66 @@ def save_project():
             content_type='application/json'
         )
         app_logger.info(f"Проект {project_id} успешно сохранён в MinIO: {object_name}")
-        
+
         return jsonify({
             'success': True,
             'project_id': project_id,
             'object_name': object_name,
-            'message': f'Project saved successfully'
+            'format': 'tpf' if is_tpf_format else 'legacy',
+            'message': 'Project saved successfully'
         }), 201
     except S3Error as e:
         app_logger.error(f"Ошибка сохранения проекта в MinIO: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
-# curl -X GET  http://localhost:15404/load_project/proj_1777373741280_8nnowm
 @app.route('/load_project/<project_id>', methods=['GET'])
 @handle_minio_errors
 def load_project(project_id):
     """
     Загружает проект из MinIO по его ID.
+    Поддерживает как старый формат (.json), так и новый TPF (.tpf).
     Возвращает JSON с данными проекта.
     """
     app_logger.info(f"Запрос на загрузку проекта {project_id} из MinIO")
-    
-    # Формируем имя объекта в MinIO
-    object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}.json"
-    
-    try:
-        # Получаем объект из MinIO
-        response = minio_client.get_object(MINIO_BUCKET, object_name)
-        
-        # Читаем данные
-        json_str = response.read().decode('utf-8')
-        response.close()
-        response.release_conn()
-        
-        # Парсим JSON
-        project_data = json.loads(json_str)
-        
-        app_logger.info(f"Проект {project_id} успешно загружен из MinIO")
 
-        return jsonify({
-            'success': True,
-            'data': project_data
-        }), 200
-    except S3Error as e:
-        if e.code == 'NoSuchKey':
-            app_logger.warning(f"Проект {project_id} не найден в MinIO")
-            return jsonify({'error': f'Project {project_id} not found'}), 404
-        app_logger.error(f"Ошибка загрузки проекта из MinIO: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+    # Пробуем сначала загрузить в формате TPF, затем в старом формате
+    possible_extensions = ['.tpf', '.json']
+    
+    for ext in possible_extensions:
+        object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}{ext}"
+        
+        try:
+            # Получаем объект из MinIO
+            response = minio_client.get_object(MINIO_BUCKET, object_name)
+
+            # Читаем данные
+            json_str = response.read().decode('utf-8')
+            response.close()
+            response.release_conn()
+
+            # Парсим JSON
+            project_data = json.loads(json_str)
+            
+            format_type = 'tpf' if ext == '.tpf' else 'legacy'
+            app_logger.info(f"Проект {project_id} успешно загружен из MinIO (формат: {format_type})")
+
+            return jsonify({
+                'success': True,
+                'data': project_data,
+                'format': format_type
+            }), 200
+            
+        except S3Error as e:
+            if e.code == 'NoSuchKey':
+                # Пробуем следующую расширение
+                continue
+            app_logger.error(f"Ошибка загрузки проекта из MinIO: {e}", exc_info=True)
+            return jsonify({'error': str(e)}), 500
+    
+    # Если ни один формат не найден
+    app_logger.warning(f"Проект {project_id} не найден в MinIO (ни .tpf, ни .json)")
+    return jsonify({'error': f'Project {project_id} not found'}), 404
 
 
 @app.route('/list_projects', methods=['GET'])
