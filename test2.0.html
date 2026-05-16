@@ -1,0 +1,2937 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WTIS 2.0 Prototype</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Цветовая палитра - темная тема */
+            --slate-900: #0F172A;
+            --slate-800: #1E293B;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-300: #CBD5E1;
+            --slate-50: #F8FAFC;
+            --indigo-500: #6366F1;
+            --indigo-400: #818CF8;
+            --indigo-600: #4F46E5;
+            --emerald-500: #10B981;
+            --red-500: #EF4444;
+            --amber-500: #F59E0B;
+            --blue-500: #3B82F6;
+            --purple-500: #8B5CF6;
+            
+            /* Типография */
+            --font-main: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            /* Отступы */
+            --space-1: 8px;
+            --space-2: 16px;
+            --space-3: 24px;
+            --space-4: 32px;
+            
+            /* Скругления */
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+            --radius-xl: 12px;
+            
+            /* Тени */
+            --shadow-panel: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+            --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+            --shadow-popup: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --shadow-active: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-main);
+            background-color: var(--slate-900);
+            color: var(--slate-50);
+            height: 100vh;
+            overflow: hidden;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-2);
+            background-color: var(--slate-800);
+            border-bottom: 1px solid var(--slate-600);
+            box-shadow: var(--shadow-panel);
+            height: 64px;
+            flex-shrink: 0;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--indigo-500), var(--purple-500));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            background-color: var(--slate-700);
+            border: 1px solid var(--slate-600);
+            border-radius: var(--radius-md);
+            color: var(--slate-50);
+            font-family: var(--font-main);
+            font-size: 14px;
+        }
+        
+        .search-bar i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-300);
+        }
+        
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background-color: var(--slate-700);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .user-profile:hover {
+            background-color: var(--slate-600);
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: var(--slate-800);
+            border: 1px solid var(--slate-600);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-popup);
+            width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--slate-700);
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background-color: var(--slate-600);
+            margin: 4px 0;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--indigo-500), var(--blue-500));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .icon-button {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--slate-700);
+            border-radius: var(--radius-md);
+            border: none;
+            color: var(--slate-300);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .icon-button:hover {
+            background-color: var(--slate-600);
+            color: var(--slate-50);
+            transform: translateY(-1px);
+        }
+        
+        .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--red-500);
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* ЛЕВАЯ ПАНЕЛЬ - БИБЛИОТЕКА УЗЛОВ */
+        .left-panel {
+            width: 280px;
+            background-color: var(--slate-800);
+            border-right: 1px solid var(--slate-600);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            padding: var(--space-2);
+            overflow-y: auto;
+        }
+        
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+            color: var(--slate-50);
+        }
+        
+        .node-category {
+            margin-bottom: var(--space-2);
+            background-color: var(--slate-700);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            cursor: pointer;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-header.active {
+            background-color: var(--slate-600);
+        }
+        
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .node-list {
+            padding: 0 16px 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .node-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background-color: var(--slate-800);
+            border-radius: var(--radius-md);
+            cursor: move;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .node-item:hover {
+            background-color: var(--slate-700);
+            border-color: var(--slate-600);
+            transform: translateX(4px);
+        }
+        
+        .node-type {
+            font-size: 12px;
+            color: var(--slate-300);
+            font-family: var(--font-mono);
+        }
+        
+        .status-bar {
+            margin-top: auto;
+            padding-top: var(--space-2);
+            border-top: 1px solid var(--slate-600);
+            font-size: 12px;
+            color: var(--slate-300);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* ЦЕНТРАЛЬНАЯ ОБЛАСТЬ - ГРАФ */
+        .graph-area {
+            flex: 1;
+            position: relative;
+            background-color: var(--slate-900);
+            overflow: hidden;
+        }
+        
+        .canvas-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .canvas-nodes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .graph-node {
+            position: absolute;
+            width: 180px;
+            background-color: var(--slate-700);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            box-shadow: var(--shadow-card);
+            cursor: move;
+            user-select: none;
+            border-top: 4px solid;
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        
+        .graph-node.selected {
+            box-shadow: 0 0 0 2px var(--indigo-500), 0 0 15px rgba(99, 102, 241, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .node-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .node-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--slate-50);
+        }
+        
+        .node-ports {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 12px;
+        }
+        
+        .port {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+        }
+        
+        .port-input, .port-output {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--slate-600);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .port-input:hover, .port-output:hover {
+            background-color: var(--indigo-500);
+            transform: scale(1.2);
+        }
+        
+        .port-label {
+            color: var(--slate-300);
+        }
+        
+        .mini-map {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 100px;
+            background-color: var(--slate-800);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--slate-600);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+        }
+        
+        .graph-controls {
+            position: absolute;
+            bottom: 130px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .graph-control {
+            width: 36px;
+            height: 36px;
+            background-color: var(--slate-800);
+            border: 1px solid var(--slate-600);
+            border-radius: var(--radius-md);
+            color: var(--slate-300);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .graph-control:hover {
+            background-color: var(--slate-700);
+            color: var(--slate-50);
+        }
+        
+        .graph-control.active {
+            background-color: var(--indigo-500);
+            color: white;
+            border-color: var(--indigo-500);
+        }
+        
+        /* ПРАВАЯ ПАНЕЛЬ - ИНСПЕКТОР */
+        .right-panel {
+            width: 320px;
+            background-color: var(--slate-800);
+            border-left: 1px solid var(--slate-600);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            padding: var(--space-2);
+            overflow-y: auto;
+        }
+        
+        .inspector-tabs {
+            display: flex;
+            margin-bottom: var(--space-2);
+            border-bottom: 1px solid var(--slate-600);
+        }
+        
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            color: var(--slate-300);
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            color: var(--indigo-400);
+            border-bottom-color: var(--indigo-400);
+        }
+        
+        .preview-container {
+            background-color: var(--slate-700);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2);
+            margin-bottom: var(--space-2);
+        }
+        
+        .preview-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
+        }
+        
+        .preview-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .preview-image {
+            width: 100%;
+            height: 240px;
+            background-color: var(--slate-800);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed var(--slate-600);
+            margin-bottom: var(--space-2);
+            overflow: hidden;
+        }
+        
+        .preview-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .property-group {
+            background-color: var(--slate-700);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2);
+            margin-bottom: var(--space-2);
+        }
+        
+        .property-item {
+            margin-bottom: 12px;
+        }
+        
+        .property-label {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--slate-300);
+            font-size: 13px;
+        }
+        
+        .property-input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--slate-800);
+            border: 1px solid var(--slate-600);
+            border-radius: var(--radius-md);
+            color: var(--slate-50);
+            font-family: var(--font-main);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .property-input:focus {
+            outline: none;
+            border-color: var(--indigo-500);
+            box-shadow: var(--shadow-active);
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .slider {
+            flex: 1;
+            height: 6px;
+            background-color: var(--slate-600);
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .slider-fill {
+            position: absolute;
+            height: 100%;
+            background-color: var(--indigo-500);
+            border-radius: 3px;
+            width: 85%;
+        }
+        
+        .slider-thumb {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: var(--indigo-400);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 15%;
+            cursor: grab;
+        }
+        
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .toggle {
+            width: 40px;
+            height: 20px;
+            background-color: var(--slate-600);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .toggle.active {
+            background-color: var(--emerald-500);
+        }
+        
+        .toggle-knob {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: var(--slate-50);
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+        
+        .toggle.active .toggle-knob {
+            transform: translateX(20px);
+        }
+        
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        
+        .checkbox input {
+            display: none;
+        }
+        
+        .checkbox-box {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--slate-600);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .checkbox input:checked + .checkbox-box {
+            background-color: var(--indigo-500);
+            border-color: var(--indigo-500);
+        }
+        
+        .checkbox input:checked + .checkbox-box::after {
+            content: "✓";
+            color: white;
+            font-size: 12px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: var(--space-2);
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            border: none;
+            font-family: var(--font-main);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background-color: var(--indigo-500);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--indigo-400);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background-color: var(--slate-700);
+            color: var(--slate-300);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--slate-600);
+            color: var(--slate-50);
+        }
+        
+        .btn-success {
+            background-color: var(--emerald-500);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #0da271;
+        }
+        
+        .btn-danger {
+            background-color: var(--red-500);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        
+        /* ===== FOOTER ===== */
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background-color: var(--slate-800);
+            border-top: 1px solid var(--slate-600);
+            height: 40px;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+        
+        .footer-left, .footer-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--slate-300);
+        }
+        
+        /* ===== МОДАЛЬНЫЕ ОКНА ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            display: none;
+        }
+        
+        .modal {
+            background-color: var(--slate-800);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-popup);
+            width: 600px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--slate-600);
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--slate-300);
+            font-size: 20px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-md);
+        }
+        
+        .modal-close:hover {
+            background-color: var(--slate-700);
+        }
+        
+        .modal-body {
+            padding: 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--slate-600);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        /* Модальные окна разного типа */
+        .modal-wide {
+            width: 800px;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .recent-projects {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .project-item {
+            padding: 12px;
+            background-color: var(--slate-700);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .project-item:hover {
+            background-color: var(--slate-600);
+        }
+        
+        .project-item.selected {
+            background-color: var(--slate-600);
+            border: 1px solid var(--indigo-500);
+        }
+        
+        .project-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .project-date {
+            font-size: 12px;
+            color: var(--slate-300);
+        }
+        
+        .thumbnail {
+            width: 100%;
+            height: 120px;
+            background-color: var(--slate-800);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: var(--slate-600);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--indigo-500), var(--purple-500));
+            border-radius: 4px;
+            width: 65%;
+            transition: width 0.5s;
+        }
+        
+        .batch-processing {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .batch-column {
+            background-color: var(--slate-700);
+            border-radius: var(--radius-md);
+            padding: 16px;
+        }
+        
+        .batch-title {
+            font-weight: 500;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .batch-item {
+            padding: 8px;
+            background-color: var(--slate-800);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        
+        /* Уведомления */
+        .notifications-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 80px;
+            width: 300px;
+            background-color: var(--slate-800);
+            border: 1px solid var(--slate-600);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-popup);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .notifications-dropdown.show {
+            display: block;
+        }
+        
+        .notification-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--slate-600);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--slate-700);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .notification-item:hover {
+            background-color: var(--slate-700);
+        }
+        
+        .notification-item.unread {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        
+        .notification-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .notification-time {
+            font-size: 11px;
+            color: var(--slate-300);
+        }
+        
+        /* ===== АНИМАЦИИ ===== */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        
+        .node-running {
+            animation: pulse 2s infinite;
+            border-color: var(--emerald-500) !important;
+        }
+        
+        .connection {
+            position: absolute;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .connection-line {
+            stroke: var(--slate-600);
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .connection-line.active {
+            stroke: var(--indigo-500);
+            stroke-width: 3;
+            stroke-dasharray: 10, 5;
+            animation: flow 1s linear infinite;
+        }
+        
+        @keyframes flow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 15; }
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .left-panel, .right-panel {
+                width: 250px;
+            }
+        }
+        
+        /* Утилиты */
+        .text-secondary {
+            color: var(--slate-300);
+        }
+        
+        .text-success {
+            color: var(--emerald-500);
+        }
+        
+        .mb-1 {
+            margin-bottom: var(--space-1);
+        }
+        
+        .mb-2 {
+            margin-bottom: var(--space-2);
+        }
+        
+        .mt-2 {
+            margin-top: var(--space-2);
+        }
+        
+        .d-none {
+            display: none !important;
+        }
+        
+        .d-flex {
+            display: flex;
+        }
+        
+        .justify-center {
+            justify-content: center;
+        }
+        
+        .justify-between {
+            justify-content: space-between;
+        }
+        
+        .align-center {
+            align-items: center;
+        }
+        
+        .w-100 {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Верхняя панель -->
+        <header class="header">
+            <div class="logo-section">
+                <div class="logo">WTIS 2.0</div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Поиск узлов, проектов..." id="searchInput">
+                </div>
+            </div>
+            
+            <div class="user-actions">
+                <div class="user-profile" id="userProfile">
+                    <div class="avatar">TU</div>
+                    <span>TIS_user</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                
+                <div class="dropdown-menu" id="userDropdown">
+                    <div class="dropdown-item">
+                        <i class="fas fa-user"></i>
+                        <span>Мой профиль</span>
+                    </div>
+                    <div class="dropdown-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Настройки аккаунта</span>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item">
+                        <i class="fas fa-moon"></i>
+                        <span>Темная тема</span>
+                        <div class="toggle-switch" style="margin-left: auto;">
+                            <div class="toggle active" id="themeToggle">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Выйти</span>
+                    </div>
+                </div>
+                
+                <button class="icon-button" id="settingsButton">
+                    <i class="fas fa-cog"></i>
+                    <div class="badge">3</div>
+                </button>
+                
+                <button class="icon-button" id="statsButton">
+                    <i class="fas fa-chart-bar"></i>
+                </button>
+                
+                <button class="icon-button" id="notificationsButton">
+                    <i class="fas fa-bell"></i>
+                    <div class="badge">5</div>
+                </button>
+                
+                <div class="notifications-dropdown" id="notificationsDropdown">
+                    <div class="notification-header">
+                        <span>Уведомления</span>
+                        <button class="btn btn-secondary btn-sm" id="markAllRead">Прочитать все</button>
+                    </div>
+                    <div class="notification-list">
+                        <div class="notification-item unread">
+                            <div class="notification-title">Workflow выполнен успешно</div>
+                            <div class="text-secondary">Обработка изображения завершена</div>
+                            <div class="notification-time">2 минуты назад</div>
+                        </div>
+                        <div class="notification-item unread">
+                            <div class="notification-title">Новая версия доступна</div>
+                            <div class="text-secondary">WTIS 2.1 готов к обновлению</div>
+                            <div class="notification-time">1 час назад</div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-title">Проект автосохранен</div>
+                            <div class="text-secondary">Анализ_1.json сохранен</div>
+                            <div class="notification-time">2 часа назад</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="icon-button" id="refreshButton">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Основное содержимое -->
+        <div class="main-content">
+            <!-- Левая панель - Библиотека узлов -->
+            <aside class="left-panel">
+                <div class="panel-title">
+                    <i class="fas fa-book"></i>
+                    <span>БИБЛИОТЕКА УЗЛОВ</span>
+                </div>
+                
+                <div class="node-category">
+                    <div class="category-header active">
+                        <div class="category-title">
+                            <i class="fas fa-download"></i>
+                            <span>Ввод/Вывод</span>
+                        </div>
+                        <i class="fas fa-chevron-up"></i>
+                    </div>
+                    <div class="node-list">
+                        <div class="node-item" data-node-type="input/LoadNode">
+                            <i class="fas fa-file-import"></i>
+                            <div>
+                                <div>Загрузить</div>
+                                <div class="node-type">input/LoadNode</div>
+                            </div>
+                        </div>
+                        <div class="node-item" data-node-type="output/SaveNode">
+                            <i class="fas fa-file-export"></i>
+                            <div>
+                                <div>Сохранить</div>
+                                <div class="node-type">output/SaveNode</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="node-category">
+                    <div class="category-header">
+                        <div class="category-title">
+                            <i class="fas fa-filter"></i>
+                            <span>Фильтры</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="node-list d-none">
+                        <!-- Содержимое будет динамически добавлено -->
+                    </div>
+                </div>
+                
+                <div class="node-category">
+                    <div class="category-header">
+                        <div class="category-title">
+                            <i class="fas fa-palette"></i>
+                            <span>Трансформы</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="node-list d-none">
+                        <!-- Содержимое будет динамически добавлено -->
+                    </div>
+                </div>
+                
+                <div class="node-category">
+                    <div class="category-header">
+                        <div class="category-title">
+                            <i class="fas fa-calculator"></i>
+                            <span>Калькулятор</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="node-list d-none">
+                        <!-- Содержимое будет динамически добавлено -->
+                    </div>
+                </div>
+                
+                <div class="node-category">
+                    <div class="category-header">
+                        <div class="category-title">
+                            <i class="fas fa-bullseye"></i>
+                            <span>ROI</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="node-list d-none">
+                        <!-- Содержимое будет динамически добавлено -->
+                    </div>
+                </div>
+                
+                <div class="action-buttons mb-2">
+                    <button class="btn btn-primary w-100" id="runWorkflowButton">
+                        <i class="fas fa-play"></i> Запустить
+                    </button>
+                    <div class="d-flex justify-between w-100 mt-1">
+                        <button class="btn btn-secondary" id="saveProjectButton" title="Сохранить проект">
+                            <i class="fas fa-save"></i>
+                        </button>
+                        <button class="btn btn-secondary" id="loadProjectButton" title="Загрузить проект">
+                            <i class="fas fa-folder-open"></i>
+                        </button>
+                        <button class="btn btn-secondary" id="importImageButton" title="Импорт изображения">
+                            <i class="fas fa-file-import"></i>
+                        </button>
+                        <button class="btn btn-danger" id="clearCanvasButton" title="Очистить холст">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="status-bar">
+                    <span id="nodeCount">Узлов: 4</span>
+                    <span id="activeNodes">Активных: 1</span>
+                </div>
+            </aside>
+            
+            <!-- Центральная область - Граф -->
+            <main class="graph-area" id="graphArea">
+                <div class="canvas-grid"></div>
+                <div class="canvas-nodes" id="canvasNodes">
+                    <!-- Узлы будут добавлены динамически -->
+                    <div class="graph-node" style="left: 100px; top: 100px; border-color: var(--blue-500);" data-node-id="1">
+                        <div class="node-header">
+                            <div class="node-title">Загрузить</div>
+                            <i class="fas fa-cog text-secondary node-settings"></i>
+                        </div>
+                        <div class="text-secondary">Загружает изображение из файла</div>
+                        <div class="node-ports">
+                            <div class="port">
+                                <div class="port-input"></div>
+                                <span class="port-label">Путь к файлу</span>
+                            </div>
+                            <div class="port">
+                                <span class="port-label">Изображение</span>
+                                <div class="port-output"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="graph-node" style="left: 350px; top: 100px; border-color: var(--emerald-500);" data-node-id="2">
+                        <div class="node-header">
+                            <div class="node-title">Собель (границы)</div>
+                            <i class="fas fa-cog text-secondary node-settings"></i>
+                        </div>
+                        <div class="text-secondary">Фильтр обнаружения границ</div>
+                        <div class="node-ports">
+                            <div class="port">
+                                <div class="port-input"></div>
+                                <span class="port-label">Вход</span>
+                            </div>
+                            <div class="port">
+                                <span class="port-label">Границы</span>
+                                <div class="port-output"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="graph-node" style="left: 600px; top: 100px; border-color: var(--amber-500);" data-node-id="3">
+                        <div class="node-header">
+                            <div class="node-title">Поворот</div>
+                            <i class="fas fa-cog text-secondary node-settings"></i>
+                        </div>
+                        <div class="text-secondary">Поворачивает изображение</div>
+                        <div class="node-ports">
+                            <div class="port">
+                                <div class="port-input"></div>
+                                <span class="port-label">Вход</span>
+                            </div>
+                            <div class="port">
+                                <span class="port-label">Выход</span>
+                                <div class="port-output"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="graph-node" style="left: 850px; top: 100px; border-color: var(--blue-500);" data-node-id="4">
+                        <div class="node-header">
+                            <div class="node-title">Сохранить</div>
+                            <i class="fas fa-cog text-secondary node-settings"></i>
+                        </div>
+                        <div class="text-secondary">Сохраняет изображение в файл</div>
+                        <div class="node-ports">
+                            <div class="port">
+                                <div class="port-input"></div>
+                                <span class="port-label">Вход</span>
+                            </div>
+                            <div class="port">
+                                <span class="port-label">Путь сохранения</span>
+                                <div class="port-output"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Соединения между узлами -->
+                <svg class="connection" width="100%" height="100%" id="connectionsSvg">
+                    <path class="connection-line" d="M210,130 L320,130" data-connection="1-2" />
+                    <path class="connection-line" d="M460,130 L570,130" data-connection="2-3" />
+                    <path class="connection-line" d="M710,130 L820,130" data-connection="3-4" />
+                </svg>
+                
+                <!-- Мини-карта -->
+                <div class="mini-map" id="miniMap"></div>
+                
+                <!-- Элементы управления графом -->
+                <div class="graph-controls">
+                    <div class="graph-control" id="zoomInButton" title="Увеличить">
+                        <i class="fas fa-search-plus"></i>
+                    </div>
+                    <div class="graph-control" id="zoomOutButton" title="Уменьшить">
+                        <i class="fas fa-search-minus"></i>
+                    </div>
+                    <div class="graph-control" id="panModeButton" title="Режим панорамирования">
+                        <i class="fas fa-arrows-alt"></i>
+                    </div>
+                    <div class="graph-control" id="resetViewButton" title="Сбросить вид">
+                        <i class="fas fa-home"></i>
+                    </div>
+                </div>
+                
+                <!-- Масштаб графа -->
+                <div class="zoom-level" style="position: absolute; bottom: 140px; left: 20px; background-color: var(--slate-800); padding: 6px 12px; border-radius: var(--radius-md); font-size: 12px; color: var(--slate-300);">
+                    Масштаб: <span id="zoomLevel">100%</span>
+                </div>
+            </main>
+            
+            <!-- Правая панель - Инспектор -->
+            <aside class="right-panel">
+                <div class="panel-title">
+                    <i class="fas fa-search"></i>
+                    <span>ИНСПЕКТОР</span>
+                </div>
+                
+                <div class="inspector-tabs">
+                    <div class="tab active" data-tab="properties">Свойства</div>
+                    <div class="tab" data-tab="preview">Превью</div>
+                    <div class="tab" data-tab="debug">Отладка</div>
+                </div>
+                
+                <!-- Вкладка Превью -->
+                <div class="tab-content" id="previewTab">
+                    <div class="preview-container">
+                        <div class="preview-title">
+                            <span>Превью изображения</span>
+                            <div class="preview-actions">
+                                <button class="icon-button" id="capturePreviewButton" title="Сделать снимок">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                                <button class="icon-button" id="savePreviewButton" title="Сохранить изображение">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                <button class="icon-button" id="refreshPreviewButton" title="Обновить превью">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                                <button class="icon-button" id="previewSettingsButton" title="Настройки превью">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="preview-image" id="previewImage">
+                            <img src="https://images.unsplash.com/photo-1579546929662-711aa81148cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Пример изображения" id="previewImageElement">
+                            <div class="preview-overlay" style="position: absolute; top: 10px; right: 10px; display: none;" id="previewOverlay">
+                                <div class="btn btn-primary btn-sm">
+                                    <i class="fas fa-expand"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-secondary" id="imageInfo">Размер: 640×480 | Формат: PNG</div>
+                    </div>
+                </div>
+                
+                <!-- Вкладка Свойства -->
+                <div class="tab-content d-none" id="propertiesTab">
+                    <div class="property-group">
+                        <h4 class="mb-2">Свойства узла</h4>
+                        
+                        <div class="property-item">
+                            <label class="property-label">Ширина:</label>
+                            <input type="number" class="property-input" id="nodeWidth" value="256" min="1" max="4096">
+                        </div>
+                        
+                        <div class="property-item">
+                            <label class="property-label">Высота:</label>
+                            <input type="number" class="property-input" id="nodeHeight" value="256" min="1" max="4096">
+                        </div>
+                        
+                        <div class="property-item">
+                            <label class="property-label">Формат:</label>
+                            <select class="property-input" id="imageFormat">
+                                <option value="png">PNG</option>
+                                <option value="jpeg">JPEG</option>
+                                <option value="bmp">BMP</option>
+                                <option value="tiff">TIFF</option>
+                            </select>
+                        </div>
+                        
+                        <div class="property-item">
+                            <label class="property-label">Качество:</label>
+                            <div class="slider-container">
+                                <div class="slider" id="qualitySlider">
+                                    <div class="slider-fill" id="qualityFill"></div>
+                                    <div class="slider-thumb" id="qualityThumb"></div>
+                                </div>
+                                <span id="qualityValue">85%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="property-item">
+                            <label class="property-label">Автоскейл:</label>
+                            <div class="toggle-switch">
+                                <div class="toggle active" id="autoScaleToggle">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                                <span id="autoScaleLabel">Вкл</span>
+                            </div>
+                        </div>
+                        
+                        <div class="property-item">
+                            <label class="checkbox">
+                                <input type="checkbox" id="keepMetadataCheckbox" checked>
+                                <div class="checkbox-box"></div>
+                                <span>Сохранять метаданные</span>
+                            </label>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="applyPropertiesButton">Применить</button>
+                            <button class="btn btn-secondary" id="resetPropertiesButton">Сбросить</button>
+                            <button class="btn btn-secondary" id="copyPropertiesButton">Копировать</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Вкладка Отладка -->
+                <div class="tab-content d-none" id="debugTab">
+                    <div class="property-group">
+                        <h4 class="mb-2">Отладка</h4>
+                        
+                        <div class="property-item">
+                            <label class="property-label">Логи выполнения:</label>
+                            <div style="background-color: var(--slate-800); border-radius: var(--radius-md); padding: 12px; height: 200px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px; color: var(--slate-300);" id="debugLog">
+                                <div>[12:30:45] Workflow запущен</div>
+                                <div>[12:30:46] Узел "Загрузить" выполнен</div>
+                                <div>[12:30:47] Узел "Собель" выполнен</div>
+                                <div>[12:30:48] Узел "Поворот" выполнен</div>
+                                <div>[12:30:49] Workflow завершен успешно</div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" id="clearLogButton">Очистить логи</button>
+                            <button class="btn btn-secondary" id="exportLogButton">Экспорт логов</button>
+                            <button class="btn btn-primary" id="startDebugButton">Начать отладку</button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+        
+        <!-- Нижняя панель -->
+        <footer class="footer">
+            <div class="footer-left">
+                <div class="status-item" id="workflowStatus">
+                    <i class="fas fa-play text-success"></i>
+                    <span>Готов к запуску</span>
+                </div>
+                <div class="status-item" id="autosaveStatus">
+                    <i class="fas fa-save"></i>
+                    <span>Автосохранение: 2 мин назад</span>
+                </div>
+            </div>
+            <div class="footer-right">
+                <div class="status-item" id="performanceStatus">
+                    <i class="fas fa-bolt text-success"></i>
+                    <span>Производительность: 92%</span>
+                </div>
+                <div class="status-item" id="connectionStatus">
+                    <i class="fas fa-wifi text-success"></i>
+                    <span>Онлайн</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Модальное окно настройки узла -->
+    <div class="modal-overlay" id="nodeSettingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Настройка узла: "Собель (границы)"</div>
+                <button class="modal-close" id="closeNodeSettings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="property-group">
+                    <h4 class="mb-2">Параметры фильтра</h4>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Размер ядра:</label>
+                        <div class="slider-container">
+                            <div class="slider" id="kernelSizeSlider">
+                                <div class="slider-fill" id="kernelSizeFill" style="width: 50%;"></div>
+                                <div class="slider-thumb" id="kernelSizeThumb" style="right: 50%;"></div>
+                            </div>
+                            <span id="kernelSizeValue">3</span>
+                        </div>
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Сигма:</label>
+                        <input type="number" class="property-input" id="sigmaInput" value="1.5" step="0.1" min="0.1" max="10">
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Направление:</label>
+                        <select class="property-input" id="directionSelect">
+                            <option value="both">Горизонтальное и вертикальное</option>
+                            <option value="horizontal">Только горизонтальное</option>
+                            <option value="vertical">Только вертикальное</option>
+                        </select>
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Нормализация:</label>
+                        <div class="toggle-switch">
+                            <div class="toggle active" id="normalizationToggle">
+                                <div class="toggle-knob"></div>
+                            </div>
+                            <span id="normalizationLabel">Вкл</span>
+                        </div>
+                    </div>
+                    
+                    <div class="property-item mt-2">
+                        <label class="property-label">Предпросмотр:</label>
+                        <div style="display: flex; gap: 20px; margin-top: 10px;">
+                            <div style="flex: 1; text-align: center;">
+                                <div style="height: 120px; background-color: var(--slate-800); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                                    <img src="https://images.unsplash.com/photo-1579546929662-711aa81148cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" alt="До" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                <div class="text-secondary">До</div>
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-arrow-right text-secondary"></i>
+                            </div>
+                            <div style="flex: 1; text-align: center;">
+                                <div style="height: 120px; background-color: var(--slate-800); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden; border: 2px solid var(--indigo-500);">
+                                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" alt="После" style="width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.5);">
+                                </div>
+                                <div class="text-secondary">После</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelNodeSettings">Отмена</button>
+                <button class="btn btn-primary" id="saveNodeSettings">Сохранить</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно загрузки проекта -->
+    <div class="modal-overlay" id="loadProjectModal">
+        <div class="modal modal-wide">
+            <div class="modal-header">
+                <div class="modal-title">Загрузить проект</div>
+                <button class="modal-close" id="closeLoadProject">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="two-column">
+                    <div>
+                        <h4 class="mb-2">Недавние проекты</h4>
+                        <div class="recent-projects">
+                            <div class="project-item selected" data-project="analysis1">
+                                <div class="project-name">Анализ_1.json</div>
+                                <div class="project-date">2 часа назад</div>
+                            </div>
+                            <div class="project-item" data-project="experiment">
+                                <div class="project-name">Эксперимент.json</div>
+                                <div class="project-date">вчера</div>
+                            </div>
+                            <div class="project-item" data-project="test">
+                                <div class="project-name">Тест.tpt</div>
+                                <div class="project-date">3 дня назад</div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons mt-2">
+                            <button class="btn btn-secondary" id="browseFilesButton">
+                                <i class="fas fa-folder-open"></i> Обзор...
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="mb-2">Свойства проекта</h4>
+                        <div class="property-group">
+                            <div class="property-item">
+                                <label class="property-label">Название:</label>
+                                <div class="property-input" style="background-color: var(--slate-700);" id="projectName">Анализ_1</div>
+                            </div>
+                            
+                            <div class="property-item">
+                                <label class="property-label">Дата:</label>
+                                <div class="property-input" style="background-color: var(--slate-700);" id="projectDate">15.03.2024</div>
+                            </div>
+                            
+                            <div class="property-item">
+                                <label class="property-label">Узлов:</label>
+                                <div class="property-input" style="background-color: var(--slate-700);" id="projectNodes">8</div>
+                            </div>
+                            
+                            <div class="property-item">
+                                <label class="property-label">Версия:</label>
+                                <div class="property-input" style="background-color: var(--slate-700);" id="projectVersion">2.0</div>
+                            </div>
+                            
+                            <div class="property-item">
+                                <label class="property-label">Миниатюра:</label>
+                                <div class="thumbnail">
+                                    <img src="https://images.unsplash.com/photo-1579546929662-711aa81148cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Миниатюра" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="loadFromCloudButton">
+                    <i class="fas fa-cloud"></i> Открыть из облака
+                </button>
+                <button class="btn btn-secondary" id="loadFromDiskButton">
+                    <i class="fas fa-hdd"></i> Загрузить с диска
+                </button>
+                <button class="btn btn-primary" id="confirmLoadProject">
+                    <i class="fas fa-folder-open"></i> Загрузить проект
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно сохранения проекта -->
+    <div class="modal-overlay" id="saveProjectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Сохранить проект</div>
+                <button class="modal-close" id="closeSaveProject">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="property-group">
+                    <div class="property-item">
+                        <label class="property-label">Название проекта:</label>
+                        <input type="text" class="property-input" id="saveProjectName" value="Мой проект">
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Описание:</label>
+                        <textarea class="property-input" id="saveProjectDescription" rows="3" placeholder="Добавьте описание проекта..."></textarea>
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Формат:</label>
+                        <select class="property-input" id="saveProjectFormat">
+                            <option value="json">WTIS JSON (.json)</option>
+                            <option value="tpt">WTIS Template (.tpt)</option>
+                            <option value="export">Экспорт PNG (.png)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="checkbox">
+                            <input type="checkbox" id="includePreviewCheckbox" checked>
+                            <div class="checkbox-box"></div>
+                            <span>Включить превью</span>
+                        </label>
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="checkbox">
+                            <input type="checkbox" id="compressProjectCheckbox">
+                            <div class="checkbox-box"></div>
+                            <span>Сжатие проекта</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelSaveProject">Отмена</button>
+                <button class="btn btn-primary" id="confirmSaveProject">Сохранить</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно пакетной обработки -->
+    <div class="modal-overlay" id="batchProcessingModal">
+        <div class="modal modal-wide">
+            <div class="modal-header">
+                <div class="modal-title">Пакетная обработка</div>
+                <button class="modal-close" id="closeBatchProcessing">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="batch-processing">
+                    <div class="batch-column">
+                        <div class="batch-title">Источник</div>
+                        <div class="batch-item">image_001.tpt</div>
+                        <div class="batch-item">image_002.tpt</div>
+                        <div class="batch-item">image_003.tpt</div>
+                        <div class="batch-item">image_004.tpt</div>
+                        <button class="btn btn-secondary w-100 mt-2" id="addFilesButton">
+                            <i class="fas fa-plus"></i> Добавить файлы
+                        </button>
+                    </div>
+                    
+                    <div class="batch-column">
+                        <div class="batch-title">Обработка</div>
+                        <div style="display: flex; justify-content: center; align-items: center; height: 150px;">
+                            <div style="background-color: var(--slate-800); width: 80px; height: 80px; border-radius: var(--radius-md); display: flex; justify-content: center; align-items: center; border: 2px dashed var(--slate-600);">
+                                <i class="fas fa-project-diagram fa-2x text-secondary"></i>
+                            </div>
+                        </div>
+                        <div class="text-secondary text-center">Текущий workflow</div>
+                        <button class="btn btn-secondary w-100 mt-2" id="selectWorkflowButton">
+                            <i class="fas fa-folder-open"></i> Выбрать workflow
+                        </button>
+                    </div>
+                    
+                    <div class="batch-column">
+                        <div class="batch-title">Назначение</div>
+                        <div class="batch-item">output_001/</div>
+                        <div class="batch-item">output_002/</div>
+                        <div class="batch-item">output_003/</div>
+                        <div class="batch-item">output_004/</div>
+                        <button class="btn btn-secondary w-100 mt-2" id="selectDestinationButton">
+                            <i class="fas fa-folder"></i> Выбрать папку
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="progress-bar mt-4">
+                    <div class="progress-fill" id="batchProgressFill"></div>
+                </div>
+                <div class="d-flex justify-between mt-1">
+                    <span id="batchProgressText">Прогресс: 65%</span>
+                    <span id="batchTimeRemaining">Осталось: ~2 минуты</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="pauseBatchButton">
+                    <i class="fas fa-pause"></i> Пауза
+                </button>
+                <button class="btn btn-danger" id="cancelBatchButton">
+                    <i class="fas fa-times"></i> Отмена
+                </button>
+                <button class="btn btn-success" id="startBatchButton">
+                    <i class="fas fa-play"></i> Запустить
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно статистики -->
+    <div class="modal-overlay" id="statsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Статистика проекта</div>
+                <button class="modal-close" id="closeStatsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="property-group">
+                    <div class="property-item">
+                        <label class="property-label">Всего узлов:</label>
+                        <div class="property-input" style="background-color: var(--slate-700);">4</div>
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Соединений:</label>
+                        <div class="property-input" style="background-color: var(--slate-700);">3</div>
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Время выполнения:</label>
+                        <div class="property-input" style="background-color: var(--slate-700);">4.2 сек</div>
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Использование памяти:</label>
+                        <div class="property-input" style="background-color: var(--slate-700);">124 MB</div>
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Дата создания:</label>
+                        <div class="property-input" style="background-color: var(--slate-700);">15.03.2024 10:30</div>
+                    </div>
+                    
+                    <div class="property-item">
+                        <label class="property-label">Последний запуск:</label>
+                        <div class="property-input" style="background-color: var(--slate-700);">15.03.2024 14:45</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeStatsButton">Закрыть</button>
+                <button class="btn btn-primary" id="exportStatsButton">Экспорт статистики</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно настроек приложения -->
+    <div class="modal-overlay" id="appSettingsModal">
+        <div class="modal modal-wide">
+            <div class="modal-header">
+                <div class="modal-title">Настройки приложения</div>
+                <button class="modal-close" id="closeAppSettings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="two-column">
+                    <div>
+                        <h4 class="mb-2">Основные</h4>
+                        <div class="property-group">
+                            <div class="property-item">
+                                <label class="property-label">Автосохранение:</label>
+                                <div class="toggle-switch">
+                                    <div class="toggle active" id="autosaveToggle">
+                                        <div class="toggle-knob"></div>
+                                    </div>
+                                    <span>Вкл</span>
+                                </div>
+                            </div>
+                            
+                            <div class="property-item">
+                                <label class="property-label">Интервал автосохранения:</label>
+                                <select class="property-input" id="autosaveInterval">
+                                    <option value="1">1 минута</option>
+                                    <option value="2" selected>2 минуты</option>
+                                    <option value="5">5 минут</option>
+                                    <option value="10">10 минут</option>
+                                </select>
+                            </div>
+                            
+                            <div class="property-item">
+                                <label class="property-label">Тема интерфейса:</label>
+                                <select class="property-input" id="themeSelect">
+                                    <option value="dark">Темная</option>
+                                    <option value="light">Светлая</option>
+                                    <option value="auto">Системная</option>
+                                </select>
+                            </div>
+                            
+                            <div class="property-item">
+                                <label class="property-label">Язык:</label>
+                                <select class="property-input" id="languageSelect">
+                                    <option value="ru">Русский</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="mb-2">Производительность</h4>
+                        <div class="property-group">
+                            <div class="property-item">
+                                <label class="property-label">Кэширование:</label>
+                                <div class="toggle-switch">
+                                    <div class="toggle active" id="cacheToggle">
+                                        <div class="toggle-knob"></div>
+                                    </div>
+                                    <span>Вкл</span>
+                                </div>
+                            </div>
+                            
+                            <div class="property-item">
+                                <label class="property-label">Размер кэша:</label>
+                                <select class="property-input" id="cacheSize">
+                                    <option value="256">256 MB</option>
+                                    <option value="512" selected>512 MB</option>
+                                    <option value="1024">1 GB</option>
+                                    <option value="2048">2 GB</option>
+                                </select>
+                            </div>
+                            
+                            <div class="property-item">
+                                <label class="property-label">Параллельная обработка:</label>
+                                <div class="toggle-switch">
+                                    <div class="toggle active" id="parallelToggle">
+                                        <div class="toggle-knob"></div>
+                                    </div>
+                                    <span>Вкл</span>
+                                </div>
+                            </div>
+                            
+                            <div class="property-item">
+                                <label class="property-label">Качество превью:</label>
+                                <select class="property-input" id="previewQuality">
+                                    <option value="low">Низкое</option>
+                                    <option value="medium" selected>Среднее</option>
+                                    <option value="high">Высокое</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelAppSettings">Отмена</button>
+                <button class="btn btn-primary" id="saveAppSettings">Сохранить настройки</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные состояния
+        let appState = {
+            selectedNode: null,
+            zoomLevel: 100,
+            isPanMode: false,
+            isRunning: false,
+            nodeCounter: 4,
+            autosaveTimer: null,
+            notifications: [
+                { id: 1, title: "Workflow выполнен успешно", message: "Обработка изображения завершена", time: "2 минуты назад", read: false },
+                { id: 2, title: "Новая версия доступна", message: "WTIS 2.1 готов к обновлению", time: "1 час назад", read: false },
+                { id: 3, title: "Проект автосохранен", message: "Анализ_1.json сохранен", time: "2 часа назад", read: true }
+            ]
+        };
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация всех компонентов
+            initAccordions();
+            initTabs();
+            initDropdowns();
+            initModals();
+            initNodeDragAndDrop();
+            initCanvasInteractions();
+            initButtons();
+            initSliders();
+            initAutoSave();
+            
+            // Обновление счетчиков
+            updateNodeCount();
+            
+            // Установка обработчика клавиш
+            document.addEventListener('keydown', handleKeyDown);
+            
+            console.log('WTIS 2.0 прототип инициализирован');
+        });
+
+        // ===== ИНИЦИАЛИЗАЦИЯ КОМПОНЕНТОВ =====
+
+        function initAccordions() {
+            const categoryHeaders = document.querySelectorAll('.category-header');
+            categoryHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const nodeList = this.nextElementSibling;
+                    const icon = this.querySelector('.fa-chevron-up, .fa-chevron-down');
+                    
+                    if (nodeList.classList.contains('d-none')) {
+                        nodeList.classList.remove('d-none');
+                        this.classList.add('active');
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                    } else {
+                        nodeList.classList.add('d-none');
+                        this.classList.remove('active');
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                });
+            });
+        }
+
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Убираем активный класс у всех вкладок
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.add('d-none'));
+                    
+                    // Добавляем активный класс текущей вкладке
+                    this.classList.add('active');
+                    
+                    // Показываем соответствующий контент
+                    const activeContent = document.getElementById(`${tabId}Tab`);
+                    if (activeContent) {
+                        activeContent.classList.remove('d-none');
+                    }
+                });
+            });
+        }
+
+        function initDropdowns() {
+            // Выпадающее меню пользователя
+            const userProfile = document.getElementById('userProfile');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            userProfile.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+            });
+            
+            // Выпадающее меню уведомлений
+            const notificationsButton = document.getElementById('notificationsButton');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            
+            notificationsButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                notificationsDropdown.classList.toggle('show');
+            });
+            
+            // Закрытие выпадающих меню при клике вне их
+            document.addEventListener('click', function(e) {
+                if (!userProfile.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('show');
+                }
+                
+                if (!notificationsButton.contains(e.target) && !notificationsDropdown.contains(e.target)) {
+                    notificationsDropdown.classList.remove('show');
+                }
+            });
+            
+            // Обработка элементов выпадающего меню пользователя
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const text = this.querySelector('span').textContent;
+                    if (text === 'Выйти') {
+                        showNotification('Вы вышли из системы', 'info');
+                        userDropdown.classList.remove('show');
+                    } else if (text === 'Темная тема') {
+                        // Обработка переключения темы уже в обработчике toggle
+                    } else {
+                        showNotification(`Выбрано: ${text}`, 'info');
+                        userDropdown.classList.remove('show');
+                    }
+                });
+            });
+            
+            // Переключение темы
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                const isDark = this.classList.contains('active');
+                document.body.style.backgroundColor = isDark ? '#0F172A' : '#FFFFFF';
+                document.body.style.color = isDark ? '#F8FAFC' : '#0F172A';
+                showNotification(isDark ? 'Темная тема включена' : 'Светлая тема включена', 'info');
+            });
+            
+            // Отметить все уведомления как прочитанные
+            document.getElementById('markAllRead').addEventListener('click', function() {
+                document.querySelectorAll('.notification-item.unread').forEach(item => {
+                    item.classList.remove('unread');
+                });
+                document.querySelector('#notificationsButton .badge').textContent = '0';
+                showNotification('Все уведомления прочитаны', 'success');
+            });
+        }
+
+        function initModals() {
+            // Модальные окна
+            const modals = {
+                'nodeSettingsModal': ['closeNodeSettings', 'cancelNodeSettings'],
+                'loadProjectModal': ['closeLoadProject'],
+                'saveProjectModal': ['closeSaveProject'],
+                'batchProcessingModal': ['closeBatchProcessing'],
+                'statsModal': ['closeStatsModal'],
+                'appSettingsModal': ['closeAppSettings']
+            };
+            
+            // Закрытие модальных окон
+            Object.keys(modals).forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                
+                // Закрытие по клику на оверлей
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+                
+                // Закрытие по клику на кнопки закрытия
+                modals[modalId].forEach(buttonId => {
+                    const button = document.getElementById(buttonId);
+                    if (button) {
+                        button.addEventListener('click', function() {
+                            modal.style.display = 'none';
+                        });
+                    }
+                });
+            });
+            
+            // Открытие модальных окон
+            document.getElementById('settingsButton').addEventListener('click', function() {
+                document.getElementById('appSettingsModal').style.display = 'flex';
+            });
+            
+            document.getElementById('statsButton').addEventListener('click', function() {
+                document.getElementById('statsModal').style.display = 'flex';
+            });
+            
+            // Сохранение настроек узла
+            document.getElementById('saveNodeSettings').addEventListener('click', function() {
+                const kernelSize = document.getElementById('kernelSizeValue').textContent;
+                const sigma = document.getElementById('sigmaInput').value;
+                const direction = document.getElementById('directionSelect').value;
+                
+                showNotification(`Настройки сохранены: Ядро=${kernelSize}, Сигма=${sigma}, Направление=${direction}`, 'success');
+                document.getElementById('nodeSettingsModal').style.display = 'none';
+            });
+            
+            // Загрузка проекта
+            document.getElementById('confirmLoadProject').addEventListener('click', function() {
+                const projectName = document.getElementById('projectName').textContent;
+                showNotification(`Проект "${projectName}" загружен`, 'success');
+                document.getElementById('loadProjectModal').style.display = 'none';
+                
+                // Обновляем статус в футере
+                document.getElementById('autosaveStatus').innerHTML = '<i class="fas fa-save"></i><span>Автосохранение: только что</span>';
+            });
+            
+            // Выбор проекта из списка
+            document.querySelectorAll('.project-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.project-item').forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // Обновляем информацию о проекте
+                    const project = this.getAttribute('data-project');
+                    updateProjectInfo(project);
+                });
+            });
+            
+            // Сохранение проекта
+            document.getElementById('confirmSaveProject').addEventListener('click', function() {
+                const projectName = document.getElementById('saveProjectName').value;
+                const format = document.getElementById('saveProjectFormat').value;
+                showNotification(`Проект "${projectName}" сохранен в формате ${format}`, 'success');
+                document.getElementById('saveProjectModal').style.display = 'none';
+            });
+            
+            // Пакетная обработка
+            let batchInterval = null;
+            document.getElementById('startBatchButton').addEventListener('click', function() {
+                const button = this;
+                const progressFill = document.getElementById('batchProgressFill');
+                const progressText = document.getElementById('batchProgressText');
+                const timeRemaining = document.getElementById('batchTimeRemaining');
+                const pauseButton = document.getElementById('pauseBatchButton');
+                
+                let progress = 0;
+                let isPaused = false;
+                
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Выполняется';
+                pauseButton.innerHTML = '<i class="fas fa-pause"></i> Пауза';
+                
+                batchInterval = setInterval(() => {
+                    if (!isPaused && progress < 100) {
+                        progress += 2;
+                        progressFill.style.width = `${progress}%`;
+                        progressText.textContent = `Прогресс: ${progress}%`;
+                        timeRemaining.textContent = `Осталось: ~${Math.round((100 - progress) / 2)} секунд`;
+                        
+                        if (progress >= 100) {
+                            clearInterval(batchInterval);
+                            button.innerHTML = '<i class="fas fa-check"></i> Завершено';
+                            button.classList.remove('btn-success');
+                            button.classList.add('btn-primary');
+                            pauseButton.style.display = 'none';
+                            showNotification('Пакетная обработка завершена успешно!', 'success');
+                        }
+                    }
+                }, 100);
+                
+                pauseButton.addEventListener('click', function() {
+                    isPaused = !isPaused;
+                    this.innerHTML = isPaused ? '<i class="fas fa-play"></i> Продолжить' : '<i class="fas fa-pause"></i> Пауза';
+                });
+                
+                document.getElementById('cancelBatchButton').addEventListener('click', function() {
+                    clearInterval(batchInterval);
+                    document.getElementById('batchProcessingModal').style.display = 'none';
+                    showNotification('Пакетная обработка отменена', 'warning');
+                });
+            });
+            
+            // Статистика
+            document.getElementById('exportStatsButton').addEventListener('click', function() {
+                showNotification('Статистика экспортирована в файл stats.json', 'success');
+            });
+            
+            // Настройки приложения
+            document.getElementById('saveAppSettings').addEventListener('click', function() {
+                const autosave = document.getElementById('autosaveToggle').classList.contains('active') ? 'включено' : 'выключено';
+                const interval = document.getElementById('autosaveInterval').value;
+                const theme = document.getElementById('themeSelect').value;
+                
+                showNotification(`Настройки сохранены: автосохранение ${autosave} (${interval} мин), тема: ${theme}`, 'success');
+                document.getElementById('appSettingsModal').style.display = 'none';
+                
+                // Обновляем настройки в приложении
+                if (autosave === 'включено') {
+                    initAutoSave();
+                } else {
+                    clearInterval(appState.autosaveTimer);
+                }
+            });
+        }
+
+        function initNodeDragAndDrop() {
+            const nodeItems = document.querySelectorAll('.node-item');
+            const canvasNodes = document.getElementById('canvasNodes');
+            
+            nodeItems.forEach(node => {
+                node.addEventListener('dragstart', function(e) {
+                    const nodeType = this.getAttribute('data-node-type');
+                    const nodeName = this.querySelector('div > div:first-child').textContent;
+                    const category = this.closest('.node-category').querySelector('.category-title span').textContent;
+                    
+                    e.dataTransfer.setData('text/plain', JSON.stringify({
+                        type: nodeType,
+                        name: nodeName,
+                        category: category
+                    }));
+                });
+            });
+            
+            canvasNodes.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            canvasNodes.addEventListener('drop', function(e) {
+                e.preventDefault();
+                
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                const rect = canvasNodes.getBoundingClientRect();
+                const x = e.clientX - rect.left - 90;
+                const y = e.clientY - rect.top - 30;
+                
+                createNewNode(data.type, data.name, data.category, x, y);
+            });
+            
+            // Двойной клик по узлу для открытия настроек
+            canvasNodes.addEventListener('dblclick', function(e) {
+                const node = e.target.closest('.graph-node');
+                if (node) {
+                    openNodeSettings(node);
+                }
+            });
+        }
+
+        function initCanvasInteractions() {
+            const canvasNodes = document.getElementById('canvasNodes');
+            let isDragging = false;
+            let currentDraggedElement = null;
+            let offsetX, offsetY;
+            
+            // Выделение узла
+            canvasNodes.addEventListener('click', function(e) {
+                const node = e.target.closest('.graph-node');
+                if (node && !e.target.classList.contains('node-settings')) {
+                    // Снимаем выделение со всех узлов
+                    document.querySelectorAll('.graph-node').forEach(n => {
+                        n.classList.remove('selected');
+                    });
+                    
+                    // Выделяем текущий узел
+                    node.classList.add('selected');
+                    appState.selectedNode = node;
+                    
+                    // Обновляем свойства в инспекторе
+                    updateNodeProperties(node);
+                    
+                    showNotification(`Узел "${node.querySelector('.node-title').textContent}" выделен`, 'info');
+                }
+            });
+            
+            // Перетаскивание узлов
+            canvasNodes.addEventListener('mousedown', function(e) {
+                if (e.target.closest('.graph-node') && !e.target.classList.contains('node-settings')) {
+                    isDragging = true;
+                    currentDraggedElement = e.target.closest('.graph-node');
+                    
+                    const rect = currentDraggedElement.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    
+                    currentDraggedElement.style.zIndex = '100';
+                    currentDraggedElement.style.cursor = 'grabbing';
+                    
+                    // Снимаем выделение если перетаскиваем не выделенный узел
+                    if (!currentDraggedElement.classList.contains('selected')) {
+                        document.querySelectorAll('.graph-node').forEach(n => {
+                            n.classList.remove('selected');
+                        });
+                        currentDraggedElement.classList.add('selected');
+                        appState.selectedNode = currentDraggedElement;
+                    }
+                }
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging && currentDraggedElement) {
+                    e.preventDefault();
+                    
+                    const canvasRect = canvasNodes.getBoundingClientRect();
+                    let x = e.clientX - canvasRect.left - offsetX;
+                    let y = e.clientY - canvasRect.top - offsetY;
+                    
+                    // Ограничиваем перемещение в пределах холста
+                    x = Math.max(0, Math.min(x, canvasRect.width - currentDraggedElement.offsetWidth));
+                    y = Math.max(0, Math.min(y, canvasRect.height - currentDraggedElement.offsetHeight));
+                    
+                    currentDraggedElement.style.left = `${x}px`;
+                    currentDraggedElement.style.top = `${y}px`;
+                    
+                    // Обновляем соединения
+                    updateConnections();
+                }
+            });
+            
+            document.addEventListener('mouseup', function() {
+                if (isDragging && currentDraggedElement) {
+                    currentDraggedElement.style.zIndex = '';
+                    currentDraggedElement.style.cursor = 'move';
+                    currentDraggedElement = null;
+                }
+                isDragging = false;
+            });
+            
+            // Обработка клика по портам
+            canvasNodes.addEventListener('click', function(e) {
+                if (e.target.classList.contains('port-input') || e.target.classList.contains('port-output')) {
+                    e.stopPropagation();
+                    const port = e.target;
+                    port.style.backgroundColor = 'var(--indigo-500)';
+                    port.style.transform = 'scale(1.3)';
+                    
+                    setTimeout(() => {
+                        port.style.backgroundColor = '';
+                        port.style.transform = '';
+                    }, 300);
+                    
+                    showNotification('Порт активирован. Перетащите для соединения с другим портом', 'info');
+                }
+            });
+        }
+
+        function initButtons() {
+            // Запуск workflow
+            document.getElementById('runWorkflowButton').addEventListener('click', runWorkflow);
+            
+            // Сохранение проекта
+            document.getElementById('saveProjectButton').addEventListener('click', function() {
+                document.getElementById('saveProjectModal').style.display = 'flex';
+            });
+            
+            // Загрузка проекта
+            document.getElementById('loadProjectButton').addEventListener('click', function() {
+                document.getElementById('loadProjectModal').style.display = 'flex';
+            });
+            
+            // Импорт изображения
+            document.getElementById('importImageButton').addEventListener('click', function() {
+                showNotification('Функция импорта изображения', 'info');
+                // В реальном приложении здесь был бы input type="file"
+            });
+            
+            // Очистка холста
+            document.getElementById('clearCanvasButton').addEventListener('click', function() {
+                if (confirm('Вы уверены, что хотите очистить холст? Все узлы будут удалены.')) {
+                    document.getElementById('canvasNodes').innerHTML = '';
+                    appState.nodeCounter = 0;
+                    updateNodeCount();
+                    showNotification('Холст очищен', 'success');
+                }
+            });
+            
+            // Кнопки управления графом
+            document.getElementById('zoomInButton').addEventListener('click', function() {
+                appState.zoomLevel = Math.min(appState.zoomLevel + 10, 200);
+                updateZoom();
+            });
+            
+            document.getElementById('zoomOutButton').addEventListener('click', function() {
+                appState.zoomLevel = Math.max(appState.zoomLevel - 10, 50);
+                updateZoom();
+            });
+            
+            document.getElementById('panModeButton').addEventListener('click', function() {
+                appState.isPanMode = !appState.isPanMode;
+                this.classList.toggle('active', appState.isPanMode);
+                const cursor = appState.isPanMode ? 'grab' : 'default';
+                document.getElementById('graphArea').style.cursor = cursor;
+                showNotification(appState.isPanMode ? 'Режим панорамирования включен' : 'Режим панорамирования выключен', 'info');
+            });
+            
+            document.getElementById('resetViewButton').addEventListener('click', function() {
+                appState.zoomLevel = 100;
+                updateZoom();
+                showNotification('Вид сброшен', 'success');
+            });
+            
+            // Кнопки обновления
+            document.getElementById('refreshButton').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                icon.classList.add('fa-spin');
+                
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                    showNotification('Интерфейс обновлен', 'success');
+                }, 1000);
+            });
+            
+            // Кнопки превью
+            document.getElementById('capturePreviewButton').addEventListener('click', function() {
+                showNotification('Снимок превью сохранен', 'success');
+            });
+            
+            document.getElementById('savePreviewButton').addEventListener('click', function() {
+                showNotification('Изображение сохранено', 'success');
+            });
+            
+            document.getElementById('refreshPreviewButton').addEventListener('click', function() {
+                const img = document.getElementById('previewImageElement');
+                img.style.opacity = '0.5';
+                
+                setTimeout(() => {
+                    img.style.opacity = '1';
+                    showNotification('Превью обновлено', 'success');
+                }, 500);
+            });
+            
+            document.getElementById('previewSettingsButton').addEventListener('click', function() {
+                showNotification('Открыты настройки превью', 'info');
+            });
+            
+            // Кнопки свойств
+            document.getElementById('applyPropertiesButton').addEventListener('click', function() {
+                const width = document.getElementById('nodeWidth').value;
+                const height = document.getElementById('nodeHeight').value;
+                const format = document.getElementById('imageFormat').value;
+                const quality = document.getElementById('qualityValue').textContent;
+                
+                showNotification(`Свойства применены: ${width}x${height}, ${format}, качество: ${quality}`, 'success');
+            });
+            
+            document.getElementById('resetPropertiesButton').addEventListener('click', function() {
+                document.getElementById('nodeWidth').value = 256;
+                document.getElementById('nodeHeight').value = 256;
+                document.getElementById('imageFormat').value = 'png';
+                updateQualitySlider(85);
+                showNotification('Свойства сброшены', 'info');
+            });
+            
+            document.getElementById('copyPropertiesButton').addEventListener('click', function() {
+                const props = {
+                    width: document.getElementById('nodeWidth').value,
+                    height: document.getElementById('nodeHeight').value,
+                    format: document.getElementById('imageFormat').value,
+                    quality: document.getElementById('qualityValue').textContent
+                };
+                
+                navigator.clipboard.writeText(JSON.stringify(props, null, 2))
+                    .then(() => showNotification('Свойства скопированы в буфер обмена', 'success'))
+                    .catch(() => showNotification('Не удалось скопировать свойства', 'error'));
+            });
+            
+            // Кнопки отладки
+            document.getElementById('clearLogButton').addEventListener('click', function() {
+                document.getElementById('debugLog').innerHTML = '<div>[Логи очищены]</div>';
+                showNotification('Логи очищены', 'success');
+            });
+            
+            document.getElementById('exportLogButton').addEventListener('click', function() {
+                showNotification('Логи экспортированы в файл debug.log', 'success');
+            });
+            
+            document.getElementById('startDebugButton').addEventListener('click', function() {
+                const button = this;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отладка...';
+                button.disabled = true;
+                
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fas fa-bug"></i> Начать отладку';
+                    button.disabled = false;
+                    showNotification('Отладка завершена', 'success');
+                }, 2000);
+            });
+            
+            // Поиск
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                if (searchTerm.length > 2) {
+                    showNotification(`Поиск: "${searchTerm}"`, 'info');
+                }
+            });
+            
+            // Пакетная обработка
+            document.getElementById('addFilesButton').addEventListener('click', function() {
+                showNotification('Функция добавления файлов', 'info');
+            });
+            
+            document.getElementById('selectWorkflowButton').addEventListener('click', function() {
+                showNotification('Выбор workflow для пакетной обработки', 'info');
+            });
+            
+            document.getElementById('selectDestinationButton').addEventListener('click', function() {
+                showNotification('Выбор папки назначения', 'info');
+            });
+        }
+
+        function initSliders() {
+            // Слайдер качества
+            const qualitySlider = document.getElementById('qualitySlider');
+            const qualityThumb = document.getElementById('qualityThumb');
+            const qualityFill = document.getElementById('qualityFill');
+            const qualityValue = document.getElementById('qualityValue');
+            
+            let isDraggingQuality = false;
+            
+            qualitySlider.addEventListener('mousedown', function(e) {
+                isDraggingQuality = true;
+                updateQualityFromEvent(e);
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (isDraggingQuality) {
+                    updateQualityFromEvent(e);
+                }
+            });
+            
+            document.addEventListener('mouseup', function() {
+                isDraggingQuality = false;
+            });
+            
+            function updateQualityFromEvent(e) {
+                const rect = qualitySlider.getBoundingClientRect();
+                let x = e.clientX - rect.left;
+                x = Math.max(0, Math.min(x, rect.width));
+                
+                const percent = Math.round((x / rect.width) * 100);
+                updateQualitySlider(percent);
+            }
+            
+            function updateQualitySlider(percent) {
+                qualityFill.style.width = `${percent}%`;
+                qualityThumb.style.right = `${100 - percent}%`;
+                qualityValue.textContent = `${percent}%`;
+            }
+            
+            // Слайдер размера ядра
+            const kernelSizeSlider = document.getElementById('kernelSizeSlider');
+            const kernelSizeThumb = document.getElementById('kernelSizeThumb');
+            const kernelSizeFill = document.getElementById('kernelSizeFill');
+            const kernelSizeValue = document.getElementById('kernelSizeValue');
+            
+            kernelSizeSlider.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                let x = e.clientX - rect.left;
+                x = Math.max(0, Math.min(x, rect.width));
+                
+                // Значения от 1 до 7 (нечетные)
+                const position = x / rect.width;
+                const kernelSizes = [1, 3, 5, 7];
+                const index = Math.min(Math.floor(position * kernelSizes.length), kernelSizes.length - 1);
+                const value = kernelSizes[index];
+                
+                kernelSizeValue.textContent = value;
+                const percent = (index / (kernelSizes.length - 1)) * 100;
+                kernelSizeFill.style.width = `${percent}%`;
+                kernelSizeThumb.style.right = `${100 - percent}%`;
+            });
+            
+            // Переключатели
+            document.querySelectorAll('.toggle').forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('active');
+                    
+                    const label = this.nextElementSibling;
+                    if (label) {
+                        label.textContent = this.classList.contains('active') ? 'Вкл' : 'Выкл';
+                    }
+                });
+            });
+        }
+
+        function initAutoSave() {
+            // Очищаем предыдущий таймер если есть
+            if (appState.autosaveTimer) {
+                clearInterval(appState.autosaveTimer);
+            }
+            
+            // Устанавливаем новый таймер автосохранения (каждые 10 секунд для демо)
+            appState.autosaveTimer = setInterval(() => {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('autosaveStatus').innerHTML = `<i class="fas fa-save"></i><span>Автосохранение: ${timeString}</span>`;
+                
+                // Периодически показываем уведомление
+                if (Math.random() > 0.7) {
+                    showNotification('Проект автосохранен', 'info');
+                }
+            }, 10000); // 10 секунд
+        }
+
+        // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+
+        function createNewNode(nodeType, nodeName, category, x, y) {
+            appState.nodeCounter++;
+            const nodeId = appState.nodeCounter;
+            
+            // Определяем цвет по категории
+            let borderColor = 'var(--slate-600)';
+            if (category === 'Ввод/Вывод') borderColor = 'var(--blue-500)';
+            else if (category === 'Фильтры') borderColor = 'var(--emerald-500)';
+            else if (category === 'Трансформы') borderColor = 'var(--amber-500)';
+            else if (category === 'Калькулятор') borderColor = 'var(--purple-500)';
+            else if (category === 'ROI') borderColor = 'var(--red-500)';
+            
+            const newNode = document.createElement('div');
+            newNode.className = 'graph-node';
+            newNode.style.left = `${x}px`;
+            newNode.style.top = `${y}px`;
+            newNode.style.borderColor = borderColor;
+            newNode.setAttribute('data-node-id', nodeId);
+            
+            // Определяем порты в зависимости от типа узла
+            let portsHtml = '';
+            if (nodeType.includes('input')) {
+                portsHtml = `
+                    <div class="port">
+                        <span class="port-label">Изображение</span>
+                        <div class="port-output"></div>
+                    </div>
+                `;
+            } else if (nodeType.includes('output')) {
+                portsHtml = `
+                    <div class="port">
+                        <div class="port-input"></div>
+                        <span class="port-label">Вход</span>
+                    </div>
+                `;
+            } else {
+                portsHtml = `
+                    <div class="port">
+                        <div class="port-input"></div>
+                        <span class="port-label">Вход</span>
+                    </div>
+                    <div class="port">
+                        <span class="port-label">Выход</span>
+                        <div class="port-output"></div>
+                    </div>
+                `;
+            }
+            
+            newNode.innerHTML = `
+                <div class="node-header">
+                    <div class="node-title">${nodeName}</div>
+                    <i class="fas fa-cog text-secondary node-settings"></i>
+                </div>
+                <div class="text-secondary">${getNodeDescription(nodeType)}</div>
+                <div class="node-ports">
+                    ${portsHtml}
+                </div>
+            `;
+            
+            document.getElementById('canvasNodes').appendChild(newNode);
+            
+            // Добавляем обработчики событий для нового узла
+            newNode.querySelector('.node-settings').addEventListener('click', function(e) {
+                e.stopPropagation();
+                openNodeSettings(newNode);
+            });
+            
+            // Анимация появления
+            newNode.style.transform = 'scale(0.8)';
+            newNode.style.transition = 'transform 0.3s';
+            
+            setTimeout(() => {
+                newNode.style.transform = 'scale(1)';
+            }, 10);
+            
+            updateNodeCount();
+            showNotification(`Узел "${nodeName}" добавлен на холст`, 'success');
+            
+            return newNode;
+        }
+
+        function getNodeDescription(nodeType) {
+            const descriptions = {
+                'input/LoadNode': 'Загружает изображение из файла',
+                'output/SaveNode': 'Сохраняет изображение в файл',
+                'filter/SobelNode': 'Фильтр обнаружения границ',
+                'filter/GaussianNode': 'Размытие по Гауссу',
+                'transform/RotateNode': 'Поворачивает изображение',
+                'transform/ScaleNode': 'Масштабирует изображение',
+                'calculator/AddNode': 'Сложение изображений',
+                'roi/SelectNode': 'Выбор области интереса'
+            };
+            
+            return descriptions[nodeType] || 'Обрабатывает изображение';
+        }
+
+        function updateNodeProperties(node) {
+            // Здесь можно обновить свойства в инспекторе на основе выбранного узла
+            const nodeTitle = node.querySelector('.node-title').textContent;
+            console.log(`Обновление свойств для узла: ${nodeTitle}`);
+        }
+
+        function openNodeSettings(node) {
+            const nodeTitle = node.querySelector('.node-title').textContent;
+            document.querySelector('#nodeSettingsModal .modal-title').textContent = `Настройка узла: "${nodeTitle}"`;
+            document.getElementById('nodeSettingsModal').style.display = 'flex';
+        }
+
+        function runWorkflow() {
+            if (appState.isRunning) return;
+            
+            appState.isRunning = true;
+            const runButton = document.getElementById('runWorkflowButton');
+            runButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Выполняется...';
+            runButton.disabled = true;
+            
+            // Обновляем статус
+            document.getElementById('workflowStatus').innerHTML = '<i class="fas fa-spinner fa-spin text-success"></i><span>Выполняется...</span>';
+            
+            const nodes = document.querySelectorAll('.graph-node');
+            const connections = document.querySelectorAll('.connection-line');
+            
+            // Анимация выполнения через узлы
+            let delay = 0;
+            nodes.forEach((node, index) => {
+                setTimeout(() => {
+                    node.classList.add('node-running');
+                    
+                    // Анимация соединений
+                    if (connections[index]) {
+                        connections[index].classList.add('active');
+                    }
+                    
+                    // Добавляем запись в логи
+                    if (index === nodes.length - 1) {
+                        const log = document.getElementById('debugLog');
+                        const now = new Date();
+                        const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                        log.innerHTML += `<div>[${time}] Workflow завершен успешно</div>`;
+                        log.scrollTop = log.scrollHeight;
+                    }
+                }, delay);
+                
+                setTimeout(() => {
+                    node.classList.remove('node-running');
+                    if (connections[index]) {
+                        connections[index].classList.remove('active');
+                    }
+                }, delay + 2000);
+                
+                delay += 800;
+            });
+            
+            // Завершение выполнения
+            setTimeout(() => {
+                appState.isRunning = false;
+                runButton.innerHTML = '<i class="fas fa-play"></i> Запустить';
+                runButton.disabled = false;
+                
+                document.getElementById('workflowStatus').innerHTML = '<i class="fas fa-check text-success"></i><span>Выполнено успешно</span>';
+                showNotification('Workflow выполнен успешно!', 'success');
+                
+                // Обновляем превью
+                const previewImg = document.getElementById('previewImageElement');
+                previewImg.style.filter = 'grayscale(1) contrast(1.2)';
+                setTimeout(() => {
+                    previewImg.style.filter = '';
+                }, 1000);
+            }, delay + 1000);
+        }
+
+        function updateConnections() {
+            // В реальном приложении здесь бы обновлялись пути соединений между узлами
+            console.log('Обновление соединений между узлами');
+        }
+
+        function updateZoom() {
+            document.getElementById('zoomLevel').textContent = `${appState.zoomLevel}%`;
+            
+            // В реальном приложении здесь бы изменялся масштаб холста
+            const grid = document.querySelector('.canvas-grid');
+            const gridSize = 20 * (appState.zoomLevel / 100);
+            grid.style.backgroundSize = `${gridSize}px ${gridSize}px`;
+        }
+
+        function updateNodeCount() {
+            const nodeCount = document.querySelectorAll('.graph-node').length;
+            const activeNodes = document.querySelectorAll('.node-running').length;
+            
+            document.getElementById('nodeCount').textContent = `Узлов: ${nodeCount}`;
+            document.getElementById('activeNodes').textContent = `Активных: ${activeNodes}`;
+        }
+
+        function updateProjectInfo(project) {
+            const projects = {
+                'analysis1': { name: 'Анализ_1', date: '15.03.2024', nodes: 8, version: '2.0' },
+                'experiment': { name: 'Эксперимент', date: '14.03.2024', nodes: 12, version: '2.0' },
+                'test': { name: 'Тест', date: '12.03.2024', nodes: 5, version: '1.9' }
+            };
+            
+            const info = projects[project] || projects.analysis1;
+            document.getElementById('projectName').textContent = info.name;
+            document.getElementById('projectDate').textContent = info.date;
+            document.getElementById('projectNodes').textContent = info.nodes;
+            document.getElementById('projectVersion').textContent = info.version;
+        }
+
+        function showNotification(message, type = 'info') {
+            // Создаем уведомление
+            const notification = document.createElement('div');
+            notification.className = `notification-item ${type === 'error' ? 'unread' : ''}`;
+            notification.innerHTML = `
+                <div class="notification-title">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'} ${type.toUpperCase()}</div>
+                <div class="text-secondary">${message}</div>
+                <div class="notification-time">только что</div>
+            `;
+            
+            // Добавляем в список уведомлений
+            const notificationList = document.querySelector('.notification-list');
+            notificationList.insertBefore(notification, notificationList.firstChild);
+            
+            // Обновляем счетчик
+            const badge = document.querySelector('#notificationsButton .badge');
+            const count = parseInt(badge.textContent) + 1;
+            badge.textContent = count;
+            
+            // Автоудаление через 5 секунд
+            setTimeout(() => {
+                notification.remove();
+                badge.textContent = Math.max(0, count - 1);
+            }, 5000);
+            
+            // Также выводим в консоль
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function handleKeyDown(e) {
+            // Удаление выделенного узла по клавише Delete
+            if (e.key === 'Delete' && appState.selectedNode) {
+                if (confirm('Удалить выделенный узел?')) {
+                    appState.selectedNode.remove();
+                    appState.selectedNode = null;
+                    updateNodeCount();
+                    showNotification('Узел удален', 'success');
+                }
+            }
+            
+            // Сохранение по Ctrl+S
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                document.getElementById('saveProjectModal').style.display = 'flex';
+            }
+            
+            // Запуск по Ctrl+Enter
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                runWorkflow();
+            }
+            
+            // Отмена по Escape
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.graph-node').forEach(n => {
+                    n.classList.remove('selected');
+                });
+                appState.selectedNode = null;
+            }
+        }
+
+        // Экспорт функций для глобального доступа (для отладки)
+        window.appState = appState;
+        window.showNotification = showNotification;
+        window.runWorkflow = runWorkflow;
+    </script>
+</body>
+</html>
