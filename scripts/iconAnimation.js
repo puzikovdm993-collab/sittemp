@@ -30,8 +30,8 @@ class IconAnimationController {
                 }
 
                 // Добавляем класс активации
-                element.classList.add('folder-loading-active');
-                element.classList.remove('folder-loading-inactive');
+                element.classList.add('folder-download-active');
+                element.classList.remove('folder-download-inactive');
 
                 // Очищаем предыдущий таймер если он был
                 if (this.activeAnimations.has(element)) {
@@ -69,8 +69,8 @@ class IconAnimationController {
             }
 
             // Удаляем класс активации
-            element.classList.remove('folder-loading-active');
-            element.classList.add('folder-loading-inactive');
+            element.classList.remove('folder-download-active');
+            element.classList.add('folder-download-inactive');
 
             console.log('Анимация папки деактивирована');
         } catch (error) {

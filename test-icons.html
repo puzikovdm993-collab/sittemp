@@ -144,11 +144,12 @@
     <div class="demo-container">
         <!-- Иконка папки -->
         <div class="icon-demo">
-            <h3>Иконка папки</h3>
+            <h3>Иконка папки (загрузка)</h3>
             <div class="icon-display" id="folder-icon">
                 <svg viewBox="0 0 24 24" fill="#007acc00" stroke="#007acc" stroke-width="2">
                     <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
-                    <circle class="folder-spinner" cx="16" cy="16" r="4" fill="none" stroke-linecap="round"/>
+                    <path d="M12 10v6" class="download-arrow"/>
+                    <path d="m15 13-3 3-3-3" class="download-arrow"/>
                 </svg>
             </div>
             <div class="controls">
@@ -185,8 +186,10 @@
     <div class="examples">
         <h2>Примеры использования в коде</h2>
         
-        <h3>1. Активировать анимацию папки на 3 секунды:</h3>
-        <pre><code>iconAnimation.activateFolderAnimation('#folder-icon', 3000);</code></pre>
+        <h3>1. Активировать анимацию папки (загрузка) на 3 секунды:</h3>
+        <pre><code>iconAnimation.activateFolderAnimation('#folder-icon', 3000);
+// или новое имя:
+iconAnimation.activateFolderDownloadAnimation('#folder-icon', 3000);</code></pre>
 
         <h3>2. Активировать анимацию синхронизации на 5 секунд:</h3>
         <pre><code>iconAnimation.activateSyncAnimation('#sync-icon', 5000);</code></pre>
