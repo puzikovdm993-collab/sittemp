@@ -5053,14 +5053,14 @@ body:not(.light-theme) .tour-highlighted {
    АНИМАЦИИ ДЛЯ ИКОНОК ПАПКИ И СИНХРОНИЗАЦИИ
    ============================================ */
 
-/* Анимация вращения для иконки синхронизации */
+/* Анимация вращения для иконки синхронизации (против часовой стрелки) */
 @keyframes sync-spin {
     from {
-        transform: rotate(0deg);
+        transform: rotate(360deg);
         transform-origin: center;
     }
     to {
-        transform: rotate(360deg);
+        transform: rotate(0deg);
         transform-origin: center;
     }
 }
