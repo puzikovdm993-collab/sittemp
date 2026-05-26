@@ -5048,3 +5048,79 @@ body:not(.light-theme) .tour-highlighted {
     outline: 2px solid var(--vscode-accent);
     outline-offset: 2px;
 }
+
+/* ============================================
+   АНИМАЦИИ ДЛЯ ИКОНОК ПАПКИ И СИНХРОНИЗАЦИИ
+   ============================================ */
+
+/* Анимация вращения для иконки синхронизации */
+@keyframes sync-spin {
+    from {
+        transform: rotate(0deg);
+        transform-origin: center;
+    }
+    to {
+        transform: rotate(360deg);
+        transform-origin: center;
+    }
+}
+
+/* Анимация вращения для спиннера папки */
+@keyframes folder-spinner-rotate {
+    from {
+        transform: rotate(0deg);
+        transform-origin: center;
+    }
+    to {
+        transform: rotate(360deg);
+        transform-origin: center;
+    }
+}
+
+/* Анимация пульсации для индикатора */
+@keyframes pulse-opacity {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Класс для активации анимации синхронизации */
+.sync-active .sync-rotation {
+    animation: sync-spin 1.5s linear infinite;
+}
+
+/* Класс для активации анимации папки */
+.folder-loading-active .folder-spinner {
+    animation: folder-spinner-rotate 1s linear infinite;
+    stroke-dasharray: 20;
+    stroke-dashoffset: 0;
+}
+
+/* Дополнительная анимация пульсации для папки */
+.folder-loading-active {
+    animation: pulse-opacity 1.5s ease-in-out infinite;
+}
+
+/* Стили для SVG элементов внутри анимированных иконок */
+.folder-spinner {
+    transition: all 0.3s ease;
+}
+
+.sync-rotation {
+    transition: transform 0.3s ease;
+}
+
+/* Убираем анимацию когда класс неактивен */
+.sync-inactive .sync-rotation {
+    animation: none;
+    transform: rotate(0deg);
+}
+
+.folder-loading-inactive .folder-spinner {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: none;
+}
