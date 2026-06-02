@@ -381,39 +381,28 @@
                             <span class="ribbon-btn-label" id="currentFileLabel" style="display: none;">Безымянный</span>
                             <div class="file-count-badge" id="fileCountBadge" style="display: none;">1</div>
                         </button>
-                        <div class="open-files-dropdown" id="openFilesDropdown">
-                            <div class="open-files-header">
-                                <span>Открытые изображения</span>
-                                <button class="close-dropdown-btn" onclick="toggleOpenFilesDropdown()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div class="open-files-list" id="openFilesList">
-                                <div class="open-file-item active" data-file-id="1" onclick="switchToFile(1)">
-                                    <div class="open-file-thumbnail">
-                                        <div class="fas fa-image open-file-thumbnail-placeholder"></div>
-                                    </div>
-                                    <div class="open-file-info">
-                                        <div class="open-file-name">Безымянный.png</div>
-                                        <div class="open-file-details">
-                                            <span class="open-file-resolution">800×600</span>
-                                            <span class="open-file-format">PNG</span>
-                                        </div>
-                                    </div>
-                                    <div class="open-file-actions">
-                                        <button class="close-file-btn" onclick="closeFile(1, event)" title="Закрыть">
-                                            <i class="fas fa-times"></i>
-                                        </button>
+                        <!-- Модальное окно открытых файлов -->
+                        <div class="modal" id="openFilesModal">
+                            <div class="modal-content" style="width: 400px; max-height: 500px;">
+                                <div class="modal-title">
+                                    <span>Открытые изображения</span>
+                                    <button onclick="closeOpenFilesModal()">✕</button>
+                                </div>
+                                <div class="modal-body" style="padding: 0;">
+                                    <div class="open-files-list" id="openFilesListModal" style="overflow-y: auto; max-height: 400px;">
+                                        <!-- Список файлов будет заполнен динамически -->
                                     </div>
                                 </div>
-                            </div>
-                            <div class="open-files-footer">
-                                <button class="footer-btn" onclick="openAllImages()">
-                                    <i class="fas fa-folder-open"></i> Открыть все
-                                </button>
-                                <button class="footer-btn" onclick="closeAllImages()">
-                                    <i class="fas fa-times-circle"></i> Закрыть все
-                                </button>
+                                <div class="modal-buttons">
+                                    <button class="modal-btn" onclick="openAllImages()">
+                                        <i class="fas fa-folder-open"></i> Открыть все
+                                    </button>
+                                    <button class="modal-btn" onclick="closeAllImages()">
+                                        <i class="fas fa-times-circle"></i> Закрыть все
+                                    </button>
+                                    <button class="modal-btn" onclick="closeOpenFilesModal()">Закрыть</button>
+                                </div>
+                                <div class="modal-resize-handle"></div>
                             </div>
                         </div>
                     </div>

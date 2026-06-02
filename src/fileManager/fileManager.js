@@ -82,7 +82,7 @@ function switchToFile(fileId) {
     setCanvasCursor();
     
     // Обновляем список открытых файлов
-    updateOpenFilesList();              // Обновление списка открытых файлов в выпадающем списке
+    updateOpenFilesListModal();              // Обновление списка открытых файлов в модальном окне
     updateActiveFilePreview(fileId);
 }
 
@@ -122,7 +122,7 @@ function closeFile(fileId, event) {
         }
     }
     
-    updateOpenFilesList();
+    updateOpenFilesListModal();
 }
 
 // Обновление превью файлов
@@ -168,17 +168,15 @@ function updateFileThumbnail(fileId) {
     }
 }
 
-// Обновление списка открытых файлов в выпадающем списке
-function updateOpenFilesList() {
-    const filesList = document.getElementById('openFilesList');
+// Обновление списка открытых файлов в модальном окне
+function updateOpenFilesListModal() {
+    const filesList = document.getElementById('openFilesListModal');
     if (!filesList) return;
     
-    
     if (project.files.length === 0) {
-    //if (openFiles.length === 0) {
         filesList.innerHTML = `
-            <div class="no-files-message">
-                <i class="fas fa-image"></i>
+            <div class="no-files-message" style="padding: 20px; text-align: center; color: var(--text-secondary);">
+                <i class="fas fa-image" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>
                 <div>Нет открытых файлов</div>
             </div>
         `;
@@ -186,7 +184,6 @@ function updateOpenFilesList() {
     }
     
     let html = '';
-    //openFiles.forEach(file => {
     project.files.forEach(file => {
         const isActive = file.id === activeFileId;
         const filename = file.filename || 'Безымянный';
@@ -194,18 +191,20 @@ function updateOpenFilesList() {
         
         html += `
             <div class="open-file-item ${isActive ? 'active' : ''}" 
-                 onclick="switchToFile('${file.id}'); closeOpenFilesDropdown();">
-                <div class="file-preview">
-                    <canvas id="thumb-canvas-${file.id}" width="40" height="40" 
+                 onclick="switchToFile('${file.id}');"
+                 style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border-color);">
+                <div class="file-preview" style="margin-right: 12px;">
+                    <canvas id="thumb-canvas-modal-${file.id}" width="40" height="40" 
                             style="display: none;"></canvas>
-                    <img id="thumb-img-${file.id}" class="file-thumbnail" 
-                         alt="${filename}" width="40" height="40">
+                    <img id="thumb-img-modal-${file.id}" class="file-thumbnail" 
+                         alt="${filename}" width="40" height="40" style="border: 1px solid var(--border-color);">
                 </div>
-                <div class="file-info">
-                    <div class="file-name" title="${filename}">${filename}</div>
-                    <div class="file-details">${dimensions}</div>
+                <div class="file-info" style="flex: 1; min-width: 0;">
+                    <div class="file-name" title="${filename}" style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${filename}</div>
+                    <div class="file-details" style="font-size: 12px; color: var(--text-secondary);">${dimensions}</div>
                 </div>
-                <button class="file-close-btn" onclick="closeFile('${file.id}', event)">
+                <button class="file-close-btn" onclick="closeFile('${file.id}', event)" 
+                        style="background: none; border: none; cursor: pointer; padding: 4px; color: var(--text-secondary);">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -213,17 +212,34 @@ function updateOpenFilesList() {
     });
     
     filesList.innerHTML = html;
-    document.getElementById("currentFileLabel").style.display = "none";
-    //document.getElementById("fileCountBadge").textContent = openFiles.length;
-    document.getElementById("fileCountBadge").textContent = project.files.length;
-
-    //document.getElementById("fileCountBadge").innerHTML = 2;
+    
     // Обновляем превью для каждого файла
-    updateFileThumbnails();
+    updateFileThumbnailsModal();
+}
 
-        // Обновляем состояние кнопок (активные/неактивные)
-        updateButtonsState();
-
+// Обновление превью файлов в модальном окне
+function updateFileThumbnailsModal() {
+    project.files.forEach(file => {
+        if (!file.canvas) return;
+        
+        const thumbCanvas = document.getElementById(`thumb-canvas-modal-${file.id}`);
+        const thumbImg = document.getElementById(`thumb-img-modal-${file.id}`);
+        
+        if (!thumbCanvas || !thumbImg) return;
+        
+        const ctx = thumbCanvas.getContext('2d');
+        thumbCanvas.width = 40;
+        thumbCanvas.height = 40;
+        
+        // Рисуем уменьшенную копию
+        ctx.clearRect(0, 0, 40, 40);
+        ctx.drawImage(file.canvas, 0, 0, 40, 40);
+        
+        // Показываем canvas как изображение
+        thumbImg.src = thumbCanvas.toDataURL();
+        thumbImg.style.display = 'block';
+        thumbCanvas.style.display = 'none';
+    });
 }
 
 function updateActiveFilePreview(fileId) {
@@ -272,45 +288,42 @@ function updateActiveFilePreview(fileId) {
 
 }
 
-// Переключение выпадающего списка открытых файлов
+// Переключение модального окна открытых файлов
 function toggleOpenFilesDropdown() {
-    const dropdown = document.getElementById('openFilesDropdown');
-    if (!dropdown) return;
+    const modal = document.getElementById('openFilesModal');
+    if (!modal) return;
     
-    const isShowing = dropdown.classList.contains('show');
+    const isActive = modal.classList.contains('active');
     
-    // Закрываем другие выпадающие списки
-    closeAllDropdowns();
-    
-    if (isShowing) {
-        closeOpenFilesDropdown();
+    if (isActive) {
+        closeOpenFilesModal();
     } else {
-        openOpenFilesDropdown();
+        openOpenFilesModal();
     }
 }
 
-// Открытие выпадающего списка
-function openOpenFilesDropdown() {
-    const dropdown = document.getElementById('openFilesDropdown');
-    if (!dropdown) return;
-    
-    dropdown.classList.add('show');
+// Открытие модального окна
+function openOpenFilesModal() {
+    const modal = document.getElementById('openFilesModal');
+    if (!modal) return;
     
     // Обновляем список файлов при открытии
-    updateOpenFilesList();
+    updateOpenFilesListModal();
+    
+    modal.classList.add('active');
 }
 
-// Закрытие выпадающего списка
-function closeOpenFilesDropdown() {
-    const dropdown = document.getElementById('openFilesDropdown');
-    if (dropdown) {
-        dropdown.classList.remove('show');
+// Закрытие модального окна
+function closeOpenFilesModal() {
+    const modal = document.getElementById('openFilesModal');
+    if (modal) {
+        modal.classList.remove('active');
     }
 }
 
 // Закрытие всех выпадающих списков
 function closeAllDropdowns() {
-    closeOpenFilesDropdown();
+    closeOpenFilesModal();
     if (dom.shapesPanel) {
         dom.shapesPanel.classList.remove('active');
     }
@@ -614,7 +627,7 @@ function createFileFromImageData(filename, matrix, width, height, minValue, maxV
     project.files.push(file);
    
     switchToFile(id);
-    updateOpenFilesList();
+    updateOpenFilesListModal();
     return file;
 }
 
