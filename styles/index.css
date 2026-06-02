@@ -851,6 +851,7 @@ svg.active { width: 48px; height: 48px; stroke: #f703ff; stroke-width: 2; fill: 
     display: flex;
     flex: 1;
     overflow: hidden;
+    z-index: auto !important;
 }
 
 /* Левая панель инструментов */
@@ -2649,6 +2650,7 @@ body {
     display: flex;
     flex: 1;
     overflow: hidden;
+    z-index: auto !important;
 }
 
 /* Левая панель инструментов */
