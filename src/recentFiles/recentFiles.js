@@ -63,7 +63,7 @@ function updateRecentFilesModal() {
         const date = file.lastModified ? new Date(file.lastModified).toLocaleString() : 'неизвестно';
         const size = file.size ? (file.size / 1024).toFixed(1) + ' KB' : '—';
         html += `
-            <div class="recent-file-item" onclick="openRecentFile(${idx})" style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #eee; cursor:pointer;">
+            <div class="recent-file-item" onclick="openRecentFileByIndex(${idx})" style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #eee; cursor:pointer;">
                 <div style="width:32px; height:32px; background:#f0f0f0; border:1px solid #ddd; margin-right:10px; display:flex; align-items:center; justify-content:center;">🖼️</div>
                 <div style="flex:1;">
                     <div><strong>${file.name}</strong></div>
@@ -123,13 +123,142 @@ function addToRecentFiles(fileInfo) {
     }
 }
 
+// Открытие недавнего файла по объекту файла
+function openRecentFile(file) {
+    if (!file) return;
+    
+    if (file.data) {
+        // Если есть данные в localStorage, создаём изображение
+        const img = new Image();
+        img.onload = () => {
+            createImageFile(img, file.name);
+        };
+        img.src = file.data;
+    } else {
+        alert('Файл не содержит данных. Откройте его заново через меню "Открыть".');
+    }
+    
+    closeRecentFilesModal();
+}
 
+// Открытие недавнего файла по индексу
+function openRecentFileByIndex(idx) {
+    const files = getRecentFiles();
+    if (idx >= 0 && idx < files.length) {
+        openRecentFile(files[idx]);
+    }
+}
 
-// function openRecentFile(file)
-// function formatRecentDate(dateStr)
-// function showRecentFilesModal()
-// function clearRecentFiles()
-// function removeRecentFile(index)
+// Форматирование даты
+function formatRecentDate(dateStr) {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 60000) return 'только что';
+    if (diff < 3600000) return Math.floor(diff / 60000) + ' мин. назад';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + ' ч. назад';
+    if (diff < 604800000) return Math.floor(diff / 86400000) + ' дн. назад';
+    
+    return date.toLocaleDateString();
+}
+
+// Показать модальное окно недавних файлов
+function showRecentFilesModal() {
+    updateRecentFilesModal();
+    const modal = document.getElementById('recentFilesModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+// Закрыть модальное окно недавних файлов
+function closeRecentFilesModal() {
+    const modal = document.getElementById('recentFilesModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Очистить список недавних файлов
+function clearRecentFiles() {
+    if (confirm('Вы уверены, что хотите очистить список недавних файлов?')) {
+        localStorage.setItem(RECENT_FILES_KEY, JSON.stringify([]));
+        updateRecentFilesMenu();
+        updateRecentFilesModal();
+    }
+}
+
+// Удалить файл из списка недавних
+function removeRecentFile(index) {
+    const recent = getRecentFiles();
+    if (index >= 0 && index < recent.length) {
+        recent.splice(index, 1);
+        localStorage.setItem(RECENT_FILES_KEY, JSON.stringify(recent));
+        updateRecentFilesMenu();
+        updateRecentFilesModal();
+    }
+}
+
+// Показать модальное окно открытых файлов
+function showOpenFilesModal() {
+    updateOpenFilesModalContent();
+    const modal = document.getElementById('openFilesModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+// Закрыть модальное окно открытых файлов
+function closeOpenFilesModal() {
+    const modal = document.getElementById('openFilesModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Обновление содержимого модального окна открытых файлов
+function updateOpenFilesModalContent() {
+    const container = document.getElementById('openFilesContainer');
+    if (!container) return;
+    
+    // Используем project.files для получения списка открытых файлов
+    const files = typeof project !== 'undefined' ? project.files : [];
+    
+    if (files.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Нет открытых файлов</div>';
+        return;
+    }
+    
+    let html = '';
+    files.forEach((file, idx) => {
+        const isActive = file.id === activeFileId;
+        const filename = file.filename || 'Безымянный';
+        const dimensions = file.canvas ? `${file.canvas.width} × ${file.canvas.height}` : '—';
+        
+        html += `
+            <div class="open-file-item ${isActive ? 'active' : ''}" 
+                 onclick="switchToFileAndClose('${file.id}')" 
+                 style="display:flex; align-items:center; padding:10px; border-bottom:1px solid #eee; cursor:pointer; background:${isActive ? '#e3f2fd' : 'white'};">
+                <div style="width:40px; height:40px; background:#f0f0f0; border:1px solid #ddd; margin-right:15px; display:flex; align-items:center; justify-content:center; border-radius:4px;">📄</div>
+                <div style="flex:1;">
+                    <div style="font-weight:bold; color:${isActive ? '#1976d2' : '#333'};">${filename}</div>
+                    <div style="font-size:12px; color:#666;">${dimensions}</div>
+                </div>
+                <button class="file-close-btn" onclick="event.stopPropagation(); closeFile('${file.id}', event)" title="Закрыть файл" style="padding:5px 10px; background:#ffebee; color:#c62828; border:none; border-radius:4px; cursor:pointer;">✕</button>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+// Переключиться на файл и закрыть модальное окно
+function switchToFileAndClose(fileId) {
+    if (typeof switchToFile === 'function') {
+        switchToFile(fileId);
+    }
+    closeOpenFilesModal();
+}
 
 
 

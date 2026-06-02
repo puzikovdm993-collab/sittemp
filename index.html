@@ -220,6 +220,7 @@
         <symbol id="save"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /><path d="M7 3v4a1 1 0 0 0 1 1h7" /></symbol>
         <symbol id="file" viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2" ><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /></symbol>
         <symbol id="file-clock"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2" ><path d="M16 22h2a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v2.85" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="M8 14v2.2l1.6 1" /><circle cx="8" cy="16" r="6" /></symbol>
+        <symbol id="icon-folder-open" viewBox="0 0 24 24" fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/><path d="M2 10h20"/></symbol>
         <symbol id="lasso"  viewBox="0 0 24 24"  fill="#007acc00" stroke="#007acc" stroke-width="2"><path d="M3.704 14.467A10 8 0 0 1 2 10a10 8 0 0 1 20 0 10 8 0 0 1-10 8 10 8 0 0 1-5.181-1.158" /><path d="M7 22a5 5 0 0 1-2-3.994" /><circle cx="5" cy="16" r="2" /></symbol>
 
 
@@ -371,54 +372,6 @@
         <div class="tabs-content">
             <!-- Контент вкладки "Файл" -->
             <div class="tab-pane active" id="tab-file" >
-                <!-- Группа открытых файлов (перемещена из верхнего ribbon) -->
-                <div class="ribbon-group" id="ribbonFilesGroup"style="display: none;">
-                    <div class="ribbon-buttons" style="position: relative;">
-                        <button class="ribbon-btn ribbon-btn-large" id="openFilesDropdownBtn" title="Открытые файлы" onclick="toggleOpenFilesDropdown()">
-                            <!-- Превью активного файла (если есть) -->
-                            <canvas id="activeFileThumbCanvas" width="32" height="32" class="ribbon-btn-thumb" style="display: none;"></canvas>
-                            <img id="activeFileThumbImg" class="ribbon-btn-thumb" width="32" height="32" style="display: none;">
-                            <span class="ribbon-btn-label" id="currentFileLabel" style="display: none;">Безымянный</span>
-                            <div class="file-count-badge" id="fileCountBadge" style="display: none;">1</div>
-                        </button>
-                        <div class="open-files-dropdown" id="openFilesDropdown">
-                            <div class="open-files-header">
-                                <span>Открытые изображения</span>
-                                <button class="close-dropdown-btn" onclick="toggleOpenFilesDropdown()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div class="open-files-list" id="openFilesList">
-                                <div class="open-file-item active" data-file-id="1" onclick="switchToFile(1)">
-                                    <div class="open-file-thumbnail">
-                                        <div class="fas fa-image open-file-thumbnail-placeholder"></div>
-                                    </div>
-                                    <div class="open-file-info">
-                                        <div class="open-file-name">Безымянный.png</div>
-                                        <div class="open-file-details">
-                                            <span class="open-file-resolution">800×600</span>
-                                            <span class="open-file-format">PNG</span>
-                                        </div>
-                                    </div>
-                                    <div class="open-file-actions">
-                                        <button class="close-file-btn" onclick="closeFile(1, event)" title="Закрыть">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="open-files-footer">
-                                <button class="footer-btn" onclick="openAllImages()">
-                                    <i class="fas fa-folder-open"></i> Открыть все
-                                </button>
-                                <button class="footer-btn" onclick="closeAllImages()">
-                                    <i class="fas fa-times-circle"></i> Закрыть все
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- <span class="ribbon-group-title">Файлы</span> -->
-                </div>
 
                 <div class="tab-section">
                     <div class="tab-buttons">
@@ -428,8 +381,11 @@
                         <button class="tab-action-btn" onclick="showSaveMethodModal()" title="Сохранить">
                             <svg><use href="#save" /></svg>
                         </button>
-                        <button class="tab-action-btn" onclick="" title="Недавние">
+                        <button class="tab-action-btn" onclick="showRecentFilesModal()" title="Недавние">
                             <svg><use href="#file-clock" /></svg>
+                        </button>
+                        <button class="tab-action-btn" onclick="showOpenFilesModal()" title="Открытые файлы">
+                            <svg><use href="#icon-folder-open" /></svg>
                         </button>
                     </div>
                     <h4>Управление файлами</h4>
@@ -1055,6 +1011,27 @@
         </div>
         <div class="modal-buttons">
             <button class="modal-btn" onclick="closeRecentFilesModal()">Закрыть</button>
+        </div>
+        <div class="modal-resize-handle"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для открытых файлов -->
+<div class="modal" id="openFilesModal">
+    <div class="modal-content" style="width: 600px;">
+        <div class="modal-title">
+            <span>Открытые файлы</span>
+            <button style="background:none;border:none;color:white;cursor:pointer;" onclick="closeOpenFilesModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="openFilesContainer" style="max-height: 400px; overflow-y: auto;">
+                <!-- Здесь будут отображаться открытые файлы -->
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="closeOpenFilesModal()">Закрыть</button>
         </div>
         <div class="modal-resize-handle"></div>
     </div>
