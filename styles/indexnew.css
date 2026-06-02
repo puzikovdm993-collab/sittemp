@@ -1082,7 +1082,7 @@ input[type="file"] {
         background: var(--background-secondary);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-xl);
-        z-index: 1000;
+        z-index: 100000 !important;
         opacity: 0;
         transform: translateY(-10px) scale(0.95);
         visibility: hidden;
@@ -1097,6 +1097,7 @@ input[type="file"] {
         opacity: 1;
         transform: translateY(0) scale(1);
         visibility: visible;
+        z-index: 100000 !important;
     }
     
     /* Заголовок выпадающего списка */

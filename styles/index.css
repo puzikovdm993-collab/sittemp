@@ -7,7 +7,7 @@
     background: var(--background-secondary);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
-    z-index: 1000;
+    z-index: 100000 !important;
     opacity: 0;
     transform: translateY(-10px) scale(0.95);
     visibility: hidden;
@@ -22,6 +22,8 @@
     opacity: 1;
     transform: translateY(0) scale(1);
     visibility: visible;
+    z-index: 100000 !important;
+    z-index: 100000 !important;
 }
 
 /* Заголовок выпадающего списка */
@@ -431,7 +433,7 @@
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
             box-shadow: var(--shadow-md);
-            z-index: 1000;
+            z-index: 100000 !important;
             min-width: 280px;
             max-height: 400px;
             overflow-y: auto;
@@ -440,6 +442,7 @@
 
         .open-files-dropdown.show {
             display: block;
+    z-index: 100000 !important;
         }
 
         .open-files-header {
@@ -1594,7 +1597,7 @@ input, textarea, select,
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
             box-shadow: var(--shadow-md);
-            z-index: 1000;
+            z-index: 100000 !important;
             min-width: 280px;
             max-height: 400px;
             overflow-y: auto;
@@ -1603,6 +1606,7 @@ input, textarea, select,
 
         .open-files-dropdown.show {
             display: block;
+    z-index: 100000 !important;
         }
 
         .open-files-header {
@@ -1957,7 +1961,7 @@ input, textarea, select,
     background: var(--background-secondary);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-lg);
-    z-index: 1000;
+    z-index: 100000 !important;
     min-width: 200px;
     border-radius: var(--radius-md);
     padding: 4px;
@@ -2855,7 +2859,7 @@ body {
     background: var(--background-secondary);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-lg);
-    z-index: 1000;
+    z-index: 100000 !important;
     min-width: 200px;
     border-radius: var(--radius-md);
     padding: 4px;
@@ -3135,7 +3139,7 @@ input[type="file"] {
         background: var(--background-secondary);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-xl);
-        z-index: 1000;
+        z-index: 100000 !important;
         opacity: 0;
         transform: translateY(-10px) scale(0.95);
         visibility: hidden;
@@ -3150,6 +3154,7 @@ input[type="file"] {
         opacity: 1;
         transform: translateY(0) scale(1);
         visibility: visible;
+    z-index: 100000 !important;
     }
     
     /* Заголовок выпадающего списка */
@@ -4544,7 +4549,7 @@ input, textarea, select,
   position: fixed;
   left: 20px;
   bottom: 48px; /* Над футером (высота футера ~28px + отступ) */
-  z-index: 1000;
+  z-index: 100000 !important;
   width: 48px;
   height: 48px;
   background: #171b21;
@@ -4604,7 +4609,7 @@ input, textarea, select,
   position: fixed;
   left: 20px;
   bottom: 48px;
-  z-index: 1000;
+  z-index: 100000 !important;
   width: 48px;
   height: 48px;
   background: #171b21;
