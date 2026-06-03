@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отслеживание бездействия пользователя</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .status.saving {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        
+        .status.saved {
+            background-color: #d4edda;
+            border-left-color: #28a745;
+        }
+        
+        .timer {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .log {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .log-entry {
+            font-family: monospace;
+            font-size: 12px;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Авто-сохранение при бездействии</h1>
+        <p>Этот пример демонстрирует, как отслеживать бездействие пользователя и автоматически отправлять данные на сервер через 5 секунд после последнего действия.</p>
+        
+        <div class="form-group">
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" placeholder="Введите ваше имя">
+        </div>
+        
+        <div class="form-group">
+            <label for="content">Содержимое:</label>
+            <textarea id="content" placeholder="Введите текст..."></textarea>
+        </div>
+        
+        <div id="status" class="status">
+            <strong>Статус:</strong> <span id="status-text">Ожидание изменений...</span>
+            <div class="timer" id="timer"></div>
+        </div>
+        
+        <div class="log">
+            <h3>📋 Журнал событий:</h3>
+            <div id="log-entries"></div>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация
+        const CONFIG = {
+            INACTIVITY_DELAY: 5000, // 5 секунд бездействия
+            SERVER_ENDPOINT: '/api/save', // Эндпоинт сервера
+            DEBUG_MODE: true // Режим отладки (имитация отправки на сервер)
+        };
+
+        // Состояние приложения
+        let state = {
+            timerId: null,
+            lastActivity: Date.now(),
+            isSaving: false,
+            hasChanges: false,
+            pendingData: null
+        };
+
+        // Элементы DOM
+        const elements = {
+            username: document.getElementById('username'),
+            content: document.getElementById('content'),
+            status: document.getElementById('status'),
+            statusText: document.getElementById('status-text'),
+            timer: document.getElementById('timer'),
+            logEntries: document.getElementById('log-entries')
+        };
+
+        /**
+         * Добавляет запись в журнал событий
+         */
+        function addLogEntry(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${timestamp}] ${message}`;
+            
+            if (type === 'error') {
+                entry.style.color = '#dc3545';
+            } else if (type === 'success') {
+                entry.style.color = '#28a745';
+            } else if (type === 'warning') {
+                entry.style.color = '#ffc107';
+            }
+            
+            elements.logEntries.prepend(entry);
+            
+            // Ограничиваем количество записей в логе
+            while (elements.logEntries.children.length > 50) {
+                elements.logEntries.removeChild(elements.logEntries.lastChild);
+            }
+        }
+
+        /**
+         * Обновляет отображение статуса
+         */
+        function updateStatus(message, className = '', timerText = '') {
+            elements.statusText.textContent = message;
+            elements.status.className = 'status ' + className;
+            elements.timer.textContent = timerText;
+        }
+
+        /**
+         * Собирает текущие данные из формы
+         */
+        function collectFormData() {
+            return {
+                username: elements.username.value.trim(),
+                content: elements.content.value.trim(),
+                timestamp: new Date().toISOString()
+            };
+        }
+
+        /**
+         * Отправляет данные на сервер
+         */
+        async function sendToServer(data) {
+            state.isSaving = true;
+            updateStatus('Сохранение...', 'saving');
+            addLogEntry('Начало отправки данных на сервер', 'info');
+
+            try {
+                if (CONFIG.DEBUG_MODE) {
+                    // Имитация отправки на сервер (для демонстрации)
+                    await simulateServerRequest(data);
+                } else {
+                    // Реальная отправка на сервер
+                    await realServerRequest(data);
+                }
+                
+                state.hasChanges = false;
+                state.pendingData = null;
+                updateStatus('Изменения сохранены!', 'saved');
+                addLogEntry('Данные успешно сохранены', 'success');
+                
+            } catch (error) {
+                updateStatus('Ошибка сохранения', '');
+                addLogEntry(`Ошибка: ${error.message}`, 'error');
+                throw error;
+            } finally {
+                state.isSaving = false;
+            }
+        }
+
+        /**
+         * Имитация запроса к серверу (для демонстрации)
+         */
+        function simulateServerRequest(data) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    console.log('📤 Отправленные данные:', data);
+                    resolve({ success: true, message: 'Данные сохранены' });
+                }, 500); // Имитация задержки сети
+            });
+        }
+
+        /**
+         * Реальный запрос к серверу
+         */
+        async function realServerRequest(data) {
+            const response = await fetch(CONFIG.SERVER_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ошибка: ${response.status}`);
+            }
+
+            return await response.json();
+        }
+
+        /**
+         * Обработчик активности пользователя
+         */
+        function onUserActivity() {
+            const now = Date.now();
+            const timeSinceLastActivity = now - state.lastActivity;
+            
+            state.lastActivity = now;
+            
+            // Проверяем, есть ли изменения в форме
+            const currentData = collectFormData();
+            const hasChanges = !state.pendingData || 
+                JSON.stringify(currentData) !== JSON.stringify(state.pendingData);
+            
+            if (hasChanges && !state.isSaving) {
+                state.pendingData = currentData;
+                state.hasChanges = true;
+                
+                // Сбрасываем предыдущий таймер
+                if (state.timerId) {
+                    clearTimeout(state.timerId);
+                }
+                
+                // Запускаем новый таймер
+                state.timerId = setTimeout(() => {
+                    if (state.hasChanges && !state.isSaving) {
+                        sendToServer(state.pendingData);
+                    }
+                }, CONFIG.INACTIVITY_DELAY);
+                
+                // Обновляем отображение
+                const secondsLeft = Math.ceil(CONFIG.INACTIVITY_DELAY / 1000);
+                updateStatus(
+                    'Обнаружены изменения. Ожидание завершения редактирования...',
+                    '',
+                    `До отправки: ${secondsLeft} сек.`
+                );
+                
+                addLogEntry('Зафиксирована активность пользователя. Таймер сброшен.', 'info');
+                
+                // Запускаем обратный отсчет для визуализации
+                startCountdown(secondsLeft);
+            }
+        }
+
+        /**
+         * Обратный отсчет до отправки данных
+         */
+        function startCountdown(seconds) {
+            let remaining = seconds;
+            
+            const countdownInterval = setInterval(() => {
+                if (state.isSaving || !state.hasChanges) {
+                    clearInterval(countdownInterval);
+                    return;
+                }
+                
+                remaining--;
+                
+                if (remaining > 0) {
+                    updateStatus(
+                        'Обнаружены изменения. Ожидание завершения редактирования...',
+                        '',
+                        `До отправки: ${remaining} сек.`
+                    );
+                } else {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+        }
+
+        /**
+         * Инициализация отслеживания активности
+         */
+        function initializeActivityTracking() {
+            // События, которые считаются активностью пользователя
+            const activityEvents = [
+                'mousedown',
+                'mousemove',
+                'keypress',
+                'scroll',
+                'touchstart',
+                'click',
+                'input',
+                'change'
+            ];
+            
+            // Добавляем обработчики событий
+            activityEvents.forEach(event => {
+                document.addEventListener(event, onUserActivity, { passive: true, capture: true });
+            });
+            
+            addLogEntry('Отслеживание активности запущено', 'success');
+            addLogEntry(`Задержка перед отправкой: ${CONFIG.INACTIVITY_DELAY / 1000} сек.`, 'info');
+        }
+
+        /**
+         * Инициализация приложения
+         */
+        function init() {
+            initializeActivityTracking();
+            addLogEntry('Приложение инициализировано', 'success');
+            updateStatus('Готов к работе. Начните ввод данных...', '');
+        }
+
+        // Запуск приложения после загрузки DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
