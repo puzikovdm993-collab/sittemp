@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<!-- <html lang="ru" data-theme="dark"> -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Название приложения -->
+    <title>WTIS</title>
+
+    <!-- Подключаем CSS-файл LiteGraph.js для стилизации узлов и связей -->
+    <link rel="stylesheet" type="text/css" href="static/css/litegraph.css">
+    <!-- <link rel="stylesheet" href="styles/wtis_workflow.css"> -->
+    <link rel="stylesheet" href="styles/new.css">
+    <link rel="stylesheet" href="styles/flow/dark.css">
+    <link rel="stylesheet" href="styles/flow/scrollbar.css">
+    <link rel="stylesheet" href="styles/flow/modal.css">
+    <link rel="stylesheet" href="styles/flow/inspector.css">
+    <link rel="stylesheet" href="styles/flow/toolbar.css">
+    <link rel="stylesheet" href="styles/flow/canvas.css">
+    <link rel="stylesheet" href="styles/flow/sidebar.css">
+    <link rel="stylesheet" href="styles/flow/header.css">
+
+
+    <script type="module" src="components/icon/icon.js"></script>
+    <script src="static/js/plotly-2.27.1.min.js"></script>
+    <style>
+        .save-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 6px;
+            flex-shrink: 0;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .dot-offline  { background-color: #e53935; }
+        .dot-saving   { background-color: #fbc02d; }
+        .dot-saved    { background-color: #43a047; }
+        .dot-error    { background-color: #e53935; box-shadow: 0 0 6px #e53935; }
+    </style>
+
+</head>
+<body>
+
+
+    
+    <!-- Основная область -->
+    <div class="main-content" id="mainContent">
+        <header class="header">
+            <div class="header-left">
+                <!-- <div style="font-weight: bold; font-size: 18px; color: var(--text-muted);">⚡</div> -->
+                <!-- <div class="project-path">
+                    <span>Starter Project</span> <span>/</span>
+                    <div class="current-flow">New Flow</div>
+                </div> -->
+            </div>
+            <div class="header-right">
+                <!-- <button class="btn">Playground</button> -->
+                <!-- <button class="btn">Share ▾</button> -->
+            </div>
+        </header>
+
+        
+        <!-- Боковая панель (сайдбар) -->
+        <aside class="sidebar" id="sidebar">
+
+            <!-- Кнопка сворачивания -->
+            <!-- <button class="collapse-btn" onclick="toggleSidebar()">
+                <span id="collapseIcon">←</span>
+            </button> -->
+
+            <!-- Информация о пользователе -->
+            <!-- <div class="user-section">
+                <div class="avatar">AI</div>
+                <div class="user-info">
+                    <div class="user-name">TIS_user</div>
+                    <div class="user-role">Senior Developer</div>
+                </div>
+            </div> -->
+
+            <!-- Поиск -->
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Поиск узлов..." autocomplete="off">
+                <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </div>
+            <div class="node-list">
+                <div class="node-tabs">
+                    <button type="button" class="node-tab active" data-tab="io">Ввод/Вывод</button>
+                    <button type="button" class="node-tab" data-tab="filters">Фильтры</button>
+                    <button type="button" class="node-tab" data-tab="transform">Трансформ</button>
+                    <button type="button" class="node-tab" data-tab="search">Поиск</button>
+                    <button type="button" class="node-tab" data-tab="calc">Калькулятор</button>
+                    <button type="button" class="node-tab" data-tab="roi">Выделение</button>
+                </div>
+                <div class="node-tab-content">
+                    <div class="node-tab-panel active" id="tab-io">
+                        <div class="node-card" draggable="true" data-node-type="input/LoadNode">
+                            <svg><use href="#icon-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>Загрузить</div>
+                                <small>Входной узел</small>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="output/SaveNode">
+                            <svg><use href="#icon-upload"></use></svg>
+                            <div class="node-text-container">
+                                <div>Сохранить</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="node-tab-panel" id="tab-filters">
+                        <div class="node-card" draggable="true" data-node-type="filter/Sobel">
+                            <svg><use href="#lucide-eye"></use></svg>
+                            <div class="node-text-container">
+                                <div>Фильтр собель</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="filter/Median">
+                            <svg><use href="#lucide-invert"></use></svg>
+                            <div class="node-text-container">
+                                <div>Медианный фильтр</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="filter/Normalisation">
+                            <svg><use href="#lucide-sliders-horizontal"></use></svg>
+                            <div class="node-text-container">
+                                <div>Нормализация</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="filter/BackgroundCorrectionPolynomialNode">
+                            <svg><use href="#lucide-sliders-horizontal"></use></svg>
+                            <div class="node-text-container">
+                                <div>Апроксимация</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="filter/Logarithm">
+                            <svg><use href="#lucide-sliders-horizontal"></use></svg>
+                            <div class="node-text-container">
+                                <div>Логарифмирование</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="node-tab-panel" id="tab-transform">
+                        <div class="node-card" draggable="true" data-node-type="transform/Rotate">
+                            <svg><use href="#lucide-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>Поворот</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="transform/Shift">
+                            <svg><use href="#lucide-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>Сместить</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="transform/ShiftCenter">
+                            <svg><use href="#lucide-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>Сместить в центр</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="transform/Crop">
+                            <svg><use href="#lucide-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>Обрезка</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="transform/Threshold">
+                            <svg><use href="#lucide-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>Порог</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="transform/Polar">
+                            <svg><use href="#lucide-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>Полярные координаты</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="transform/TracingFilter">
+                            <svg><use href="#lucide-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>Трассировка</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="transform/SaveTrassNode">
+                            <svg><use href="#lucide-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>сохранение трассы</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="plot/plotly">
+                            <svg><use href="#lucide-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>рисовалка</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="plot/data">
+                            <svg><use href="#lucide-download"></use></svg>
+                            <div class="node-text-container">
+                                <div>data from рисовалка</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="node-tab-panel" id="tab-search">
+                        <div class="node-card" draggable="true" data-node-type="search/CircleSearch">
+                            <svg><use href="#lucide-eye"></use></svg>
+                            <div class="node-text-container">
+                                <div>Поиск окружности</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="search/LineSearch">
+                            <svg><use href="#lucide-eye"></use></svg>
+                            <div class="node-text-container">
+                                <div>Поиск прямой</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="node-tab-panel" id="tab-calc">
+                        <div class="node-card" draggable="true" data-node-type="Calculation/Difference">
+                            <svg><use href="#lucide-eye"></use></svg>
+                            <div class="node-text-container">
+                                <div>Деление</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="node-tab-panel" id="tab-roi">
+                        <div class="node-card" draggable="true" data-node-type="roi/mask_store">
+                            <svg><use href="#lucide-eye"></use></svg>
+                            <div class="node-text-container">
+                                <div>ROI Контейнер</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="roi/merge_points">
+                            <svg><use href="#lucide-eye"></use></svg>
+                            <div class="node-text-container">
+                                <div>merge points</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="roi/lasso">
+                            <svg><use href="#lucide-eye"></use></svg>
+                            <div class="node-text-container">
+                                <div>Лассо</div>
+                            </div>
+                        </div>
+                        <div class="node-card" draggable="true" data-node-type="roi/rectangle">
+                            <svg><use href="#lucide-eye"></use></svg>
+                            <div class="node-text-container">
+                                <div>Прямоугольник</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- <div class="toolbar" id="toolbar">
+            <button id="run">Запустить</button>
+            <button id="export-graph">Экспорт JSON</button>
+            <button id="import-graph">Импорт JSON</button>
+            <button id="clear-graph">Очистить</button>
+            <button id="theme-toggle">Переключить тему</button>
+        </div> -->
+
+        <div class="toolbar-group" id="toolbar-group">
+            <div class="toolbar-header">
+                <button id="run" class="btn-run">Запустить</button>
+                <div id="dropdown-toggle" class="dropdown-arrow">▼</div>
+            </div>
+            <div class="toolbar-menu" id="toolbar-menu">
+                <button id="export-graph">Экспорт JSON</button>
+                <button id="import-graph">Импорт JSON</button>
+                <button id="import-append-graph">Импорт в конец</button>
+                <button id="clear-graph">Очистить</button>
+                <button id="clear-image-data">Очистить данные изображений</button>
+                <button id="save-idb">Сохранить в IndexedDB</button>
+                <button id="load-idb">Загрузить из IndexedDB</button>
+                <button id="delete-idb">Удалить из IndexedDB</button>
+                <button id="theme-toggle">Переключить тему</button>
+
+            </div>
+        </div>
+        
+        
+
+        <!-- Контейнер для LiteGraph -->
+        <div id="workflow-layout">
+            <div id="graph-container">
+                <canvas id="graph-canvas"></canvas>
+            </div>
+            <!-- Нижняя панель навигации по canvas -->
+            <div class="canvas-nav-bar" id="canvasNavBar">
+                <button id="nav-zoom-menu" title="Масштаб">
+                    <span id="zoomValue">100%</span>
+                </button>
+                <button id="nav-zoom-100" title="Сброс масштаба до 100%">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="3" x2="7" y2="7"/>
+                        <polyline points="4,7 7,7 7,4"/>
+                        <line x1="13" y1="13" x2="9" y2="9"/>
+                        <polyline points="12,9 9,9 9,12"/>
+                    </svg>
+                </button>
+                <button id="nav-reset-origin" title="Вернуть к началу координат">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="8" cy="8" r="4.5"/>
+                        <line x1="8" y1="1" x2="8" y2="4"/>
+                        <line x1="8" y1="12" x2="8" y2="15"/>
+                        <line x1="1" y1="8" x2="4" y2="8"/>
+                        <line x1="12" y1="8" x2="15" y2="8"/>
+                    </svg>
+                </button>
+                <div class="zoom-menu" id="zoomMenu">
+                    <button data-zoom="50">50%</button>
+                    <button data-zoom="65">65%</button>
+                    <button data-zoom="85">85%</button>
+                    <button data-zoom="100">100%</button>
+                    <button data-zoom="150">150%</button>
+                    <button data-zoom="200">200%</button>
+                    <button data-zoom="400">400%</button>
+                </div>
+                <div id="save-status" class="save-status dot-offline" title="Нет соединения"></div>
+            </div>
+        </div>
+
+        <!-- <aside class="inspector" id="inspector">
+            <div class="preview" id="inspector-preview">
+                <div>Нет превью</div>
+            </div>
+            <div id="inspector-node-controls" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"></div>
+        </aside> -->
+
+        <!-- <div class="preview-tooltip" id="previewTooltip"></div> -->
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Всплывающие окна и модалки -->
+    <!-- <div class="modal" id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center;">
+        <span class="close-modal" style="position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer;">&times;</span>
+        <img class="modal-content" id="modalImage" src="" alt="" style="max-width: 90%; max-height: 90%; border-radius: 8px;">
+    </div> -->
+
+    <!-- Модальное окно для редактирования узлов
+    <div id="overlay"></div>
+    <div id="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-title">Edit Node</div>
+            <button class="close-btn" onclick="hideModal()">&times;</button>
+        </div>
+        <div class="modal-content" id="modal-content">
+            Содержимое будет генерироваться динамически
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="hideModal()">Cancel</button>
+            <button class="btn-save" onclick="saveNodeProperties()">Save</button>
+        </div>
+    </div> -->
+
+    <!-- SVG-иконки (скрыты, используются через <use>) -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+        <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+        <symbol id="icon-invert" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 12h20"/><path d="m5 5 7 7m0 0 7-7m-7 7v10"/></symbol>
+        <symbol id="icon-grayscale" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18"/><path d="M12 3v18"/></symbol>
+        <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="icon-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+        <symbol id="icon-brightness" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></symbol>
+        <symbol id="icon-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2v2M12 20v-2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+        <symbol id="icon-sepia" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor"/></symbol>
+        <symbol id="icon-resize" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18"/><line x1="21" y1="3" x2="21" y2="21"/><line x1="3" y1="21" x2="21" y2="21"/></symbol>
+        <symbol id="icon-rotate" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M2.5 22v-6h6" /><path d="M2 11.5a10 10 0 0 1 18.8-3H17a6 6 0 0 0-10.8 3H2z" /><path d="M22 12.5a10 10 0 0 1-18.8 3H7a6 6 0 0 0 10.8-3H22z" /></symbol>
+        <symbol id="icon-crop" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20"/><path d="M16 2L2 16"/></symbol>
+        <symbol id="icon-blur" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5" fill="currentColor"/></symbol>
+        <symbol id="icon-flip" viewBox="0 0 24 24"><path d="M12 3v18" /><path d="M16 7h3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-3" /><path d="M8 7H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3" /></symbol>
+        <symbol id="icon-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
+    
+        <symbol id="lucide-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></symbol>
+        <symbol id="lucide-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="lucide-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+        <symbol id="lucide-sliders-horizontal" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/><circle cx="6" cy="6" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+        <symbol id="lucide-droplet" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 1-7-7c0-4 7-11 7-11s7 7 7 11a7 7 0 0 1-7 7z"/><path d="M12 2v4"/></symbol>
+        <symbol id="lucide-invert" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 12h20"/></symbol>
+    </svg>
+
+
+    <!-- === ПОДКЛЮЧЕНИЕ БИБЛИОТЕК === -->
+    <script src="static/js/litegraph.js"></script> <!-- Основная библиотека для создания графов узлов -->
+   
+    <script>
+
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Супер-веб-страница загружается...');
+        
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const htmlElement = document.documentElement;
+            // Обработчик клика по кнопке
+            themeToggleBtn.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+
+                setTheme(newTheme, graphCanvas);
+
+                // Устанавливаем новую тему
+                htmlElement.setAttribute('data-theme', newTheme);
+            });
+
+
+            console.log('✅ Все системы инициализированы!');
+
+            const group = document.getElementById('toolbar-group');
+            const toggle = document.getElementById('dropdown-toggle');
+            const header = document.querySelector('.toolbar-header');
+            const menu = document.getElementById('toolbar-menu');
+
+            // Определяем направление раскрытия: вниз по умолчанию,
+            // вверх — если контент не помещается под кнопкой
+            function computeDirection() {
+                group.classList.remove('up');
+                const contentH = menu.scrollHeight;
+                const top = group.getBoundingClientRect().top;
+                const spaceBelow = window.innerHeight - top;
+                // высота кнопки (~44px) + отступ 8px + контент не должны упереться в низ
+                if (contentH + 8 + 44 > spaceBelow) {
+                    group.classList.add('up');
+                }
+            }
+
+            // Открытие по клику на заголовок или стрелку
+            header.addEventListener('click', (e) => {
+                // Если нажали именно на кнопку "Запустить", она сработает как кнопка,
+                // а не как переключатель меню.
+                if (e.target.id === 'run') return;
+
+                if (!group.classList.contains('open')) {
+                    computeDirection();
+                }
+                group.classList.toggle('open');
+            });
+
+            // Закрытие при клике вне элемента
+            window.addEventListener('click', (e) => {
+                if (!group.contains(e.target)) {
+                    group.classList.remove('open');
+                }
+            });
+
+            // При изменении размера окна пересчитываем направление, если меню открыто
+            window.addEventListener('resize', () => {
+                if (group.classList.contains('open')) {
+                    computeDirection();
+                }
+            });
+
+        });
+
+
+
+        const previewTooltip = document.getElementById('previewTooltip');
+
+
+
+
+
+        //alert('Ошибка: LiteGraph не загрузился. Проверьте соединение.');
+        
+        
+        // ===================================================================
+        // === 1. ИНИЦИАЛИЗАЦИЯ ГРАФА И ХОЛСТОВ ===
+        // ===================================================================
+        
+        // Создаём объект графа — это основная структура, где хранятся узлы и связи
+        const graph = new LiteGraph.LGraph();
+        // Создаём холст для отрисовки графа. Указываем селектор #graph-canvas и передаём граф
+        const graphCanvas = new LiteGraph.LGraphCanvas("#graph-canvas", graph);
+        // Разрешает перетаскивание узлов
+        graphCanvas.allow_dragnode = true;
+        // Разрешает перенаправление соединений
+        graphCanvas.allow_reconnect = true;
+
+        const Types = {
+            SELECTRECTANGLE: "selectRectangle",
+            POINTS: "Points",
+            TRASS: "Trass",
+            NUMBER1: "Number1",
+            ROTATE: "Rotate",
+            IMAGE: "image"
+        };
+
+
+        // ===================================================================
+        // === 2. ОПРЕДЕЛЕНИЕ УЗЛОВ ===
+        // ===================================================================
+
+
+        // Базовый класс для фильтрации
+        class FilterNode extends LGraphNode {
+            constructor() {
+                super();
+                this.addInput("Image", Types.IMAGE); 
+                this.addOutput("Image", Types.IMAGE); 
+                // Свойства узла (по умолчанию)
+                this.properties = {
+                    "width": 10,
+                    "height": 10,
+                    "data": "[[0, 0, 0], [0, 255, 0], [0, 0, 0]]", // Начальная матрица (JSON-строка)
+                    "minValue": 0,
+                    "maxValue": 255,
+                    "format": null,
+                    "filename": null,
+                    "autoscale": true,
+                    "colormap": "gray", // Цветовая схема
+                    "previewData":null
+                };
+            }
+        }
+        
+
+
+
+
+        // Базовый класс для трансформаций
+        class TransformNode extends LGraphNode {
+            constructor() {
+                super();
+                this.addInput("Image", Types.IMAGE); 
+                this.addOutput("Image", Types.IMAGE); 
+                // Свойства узла (по умолчанию)
+                this.properties = {
+                    "width": 10,
+                    "height": 10,
+                    "data": "[[0, 0, 0], [0, 255, 0], [0, 0, 0]]", // Начальная матрица (JSON-строка)
+                    "minValue": 0,
+                    "maxValue": 255,
+                    "format": null,
+                    "filename": null,
+                    "autoscale": true,
+                    "colormap": "gray", // Цветовая схема
+                    "previewData":null
+                };
+            }
+        }
+        
+
+
+        // // // /**
+        // // //  * Узел "Трассировка" (TracingFilter)
+        // // //  * Аналог C# класса TracingFilterEffectPlugin
+        // // //  * 
+        // // //  * Работает по принципу:
+        // // //  * 1. Выделение области интереса (ROI) - опционально.
+        // // //  * 2. Вычисление средней линии интенсивности внутри ROI.
+        // // //  * 3. Поиск эталона (пика) на средней линии.
+        // // //  * 4. Трассировка контура вверх и вниз от эталона.
+        // // //  * 5. Сглаживание медианным фильтром.
+        // // //  * 6. Визуализация и/или вывод координат.
+        // // //  */
+        // // // class TracingFilter extends TransformNode {
+        // // //     constructor() {
+        // // //         super();
+        // // //         this.title = "Трассировка";
+        // // //         // Свойства узла
+        // // //         this.properties = {
+        // // //             // Параметры ROI (Области интереса)
+        // // //             roiX: 0,                // Левый край ROI
+        // // //             roiY: 0,                // Верхний край ROI
+        // // //             roiWidth: 0,            // Ширина ROI
+        // // //             roiHeight: 0,           // Высота ROI
+        // // //             // Параметры алгоритма
+        // // //             sensitivity: 0.5,       // Чувствительность (порог для отсечения шума)
+        // // //             epsilon: 10,            // Область поиска (радиус окна)
+        // // //             useCorrelation: false,  // false = Поиск максимума (быстро), true = Корреляция (точнее, но требует шаблона)
+        // // //             medianFilterSize: 5,    // Размер окна медианной фильтрации
+        // // //             dpi: 0.0,               // DPI для перевода пикселей в миллиметры (0 = пиксели)
+        // // //             outputMode: 0           // 0: Только изображение, 1: Только координаты, 2: Оба
+        // // //         };
+        // // //         // --- Создание виджетов (UI) ---
+        // // //         // Настройки ROI
+        // // //             this.addWidget("number", "ROI X", this.properties.roiX, (v) => {
+        // // //                 this.properties.roiX = Math.round(v);
+        // // //                 this.setDirtyCanvas(true, true);
+        // // //             }, { min: 0 });
+        // // //             this.addWidget("number", "ROI Y", this.properties.roiY, (v) => {
+        // // //                 this.properties.roiY = Math.round(v);
+        // // //                 this.setDirtyCanvas(true, true);
+        // // //             }, { min: 0 });
+        // // //             this.addWidget("number", "ROI W", this.properties.roiWidth, (v) => {
+        // // //                 this.properties.roiWidth = Math.max(1, Math.round(v));
+        // // //                 this.setDirtyCanvas(true, true);
+        // // //             }, { min: 1 });
+        // // //             this.addWidget("number", "ROI H", this.properties.roiHeight, (v) => {
+        // // //                 this.properties.roiHeight = Math.max(1, Math.round(v));
+        // // //                 this.setDirtyCanvas(true, true);
+        // // //             }, { min: 1 });
+        // // //         // Параметры трассировки
+        // // //         this.addWidget("number", "Чувствительность", this.properties.sensitivity, (v) => {
+        // // //             this.properties.sensitivity = v;
+        // // //             this.setDirtyCanvas(true, true);
+        // // //         }, { min: 0, max: 1, step: 0.01 });
+        // // //         this.addWidget("number", "Область поиска (Epsilon)", this.properties.epsilon, (v) => {
+        // // //             this.properties.epsilon = Math.max(1, Math.round(v));
+        // // //             this.setDirtyCanvas(true, true);
+        // // //         }, { min: 1, max: 100, step: 1 });
+        // // //         // this.addWidget("combo", "Метод поиска", 
+        // // //         //     ["Максимум интенсивности", "Корреляция"], 
+        // // //         //     this.properties.useCorrelation ? 1 : 0, 
+        // // //         //     (v) => {
+        // // //         //         this.properties.useCorrelation = (v === 1);
+        // // //         //         this.setDirtyCanvas(true, true);
+        // // //         //     }
+        // // //         // );
+        // // //         this.addWidget("number", "Сглаживание (Медиана)", this.properties.medianFilterSize, (v) => {
+        // // //             this.properties.medianFilterSize = Math.max(3, Math.round(v));
+        // // //             if (this.properties.medianFilterSize % 2 === 0) this.properties.medianFilterSize += 1;
+        // // //             this.setDirtyCanvas(true, true);
+        // // //         }, { min: 3, max: 21, step: 2 });
+        // // //         this.addWidget("number", "DPI (мм)", this.properties.dpi, (v) => {
+        // // //             this.properties.dpi = v;
+        // // //             this.setDirtyCanvas(true, true);
+        // // //         }, { min: 0, max: 600, step: 1 });
+        // // //     }
+        // // //     // --- Вспомогательные функции ---
+        // // //     /**
+        // // //      * Применяет медианный фильтр к одномерному массиву
+        // // //      */
+        // // //     applyMedianFilter(arr, windowSize) {
+        // // //         const len = arr.length;
+        // // //         if (len === 0 || windowSize < 3) return arr.slice();
+        // // //         const half = Math.floor(windowSize / 2);
+        // // //         const result = new Float64Array(len);
+        // // //         const windowBuf = new Float64Array(windowSize);
+        // // //         for (let i = 0; i < len; i++) {
+        // // //             // Заполняем окно с учетом границ (отражение или обрезка)
+        // // //             for (let k = 0; k < windowSize; k++) {
+        // // //                 let idx = i - half + k;
+        // // //                 if (idx < 0) idx = -idx; // Простое отражение границ
+        // // //                 if (idx >= len) idx = 2 * len - 2 - idx; // Отражение
+        // // //                 windowBuf[k] = arr[idx];
+        // // //             }
+        // // //             // Сортировка вставками (эффективна для малых массивов)
+        // // //             for (let k = 1; k < windowSize; k++) {
+        // // //                 let key = windowBuf[k];
+        // // //                 let j = k - 1;
+        // // //                 while (j >= 0 && windowBuf[j] > key) {
+        // // //                     windowBuf[j + 1] = windowBuf[j];
+        // // //                     j--;
+        // // //                 }
+        // // //                 windowBuf[j + 1] = key;
+        // // //             }
+        // // //             result[i] = windowBuf[half];
+        // // //         }
+        // // //         return result;
+        // // //     }
+        // // //     /**
+        // // //     * Вычисляет коэффициент корреляции Пирсона между двумя массивами
+        // // //     */
+        // // //     calculateCorrelation(arr1, arr2) {
+        // // //         if (arr1.length !== arr2.length || arr1.length === 0) return -1e10;
+        // // //         const n = arr1.length;
+        // // //         let sum1 = 0, sum2 = 0, sum12 = 0, sum1Sq = 0, sum2Sq = 0;
+        // // //         for (let i = 0; i < n; i++) {
+        // // //             sum1 += arr1[i];
+        // // //             sum2 += arr2[i];
+        // // //             sum12 += arr1[i] * arr2[i];
+        // // //             sum1Sq += arr1[i] * arr1[i];
+        // // //             sum2Sq += arr2[i] * arr2[i];
+        // // //         }
+        // // //         const numerator = n * sum12 - sum1 * sum2;
+        // // //         const denominator = Math.sqrt((n * sum1Sq - sum1 * sum1) * (n * sum2Sq - sum2 * sum2));
+        // // //         if (denominator < 1e-9) return -1e10;
+        // // //         return numerator / denominator;
+        // // //     }
+        // // //     // --- Основной метод выполнения ---
+        // // //     onExecute() {
+        // // //         const inputData = this.getInputData(0);
+        // // //         // Если входных данных нет, очищаем выходы
+        // // //         if (!inputData || !inputData.data) {
+        // // //             this.setOutputData(0, null);
+        // // //             this.setOutputData(1, null);
+        // // //             return;
+        // // //         }
+        // // //         // 1. Подготовка данных
+        // // //         let width = inputData.width;
+        // // //         let height = inputData.height;
+        // // //         let matrix = inputData.data; // Ожидается двумерный массив [y][x]
+        // // //         const minVal = inputData.minValue !== undefined ? inputData.minValue : 0;
+        // // //         const maxVal = inputData.maxValue !== undefined ? inputData.maxValue : 1;
+        // // //         // Если данные плоские, конвертируем в 2D
+        // // //         if (!Array.isArray(matrix[0])) {
+        // // //             matrix = [];
+        // // //             for (let y = 0; y < height; y++) {
+        // // //                 matrix[y] = matrix.slice(y * width, (y + 1) * width);
+        // // //             }
+        // // //         }
+        // // //         // 2. Определение области интереса (ROI)
+        // // //         let roi = {
+        // // //             x: 0, y: 0, w: width, h: height
+        // // //         };
+        // // //             roi.x = Math.max(0, Math.min(width - 1, this.properties.roiX));
+        // // //             roi.y = Math.max(0, Math.min(height - 1, this.properties.roiY));
+        // // //             roi.w = Math.max(1, Math.min(width - roi.x, this.properties.roiWidth));
+        // // //             roi.h = Math.max(1, Math.min(height - roi.y, this.properties.roiHeight));
+        // // //         const startX = roi.x;
+        // // //         const startY = roi.y;
+        // // //         const endX = startX + roi.w;
+        // // //         const endY = startY + roi.h;
+        // // //         // 3. Вычисление эталонной линии (TestLine)
+        // // //         // Аналог C# кода: summing vertical values within ROI
+        // // //         const testLineWidth = roi.w;
+        // // //         const testLine = new Float64Array(testLineWidth);
+        // // //         for (let x = startX; x < endX; x++) {
+        // // //             let sum = 0;
+        // // //             let count = 0;
+        // // //             for (let y = startY; y < endY; y++) {
+        // // //                 sum += matrix[y][x];
+        // // //                 count++;
+        // // //             }
+        // // //             testLine[x - startX] = count > 0 ? sum / count : 0;
+        // // //         }
+        // // //         // 4. Поиск начальной точки (Seed)
+        // // //         // Находим пик с максимальной интенсивностью на средней линии
+        // // //         let maxValTest = -Infinity;
+        // // //         let localMaxIdx = -1;
+        // // //         for (let i = 0; i < testLineWidth; i++) {
+        // // //             if (testLine[i] > maxValTest) {
+        // // //                 maxValTest = testLine[i];
+        // // //                 localMaxIdx = i;
+        // // //             }
+        // // //         }
+        // // //         if (localMaxIdx === -1) {
+        // // //             console.warn("TracingFilter: Пик не найден на тестовой линии.");
+        // // //             this.setOutputData(0, null);
+        // // //             this.setOutputData(1, null);
+        // // //             return;
+        // // //         }
+        // // //         // Глобальные координаты центра
+        // // //         const centerXGlobal = startX + localMaxIdx;
+        // // //         const centerYGlobal = startY + Math.floor(roi.h / 2);
+        // // //         // 5. Трассировка контура
+        // // //         // Массив для хранения координат трассы: trassCoords[y_global] = {x, y}
+        // // //         const trassCoords = new Array(height);
+        // // //         for(let i=0; i<height; i++) {
+        // // //             trassCoords[i] = { x: centerXGlobal, y: i };
+        // // //         }
+        // // //         const halfWin = this.properties.epsilon;
+        // // //         const useCorr = this.properties.useCorrelation;
+        // // //         const sensitivity = this.properties.sensitivity;
+        // // //         // --- Трассировка ВВЕРХ (от centerY к startY) ---
+        // // //         let currentX = centerXGlobal; 
+        // // //         // Ищем эталонный патч для корреляции, если выбран этот режим
+        // // //         // Для простоты в JS-версии без внешних библиотек, будем использовать 
+        // // //         // локальную интенсивность как прокси для "максимума", 
+        // // //         // либо можно загрузить фиксированный эталон, если он есть в inputData.
+        // // //         for (let y = centerYGlobal; y >= startY; y--) {
+        // // //             let bestX = currentX;
+        // // //             let bestScore = -Infinity;
+        // // //             // Окно поиска
+        // // //             const winStart = Math.max(startX, currentX - halfWin);
+        // // //             const winEnd = Math.min(endX, currentX + halfWin);
+        // // //             for (let x = winStart; x < winEnd; x++) {
+        // // //                 let score = 0;      
+        // // //                 if (useCorr) {
+        // // //                     // Упрощенная корреляция: сравнение с "шаблоном" вокруг текущего предположения
+        // // //                     // В реальном C# коде шаблон загружался из файла или вычислялся.
+        // // //                     // Здесь используем простую эвристику: если значение близко к среднему эталону.
+        // // //                     // Для демо используем интенсивность.
+        // // //                     score = matrix[y][x]; 
+        // // //                 } else {
+        // // //                     // Поиск максимума (аналог Trass_Up_Max из C#)
+        // // //                     score = matrix[y][x];
+        // // //                 }
+        // // //                 if (score > bestScore) {
+        // // //                     bestScore = score;
+        // // //                     bestX = x;
+        // // //                 }
+        // // //             }
+        // // //             // Проверка порога (опционально)
+        // // //             if (bestScore < sensitivity && useCorr) {
+        // // //                 // Если корреляция низкая, можно остановить или оставить предыдущую точку
+        // // //                 // В данном примере просто движемся дальше
+        // // //             }
+        // // //             currentX = bestX;
+        // // //             trassCoords[y].x = currentX;
+        // // //         }
+        // // //         // --- Трассировка ВНИЗ (от centerY к endY) ---
+        // // //         currentX = centerXGlobal;
+        // // //         for (let y = centerYGlobal; y < endY; y++) {
+        // // //             let bestX = currentX;
+        // // //             let bestScore = -Infinity;
+        // // //             const winStart = Math.max(startX, currentX - halfWin);
+        // // //             const winEnd = Math.min(endX, currentX + halfWin);
+        // // //             for (let x = winStart; x < winEnd; x++) {
+        // // //                 let score = 0;
+        // // //                 if (useCorr) {
+        // // //                     score = matrix[y][x];
+        // // //                 } else {
+        // // //                     score = matrix[y][x];
+        // // //                 }
+        // // //                 if (score > bestScore) {
+        // // //                     bestScore = score;
+        // // //                     bestX = x;
+        // // //                 }
+        // // //             }
+        // // //             currentX = bestX;
+        // // //             trassCoords[y].x = currentX;
+        // // //         }
+        // // //         // 6. Постобработка: Медианная фильтрация координат X
+        // // //         // Извлекаем X для всего изображения (или только для ROI, если нужно)
+        // // //         // В C# код применял фильтр ко всему массиву trass_coords_v1
+        // // //         const xCoords = trassCoords.map(p => p.x);
+        // // //         const smoothedX = this.applyMedianFilter(xCoords, this.properties.medianFilterSize);
+        // // //         for (let i = 0; i < height; i++) {
+        // // //             trassCoords[i].x = smoothedX[i];
+        // // //         }
+        // // //         // 7. Конвертация единиц измерения (если DPI > 0)
+        // // //         const scale = this.properties.dpi > 0 ? (25.4 / this.properties.dpi) : 1.0;
+        // // //         const finalCoords = trassCoords.map(p => ({
+        // // //             x: p.x * scale,
+        // // //             y: p.y * scale
+        // // //         }));
+        // // //         // 8. Формирование выходных данных
+        // // //         // --- Выход 0: Изображение ---
+        // // //         // Создаем буфер изображения
+        // // //         const outBuffer = new Uint8ClampedArray(width * height * 4);
+        // // //         const range = maxVal - minVal || 1;
+        // // //         for (let y = 0; y < height; y++) {
+        // // //             for (let x = 0; x < width; x++) {
+        // // //                 const idx = (y * width + x) * 4;
+        // // //                 // Проверяем, близок ли пиксель к трассе
+        // // //                 // Допуск в 2 пикселя для толщины линии
+        // // //                 const traceX = finalCoords[y].x / scale; // Возвращаем в пиксели для сравнения
+        // // //                 const isTrace = Math.abs(x - traceX) < 2.0;
+        // // //                 if (isTrace) {
+        // // //                     // Красный цвет для трассы
+        // // //                     outBuffer[idx] = 255;
+        // // //                     outBuffer[idx+1] = 0;
+        // // //                     outBuffer[idx+2] = 0;
+        // // //                     outBuffer[idx+3] = 255;
+        // // //                 } else {
+        // // //                     // Исходные данные (нормализация в 0-255)
+        // // //                     const val = matrix[y][x];
+        // // //                     const norm = Math.max(0, Math.min(1, (val - minVal) / range));
+        // // //                     const gray = Math.floor(norm * 255);
+        // // //                     outBuffer[idx] = gray;
+        // // //                     outBuffer[idx+1] = gray;
+        // // //                     outBuffer[idx+2] = gray;
+        // // //                     outBuffer[idx+3] = 255;
+        // // //                 }
+        // // //             }
+        // // //         }
+        // // //         const imageData = new ImageData(outBuffer, width, height);
+        // // //         // // Вывод изображения
+        // // //         // this.setOutputData(0, { 
+        // // //         //     data: outBuffer, 
+        // // //         //     width: width, 
+        // // //         //     height: height,
+        // // //         //     format: "RGBA"
+        // // //         // });
+        // // //         const trass = [
+        // // //         trassCoords.map(p => p.x), // Первый ряд: все X
+        // // //             finalCoords.map(p => p.y)  // Второй ряд: все Y
+        // // //         ];
+        // // //         console.log(trass)
+        // // //                 // Формируем выходные данные
+        // // //                 const outputData = {
+        // // //                     width: 720,
+        // // //                     height: 2,
+        // // //                     data: trass,
+        // // //                     minValue: this.properties.minValue,
+        // // //                     maxValue: this.properties.maxValue,
+        // // //                     format: this.properties.format,
+        // // //                     filename: this.properties.filename,
+        // // //                     autoscale: this.properties.autoscale,
+        // // //                     colormap: this.properties.colormap
+        // // //                 };
+        // // //                 this.setOutputData(0, outputData);
+        // // //                 // Сохраняем для превью
+        // // //                 this.properties.previewData = imageData;
+        // // //         // --- Выход 1: Координаты ---
+        // // //         this.setOutputData(1, finalCoords);
+        // // //     }
+        // // //     onConfigure(obj) {
+        // // //         // Восстановление свойств при загрузке узла
+        // // //         if (obj.properties) {
+        // // //             this.properties = { ...this.properties, ...obj.properties };
+        // // //         }
+        // // //         this.setDirtyCanvas(true, true);
+        // // //     }
+        // // // }
+        // // // // Регистрация узла в LiteGraph
+        // // // LiteGraph.registerNodeType("transform/TracingFilter123", TracingFilter);
+
+
+
+        
+
+
+
+
+
+
+
+
+        // Базовый класс для калькулятора
+        class CalculationNode extends LGraphNode {
+            constructor() {
+                super();
+                this.addInput("Image1",  Types.IMAGE); 
+                this.addInput("Image2",  Types.IMAGE); 
+                this.addOutput("Image",  Types.IMAGE); 
+            }
+        }
+
+
+
+
+
+
+
+
+
+// =====================================================
+// IndexedDB: сохранение графа без тяжёлых properties
+// =====================================================
+
+const IDB_NAME = "skaz-graph-db";
+const IDB_STORE = "graphs";
+const IDB_KEY = "main";
+
+function openGraphDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(IDB_NAME, 1);
+
+        request.onupgradeneeded = () => {
+            const db = request.result;
+
+            if (!db.objectStoreNames.contains(IDB_STORE)) {
+                db.createObjectStore(IDB_STORE);
+            }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+function sanitizeGraphForStorage(data) {
+    let cleaned;
+
+    try {
+        cleaned = structuredClone(data);
+    } catch {
+        cleaned = JSON.parse(JSON.stringify(data));
+    }
+
+    if (Array.isArray(cleaned.nodes)) {
+        cleaned.nodes.forEach((node) => {
+            if (node && node.properties) {
+                delete node.properties.data;
+                delete node.properties.width;
+                delete node.properties.previewData;
+            }
+        });
+    }
+
+    return cleaned;
+}
+
+async function saveGraphToIndexedDB(key = IDB_KEY) {
+    const db = await openGraphDB();
+    const payload = sanitizeGraphForStorage(graph.serialize());
+
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, "readwrite");
+        const store = tx.objectStore(IDB_STORE);
+        const request = store.put(payload, key);
+
+        request.onsuccess = () => {
+            db.close();
+            resolve();
+        };
+
+        request.onerror = () => {
+            db.close();
+            reject(request.error);
+        };
+    });
+}
+
+async function loadGraphFromIndexedDB(key = IDB_KEY) {
+    const db = await openGraphDB();
+
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, "readonly");
+        const store = tx.objectStore(IDB_STORE);
+        const request = store.get(key);
+
+        request.onsuccess = () => {
+            db.close();
+            resolve(request.result);
+        };
+
+        request.onerror = () => {
+            db.close();
+            reject(request.error);
+        };
+    });
+}
+
+async function deleteGraphFromIndexedDB(key = IDB_KEY) {
+    const db = await openGraphDB();
+
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, "readwrite");
+        const store = tx.objectStore(IDB_STORE);
+        const request = store.delete(key);
+
+        request.onsuccess = () => {
+            db.close();
+            resolve();
+        };
+
+        request.onerror = () => {
+            db.close();
+            reject(request.error);
+        };
+    });
+}
+
+let autosaveTimer = null;
+let saveStatusDot = null;
+let _isRestoring = false;
+let _dragStartPos = null;
+
+function setSaveStatus(state, title) {
+    if (!saveStatusDot) return;
+    saveStatusDot.className = "save-status dot-" + state;
+    saveStatusDot.title = title;
+}
+
+function scheduleAutosave() {
+    if (_isRestoring) return;
+    setSaveStatus("saving", "Сохранение…");
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => {
+        saveGraphToIndexedDB()
+            .then(() => {
+                if (navigator.onLine) {
+                    setSaveStatus("saved", "Изменения сохранены");
+                } else {
+                    setSaveStatus("offline", "Нет соединения");
+                }
+            })
+            .catch(err => {
+                console.warn("Автосохранение:", err);
+                setSaveStatus("error", "Ошибка сохранения");
+            });
+    }, 1500);
+}
+
+graph.onNodeAdded = () => scheduleAutosave();
+graph.onNodeRemoved = () => scheduleAutosave();
+graph.onNodeConnectionChange = () => scheduleAutosave();
+
+const _origMouseDown = graphCanvas.processMouseDown;
+graphCanvas.processMouseDown = function(...args) {
+    _dragStartPos = null;
+    return _origMouseDown.apply(this, args);
+};
+
+const _origMouseMove = graphCanvas.processMouseMove;
+graphCanvas.processMouseMove = function(...args) {
+    if (this.node_dragged && !this.live_mode) {
+        if (!_dragStartPos) {
+            const first = this.selected_nodes ? this.selected_nodes[0] : this.node_dragged;
+            if (first) _dragStartPos = [first.pos[0], first.pos[1]];
+        }
+        const first = this.selected_nodes ? this.selected_nodes[0] : this.node_dragged;
+        if (first && _dragStartPos &&
+            (first.pos[0] !== _dragStartPos[0] || first.pos[1] !== _dragStartPos[1])) {
+            scheduleAutosave();
+        }
+    }
+    return _origMouseMove.apply(this, args);
+};
+
+const _origMouseUp = graphCanvas.processMouseUp;
+graphCanvas.processMouseUp = function(...args) {
+    _dragStartPos = null;
+    return _origMouseUp.apply(this, args);
+};
+
+function initSaveStatusDot() {
+    saveStatusDot = document.getElementById("save-status");
+    if (!saveStatusDot) return;
+
+    function update() {
+        if (!navigator.onLine) {
+            setSaveStatus("offline", "Нет соединения");
+        } else {
+            setSaveStatus("saved", "Изменения сохранены");
+        }
+    }
+
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    update();
+}
+
+document.addEventListener("DOMContentLoaded", initSaveStatusDot);
+
+
+
+
+
+        // ===================================================================
+        // === 3. ОБРАБОТЧИКИ КНОПОК ===
+        // ===================================================================
+
+        // run
+        document.getElementById('run').onclick = async () => {
+            const btn = document.getElementById('run');
+            btn.classList.add('running');
+            btn.disabled = true;
+            // const inspector = document.getElementById('inspector');
+            // if (!inspector) return;
+            //inspector.classList.remove('visible');
+            try {
+                const loadNodes = graph.findNodesByType("input/LoadNode");
+                for (let node of loadNodes) {
+                    if (!node.hasData()) {
+                        // Загружаем .tpt-файл через диалог (реализация в LoadNode._loadFromFile)
+                        await node._loadFromFile();
+                    }
+                }
+                const nodesInOrder = graph.computeExecutionOrder(false);
+                // Убедитесь, что эта функция не рекурсивна
+                await animateExecution(nodesInOrder); 
+
+
+
+    // Обновляем все кнопки превью
+    for (const node of graph._nodes) {
+        if (node.updatePreviewButtonState) {
+            node.updatePreviewButtonState();
+        }
+    }
+    graphCanvas.setDirty(true, true);
+
+            } catch (err) {
+                alert(`Ошибка: ${err}`);
+            } finally {
+                btn.classList.remove('running');
+                btn.disabled = false;
+            }
+        };
+
+        // Экспорт графа в JSON
+        document.getElementById('export-graph').onclick = () => {
+            const data = graph.serialize();
+            console.log(data);
+            const cleanedData = JSON.parse(JSON.stringify(data)); // Создаём глубокую копию
+                   
+            if (cleanedData.nodes) {
+                cleanedData.nodes.forEach(node => {
+                    // Полное удаление properties (включая вложенные поля)
+                    if (node.properties) {
+                        delete node.properties.data;
+                        delete node.properties.width;
+                        delete node.properties.previewData;
+                    }
+                });
+            }
+  
+            // Сохраняем результат
+            const blob = new Blob([JSON.stringify(cleanedData, null, 2)], { 
+                type: 'application/json' 
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'workflow_no_props.json'; // Чёткое название файла
+            a.textContent = 'Экспорт без properties';
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        // Импорт графа из JSON
+        document.getElementById('import-graph').onclick = () => {
+            var input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                var file = e.target.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+
+                        var data = JSON.parse(e.target.result);        
+                        graph.clear();
+                        // graph.configure(data);
+                        graph.configure(JSON.parse(e.target.result));
+                        // Перерисовываем канвас
+                        graphCanvas.draw(true, true);
+
+
+                    } catch (err) { alert('Ошибка: ' + err.message); }
+                };
+                reader.readAsText(file);
+                
+            };
+            input.click();            
+        };
+
+
+// Импорт графа в конец текущего (без очистки)
+document.getElementById('import-append-graph').onclick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                // 1. Находим текущие максимальные ID
+                let maxNodeId = 0;
+                let maxLinkId = 0;
+                
+                // Максимальный ID узлов в текущем графе
+                graph._nodes.forEach(node => {
+                    if (node.id > maxNodeId) maxNodeId = node.id;
+                });
+                
+                // Максимальный ID связей в текущем графе
+                for (const linkId in graph.links) {
+                    const id = parseInt(linkId);
+                    if (id > maxLinkId) maxLinkId = id;
+                }
+                
+                // 2. Вычисляем смещение по Y
+                // Находим максимальную Y-координату + высоту текущего графа
+                let maxBottomY = 0;
+                graph._nodes.forEach(node => {
+                    const bottomY = node.pos[1] + node.size[1];
+                    if (bottomY > maxBottomY) maxBottomY = bottomY;
+                });
+                
+                // Добавляем отступ (например, 100px)
+                const yOffset = maxBottomY + 100;
+                
+                // 3. Создаем маппинг старых ID на новые
+                const nodeIdMap = {};
+                const linkIdMap = {};
+                
+                // 4. Добавляем узлы с переназначенными ID и смещением
+                if (importedData.nodes) {
+                    importedData.nodes.forEach(nodeData => {
+                        // Переназначаем ID узла
+                        const newId = ++maxNodeId;
+                        nodeIdMap[nodeData.id] = newId;
+                        
+                        // Создаем узел
+                        const node = LiteGraph.createNode(nodeData.type, nodeData.title);
+                        if (!node) {
+                            console.warn('Не удалось создать узел:', nodeData.type);
+                            return;
+                        }
+                        
+                        // Настраиваем узел
+                        node.id = newId;
+                        node.configure(nodeData);
+                        
+                        // Смещаем по Y
+                        node.pos[1] += yOffset;
+                        
+                        // Добавляем в граф
+                        graph.add(node, true); // true = не пересчитывать порядок выполнения пока
+                    });
+                }
+                
+                // 5. Добавляем связи с переназначенными ID
+                if (importedData.links) {
+                    importedData.links.forEach(linkData => {
+                        // linkData формат: [id, origin_id, origin_slot, target_id, target_slot, type]
+                        const oldLinkId = linkData[0];
+                        const oldOriginId = linkData[1];
+                        const oldTargetId = linkData[3];
+                        
+                        // Проверяем, существуют ли узлы
+                        const newOriginId = nodeIdMap[oldOriginId];
+                        const newTargetId = nodeIdMap[oldTargetId];
+                        
+                        if (!newOriginId || !newTargetId) {
+                            console.warn('Связь пропущена: узлы не найдены', oldOriginId, oldTargetId);
+                            return;
+                        }
+                        
+                        // Переназначаем ID связи
+                        const newLinkId = ++maxLinkId;
+                        linkIdMap[oldLinkId] = newLinkId;
+                        
+                        // Создаем связь
+                        const link = new LiteGraph.LLink(
+                            newLinkId,
+                            linkData[5], // type
+                            newOriginId,
+                            linkData[2],  // origin_slot
+                            newTargetId,
+                            linkData[4]   // target_slot
+                        );
+                        
+                        // Добавляем в граф
+                        graph.links[newLinkId] = link;
+                        
+                        // Обновляем ссылки в узлах
+                        const originNode = graph.getNodeById(newOriginId);
+                        const targetNode = graph.getNodeById(newTargetId);
+                        
+                        if (originNode && originNode.outputs[linkData[2]]) {
+                            if (!originNode.outputs[linkData[2]].links) {
+                                originNode.outputs[linkData[2]].links = [];
+                            }
+                            originNode.outputs[linkData[2]].links.push(newLinkId);
+                        }
+                        
+                        if (targetNode && targetNode.inputs[linkData[4]]) {
+                            targetNode.inputs[linkData[4]].link = newLinkId;
+                        }
+                    });
+                }
+                
+                // 6. Обновляем порядок выполнения и перерисовываем
+                graph.updateExecutionOrder();
+                graphCanvas.draw(true, true);
+                
+                console.log(`Импортировано узлов: ${importedData.nodes ? importedData.nodes.length : 0}`);
+                console.log(`Импортировано связей: ${importedData.links ? importedData.links.length : 0}`);
+                
+            } catch (err) {
+                alert('Ошибка импорта: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+};
+
+
+        // Очищение графа
+        document.getElementById('clear-graph').onclick = () => {
+            if (confirm('Очистить граф?')) {
+                graph.clear();
+                previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                if (typeof updateMinimap === 'function') updateMinimap();
+            }
+        };
+
+        // Очистка только данных изображений (узлы и связи остаются)
+        // Чтобы добавить новые типы узлов — допишите их в массив CLEAR_IMAGE_DATA_NODE_TYPES.
+        // Свойства очищаются по списку CLEAR_IMAGE_DATA_PROPERTIES:
+        //   null  — очистить в null
+        //   число/строка — установить значение по умолчанию
+        const CLEAR_IMAGE_DATA_NODE_TYPES = [
+            "input/LoadNode",
+            "filter/Normalisation",
+        ];
+        const CLEAR_IMAGE_DATA_PROPERTIES = {
+            data: null,
+            width: null,
+            height: null,
+            minValue: null,
+            maxValue: null,
+            filename: null,
+            previewData: null,
+            dpi: 254,
+            format: "tpt",
+        };
+        document.getElementById('clear-image-data').onclick = () => {
+            let nodes = [];
+            for (const type of CLEAR_IMAGE_DATA_NODE_TYPES) {
+                nodes = nodes.concat(graph.findNodesByType(type));
+            }
+            if (nodes.length === 0) {
+                alert('В графе нет узлов для очистки данных изображений');
+                return;
+            }
+            if (!confirm(`Очистить данные изображений в ${nodes.length} узл(а/ах)?`)) return;
+            for (const node of nodes) {
+                for (const key of Object.keys(CLEAR_IMAGE_DATA_PROPERTIES)) {
+                    if (node.properties && key in node.properties) {
+                        node.properties[key] = CLEAR_IMAGE_DATA_PROPERTIES[key];
+                    }
+                }
+                if (typeof node.updatePreviewButtonState === 'function') {
+                    node.updatePreviewButtonState();
+                }
+            }
+            graph.setDirtyCanvas(true, true);
+            if (typeof updateMinimap === 'function') updateMinimap();
+        };
+
+
+
+// ===================================================================
+// === 4. DRAG-AND-DROP (перетаскивание узлов) ===
+// ===================================================================
+
+const nodePanel = document.getElementById("sidebar");
+const graphContainer = document.getElementById("graph-container");
+
+function addNodeToCanvas(nodeType, pos = null) {
+    if (!nodeType) return;
+
+    if (!LiteGraph.registered_node_types[nodeType]) {
+        alert('Тип узла не зарегистрирован: ' + nodeType);
+        return;
+    }
+
+    const node = LiteGraph.createNode(nodeType);
+    if (!pos) {
+        const rect = graphCanvas.canvas.getBoundingClientRect();
+
+        const margin = 100;
+        pos = [
+            Math.max(0, rect.width * 0.5  + Math.random() * margin),
+            Math.max(0, rect.height * 0.5  + Math.random() * margin)
+        ];
+    }
+
+
+
+    node.pos = pos;
+    graph.add(node);
+    graphCanvas.setDirty(true);
+}
+
+function initNodeCardAddButtons() {
+    document.querySelectorAll('.node-card').forEach((card) => {
+        if (card.dataset.addBtnInitialized === 'true') return;
+        card.dataset.addBtnInitialized = 'true';
+
+        card.setAttribute('draggable', 'true');
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'node-card-add-btn';
+        btn.title = 'Добавить на холст';
+        btn.textContent = '+';
+        btn.draggable = false;
+        btn.dataset.nodeType = card.dataset.nodeType || '';
+
+        card.appendChild(btn);
+    });
+}
+
+initNodeCardAddButtons();
+
+let nodeCardDragging = false;
+
+window.addEventListener('mouseup', () => {
+    nodeCardDragging = false;
+});
+
+nodePanel.addEventListener("dragstart", e => {
+    // Кнопка "+" не должна запускать drag-and-drop
+    if (e.target.closest('.node-card-add-btn')) {
+        e.preventDefault();
+        return;
+    }
+
+    const card = e.target.closest(".node-card");
+    if (!card || !card.dataset.nodeType) return;
+
+    e.dataTransfer.setData("text/plain", card.dataset.nodeType);
+    card.classList.add("dragging");
+    graphContainer.classList.add("drag-over");
+    nodeCardDragging = true;
+});
+
+nodePanel.addEventListener("dragend", e => {
+    const card = e.target.closest(".node-card");
+    if (card) card.classList.remove("dragging");
+    graphContainer.classList.remove("drag-over");
+    nodeCardDragging = false;
+});
+
+nodePanel.addEventListener("click", e => {
+    if (nodeCardDragging) return;
+
+    const btn = e.target.closest('.node-card-add-btn');
+    if (!btn) return;
+
+    e.preventDefault();
+
+    const card = btn.closest('.node-card');
+    const nodeType = btn.dataset.nodeType || (card ? card.dataset.nodeType : null);
+
+    addNodeToCanvas(nodeType);
+});
+
+graphContainer.addEventListener("dragover", e => e.preventDefault());
+
+graphContainer.addEventListener("drop", e => {
+    e.preventDefault();
+    graphContainer.classList.remove("drag-over");
+    nodeCardDragging = false;
+
+    const nodeType = e.dataTransfer.getData("text/plain");
+    if (!nodeType || !LiteGraph.registered_node_types[nodeType]) return;
+
+    const rect = graphCanvas.canvas.getBoundingClientRect();
+    const pos = graphCanvas.convertCanvasToOffset([e.clientX - rect.left, e.clientY - rect.top]);
+
+    addNodeToCanvas(nodeType, pos);
+});
+
+
+        
+        // Resize
+        let resizeRafId = null;
+        function resizeGraphCanvas() {
+            const rect = graphContainer.getBoundingClientRect();
+            graphCanvas.canvas.width = rect.width;
+            graphCanvas.canvas.height = rect.height;
+            graphCanvas.resize();
+            resizeRafId = null;
+        };
+        resizeGraphCanvas();
+
+        const onResize = () => {
+            if (resizeRafId) cancelAnimationFrame(resizeRafId);
+            resizeRafId = requestAnimationFrame(resizeGraphCanvas);
+        };
+
+        window.addEventListener("resize", onResize);
+
+        // ===================================================================
+        // === НАВИГАЦИЯ ПО CANVAS (zoom / 100%) ===
+        // ===================================================================
+        function canvasCenter() {
+            const r = graphCanvas.canvas.getBoundingClientRect();
+            return [r.width / 2, r.height / 2];
+        }
+
+        function updateZoomLabel() {
+            const el = document.getElementById('zoomValue');
+            if (el) el.textContent = Math.round(graphCanvas.ds.scale * 100) + '%';
+        }
+
+        function navZoomTo(percent) {
+            graphCanvas.setZoom(percent / 100, canvasCenter());
+            updateZoomLabel();
+        }
+
+        function navZoom100() {
+            graphCanvas.setZoom(1, canvasCenter());
+            updateZoomLabel();
+        }
+
+        function navResetOrigin() {
+            graphCanvas.ds.offset = [0, 0];
+            graphCanvas.dirty_canvas = graphCanvas.dirty_bgcanvas = true;
+        }
+
+        const zoomMenu = document.getElementById('zoomMenu');
+        document.getElementById('nav-zoom-menu').onclick = (e) => {
+            e.stopPropagation();
+            zoomMenu.classList.toggle('open');
+        };
+        zoomMenu.querySelectorAll('button').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                navZoomTo(parseInt(btn.dataset.zoom, 10));
+                zoomMenu.classList.remove('open');
+            };
+        });
+        document.addEventListener('click', () => zoomMenu.classList.remove('open'));
+
+        document.getElementById('nav-zoom-100').onclick    = navZoom100;
+        document.getElementById('nav-reset-origin').onclick = navResetOrigin;
+
+        // Живой индикатор: обновляем на каждом кадре рендера
+        // (покрывает зум колесом, панораму и клики по кнопкам)
+        const origDraw = graphCanvas.draw.bind(graphCanvas);
+        graphCanvas.draw = function(...args) {
+            const r = origDraw(...args);
+            updateZoomLabel();
+            return r;
+        };
+
+        updateZoomLabel();
+
+        // Поиск
+        // Обработчик ввода
+        document.getElementById('searchInput').addEventListener('input', filterNodes);
+
+        // Переключение вкладок
+        document.querySelector('.node-tabs').addEventListener('click', (e) => {
+            const tab = e.target.closest('.node-tab');
+            if (tab) switchTab(tab.dataset.tab);
+        });
+        
+
+
+        // ===================================================================
+        // === 5. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+        // ===================================================================
+
+
+        function imageToMatrix(imageData, width, height, minVal, maxVal, autoscale = true) {
+            // const ctx = canvas.getContext('2d');
+            // const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            // const width = canvas.width;
+            // const height = canvas.height;
+            const data = imageData.data; // Uint8ClampedArray (RGBA)
+            const matrix = new Array(height);
+
+            for (let y = 0; y < height; y++) {
+                matrix[y] = new Array(width);
+                for (let x = 0; x < width; x++) {
+                    // Индекс пикселя в ImageData: 4 * (y * width + x)
+                    const dataIndex = 4 * (y * width + x);
+                    const r = data[dataIndex] / 255;     // Нормализованное значение (0..1)
+                    const g = data[dataIndex + 1] / 255;
+                    const b = data[dataIndex + 2] / 255;
+
+                    // Для градаций серого используем среднее (или любой канал, например r)
+                    const normalizedValue = (r + g + b) / 3; // или просто r (если изображение чёрно-белое)
+
+                    // Обратное преобразование в исходные значения
+                    const matrixValue = autoscale 
+                        ? minVal + normalizedValue * (maxVal - minVal) 
+                        : scale[0] + normalizedValue * (scale[1] - scale[0]);
+
+                    matrix[y][x] = matrixValue;
+                }
+            }
+
+            return matrix;
+        }
+
+        function matrixToImage(matrix, width, height, minVal, maxVal, autoscale = true) {
+            // Проверяем корректность размеров
+            if (matrix.length !== height || matrix.some(row => row.length !== width)) {
+                throw new Error("Размеры матрицы не соответствуют заданным width/height");
+            }
+
+            // Создаем массив для данных изображения (RGBA)
+            const data = new Uint8ClampedArray(width * height * 4);
+            //const maxVal = 255; // Максимальное значение для канала (0..255)
+
+            const colormap = 'gray';
+            const colorMap = getColormap(colormap);
+
+            let dataIndex = 0;
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const matrixValue = matrix[y][x];
+
+                    
+                    const normalizedValue = autoscale 
+                        ? (matrix[y][x] - minVal) / (maxVal - minVal + 1e-9) 
+                        : (matrix[y][x] - scale[0]) / (scale[1] - scale[0] + 1e-9);
+                    
+                    const color = colorMap(Math.max(0, Math.min(1, normalizedValue)));
+                    data[dataIndex++] = color.r * 255;
+                    data[dataIndex++] = color.g * 255;
+                    data[dataIndex++] = color.b * 255;
+                    data[dataIndex++] = 255;
+                }
+            }
+            return new ImageData(data, width, height);
+        }
+        
+        function getColormap(name) {
+            const colormaps = {
+                'hot': (t) => ({
+                    r: t < 0.5 ? 0 : 2 * t,
+                    g: t < 0.25 ? 0 : t < 0.75 ? 2 * t - 0.5 : 1,
+                    b: t < 0.75 ? 0 : 2 * t - 1
+                }),
+                'jet': (t) => {
+                    const h = 240 * (1 - t); // От синего (t=0) до красного (t=1)
+                    const hslToRgb = (h) => {
+                        const hue = h / 360; // Нормализуем до [0, 1]
+                        const i = Math.floor(hue * 6); // Индекс сегмента
+                        const f = hue * 6 - i; // Дополнительная доля
+                        
+                        // Значения для RGB (избегаем дублирования имён)
+                        const red = [1, f, 1 - f, 0, 0, 0][i % 6];
+                        const green = [1 - f, 1, 1, 1 - f, 1 - f, 1 - f][i % 6];
+                        const blue = [0, 0, 0, 0, 1 - f, 1][i % 6];
+                        
+                        return { r: red, g: green, b: blue }; // Теперь ключи объекта не конфликтуют
+                    };
+                    return hslToRgb(h);
+                },
+                'gray': (t) => ({ r: t, g: t, b: t }),
+                'viridis': (t) => { // Упрощённая версия
+                    const x = 1 - t;
+                    const a = 16.0, b = 254.0;
+                    const red = ((6.0 - 2.4 * x) * x * x * x + (-4.8 * x * x * x + 18.0 * x * x - 22.2 * x + 8.3) * x * x * x + (b - a) * x * x * x * x * x * x + a) / 255;
+                    const green = ((13.0 - 1.5 * x) * x * x * x + (-12.0 * x * x * x + 45.0 * x * x - 49.5 * x + 17.0) * x * x * x + (b - a) * x * x * x * x * x * x + a) / 255;
+                    const blue = ((b - a) * x * x * x * x * x * x + a) / 255;
+                    return { r: red, g: green, b: blue }; // Ключи объекта не конфликтуют
+                }
+            };
+
+            if (!colormaps[name]) {
+                console.warn(`Цветовая карта "${name}" не найдена. Используется "gray".`);
+                return colormaps['gray'];
+            }
+            return colormaps[name];
+        }
+
+        // Функция для подсветки узла и его входных связей
+        function highlightNode(node, highlight = true) {
+            if (highlight) {
+                node.color = '#00FF00'; // Зеленый для подсветки узла
+                if (node.inputs) {
+                    node.inputs.forEach(input => {
+                        if (input.link !== null) {
+                            const link = graph.links[input.link];
+                            if (link) {
+                                link.color = '#00FF00'; // Зеленый для подсветки связи
+                            }
+                        }
+                    });
+                }
+            } else {
+                node.color = null; // Сброс цвета узла
+                if (node.inputs) {
+                    node.inputs.forEach(input => {
+                        if (input.link !== null) {
+                            const link = graph.links[input.link];
+                            if (link) {
+                                link.color = undefined; // Сброс цвета связи
+                            }
+                        }
+                    });
+                }
+            }
+            graphCanvas.setDirty(true);
+        }
+
+        // Асинхронная функция, которая анимирует выполнение узлов графа поочерёдно
+        async function animateExecution(nodesInOrder) {
+            // Итерируемся по каждому узлу в заданном порядке (nodesInOrder)
+            for (const node of nodesInOrder) {
+                // Проверяем, нужно ли выполнять узел:
+                // - LiteGraph.ALWAYS: узел всегда активен (например, генерирует данные)
+                // - LiteGraph.ON_TRIGGER: узел запускается при получении триггера
+                if (node.mode === LiteGraph.ALWAYS || node.mode === LiteGraph.ON_TRIGGER) {
+                    // Подсвечиваем узел (например, меняем цвет фона или добавляем эффект)
+                    // Аргумент `true` означает "активировать подсветку"
+                    highlightNode(node, true);
+
+                    // Ручное выполнение узла (аналог автоматического запуска в LiteGraph)
+                    // Этот метод вызывает `onExecute` узла, передавая ему входные данные
+                    node.doExecute(); 
+
+                    // Задержка на 500 мс, чтобы пользователь успел увидеть анимацию
+                    // `await` блокирует выполнение цикла до окончания задержки
+                    await new Promise(resolve => setTimeout(resolve, 500)); 
+
+                    // Убираем подсветку узла после выполнения
+                    // Аргумент `false` означает "деактивировать подсветку"
+                    highlightNode(node, false);
+                }
+            }
+        }
+
+        // сохранения
+        function saveToTptFile(node, filename = null) {
+            return new Promise((resolve, reject) => {
+                try {
+                    // Получаем данные из node.properties
+                    let { width, height, data,dpi, filename: originalFilename } = node;
+                    
+                    if (!dpi)
+                        dpi = 322
+                    // Если filename не указан, используем оригинальный или генерируем новый
+                    const outputFilename = filename || originalFilename || `matrix_${Date.now()}.tpt`;
+                    
+                    // Формируем строки файла
+                    const header = `#DPI=${dpi}\n${height}\n${width}\n`;
+                    // console.log(data);
+                    const matrixLines = data.map(row => 
+                        row.map(val => val.toString()).join('\t') // Числа разделены табуляцией (можно заменить на пробел)
+                    ).join('\n');
+                    
+                    // Объединяем заголовок и матрицу
+                    const fileContent = header + matrixLines;
+                    
+                    // Создаём Blob (UTF-8 текст)
+                    const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+                    // Сохраняем файл (используем FileSaver.js или нативный способ)
+                    if (typeof saveAs === 'function') {
+                        // Если доступна библиотека FileSaver.js
+                        saveAs(blob, outputFilename);
+                    } else {
+                        // Альтернативный способ (без FileSaver.js)
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = outputFilename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }
+                    
+                    //resolve(`Файл "${outputFilename}" успешно сохранён!`);
+                } catch (error) {
+                    reject(`Ошибка сохранения файла: ${error.message}`);
+                }
+            });
+        }
+        
+        
+
+        // Функция сворачивания сайдбара
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('collapseIcon');
+            const toolbar = document.getElementById('toolbar');
+            const mainContent = document.getElementById('mainContent');
+
+            // Переключает класс
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            // Синхронизирует toolbar
+            toolbar.classList.toggle('collapsed', isCollapsed);
+            // Обновляет mainContent
+            mainContent.classList.toggle('collapsed', isCollapsed);
+            // Меняет иконку
+            icon.textContent = isCollapsed ? '→' : '←';
+
+            setTimeout(() => {
+                resizeGraphCanvas();// Переразмеряет граф
+                updateLayout();// Обновляет позицию toolbar
+            }, 350);// Задержка для анимации
+        }
+
+        // Переключение вкладки
+        function switchTab(tabKey) {
+            document.querySelectorAll('.node-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabKey);
+            });
+            document.querySelectorAll('.node-tab-panel').forEach(panel => {
+                panel.classList.toggle('active', panel.id === 'tab-' + tabKey);
+            });
+        }
+
+        // Функция обновления позиции toolbar
+        function updateLayout() {
+            const toolbar = document.getElementById('toolbar');
+            const collapsed = document.getElementById('sidebar').classList.contains('collapsed');
+            // const width = collapsed 
+            //     ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-collapsed'))
+            //     : parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width'));
+            
+            // toolbar.style.left = width + 'px';
+            resizeGraphCanvas();
+        }
+
+        // Фильтрация узлов по поисковому запросу
+        function filterNodes() {
+            const input = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            if (!input) {
+                document.querySelectorAll('.node-card').forEach(card => {
+                    card.style.display = '';
+                });
+                // Вернуть активную вкладку
+                const activeTab = document.querySelector('.node-tab.active');
+                if (activeTab) switchTab(activeTab.dataset.tab);
+                return;
+            }
+
+            // Показать все панели, скрыть несовпавшие карточки
+            document.querySelectorAll('.node-tab-panel').forEach(panel => {
+                panel.classList.add('active');
+            });
+
+            document.querySelectorAll('.node-card').forEach(card => {
+                const title = card.querySelector('.node-text-container > div').textContent.toLowerCase();
+                card.style.display = title.includes(input) ? 'flex' : 'none';
+            });
+        }
+        
+        // ===================================================================
+        // === 6. ИНСПЕКТОР ===
+        // ===================================================================
+        function updateInspector(node) {
+
+        // Получаем DOM-элементы панели инспектора:
+        // - `inspector` — основной контейнер
+        // - `preview` — область для отображения превью узла
+        // - `controls` — область для элементов управления (виджетов)
+        const inspector = document.getElementById('inspector');
+        const preview = document.getElementById('inspector-preview');
+        const controls = document.getElementById('inspector-node-controls');
+
+        // Если панель инспектора не найдена — выходим
+        if (!inspector) return;
+
+        // Если узел не передан (null/undefined) — скрываем инспектор
+        if (!node) {
+            inspector.classList.remove('visible');// Убираем класс "видимый"
+            return;
+        }
+
+        // Если узел есть — показываем инспектор
+        inspector.classList.add('visible');
+
+        // Очищаем превью и настройки перед обновлением
+        preview.innerHTML = '';
+        controls.innerHTML = '';
+
+        // --- РАЗДЕЛ: ОТСЛЕЖИВАНИЕ ПРЕВЬЮ ---
+        // Проверяем, есть ли у узла данные для превью
+        if (node.properties?.previewData) {
+            // Создаём временный canvas для отображения превью
+            const canvas = document.createElement('canvas');
+            // Устанавливаем размеры из данных узла
+            canvas.width = node.properties.previewData.width;
+            canvas.height = node.properties.previewData.height;
+            // Настраиваем стили для адаптации под контейнер
+            canvas.style.maxWidth = '100%';
+            canvas.style.height = 'auto';
+            // Рисуем ImageData на canvas
+            canvas.getContext('2d').putImageData(node.properties.previewData, 0, 0);
+            // Добавляем canvas в область превью
+            preview.appendChild(canvas);
+
+
+            preview.addEventListener('click', () => {
+                //showLocationInfo(location);
+                const modal = document.getElementById('imageModal');
+                const modalImg = document.getElementById('modalImage');
+                modal.style.display = 'flex';
+                modal.appendChild(canvas);
+            });
+            // Закрытие модального окна
+                document.querySelector('.close-modal').addEventListener('click', () => {
+                document.getElementById('imageModal').style.display = 'none';
+                // Добавляем canvas в область превью
+                preview.appendChild(canvas);
+            });
+
+
+        } else {
+            // Если превью нет — показываем текстовое уведомление
+            preview.textContent = 'Нет превью123';
+        }
+
+
+            
+
+
+        // --- РАЗДЕЛ: ОТСЛЕЖИВАНИЕ НАСТРОЕК ---
+        // Проверяем, есть ли у узла настройки
+        if (node.widgets) {
+            // Проходим по каждому виджету
+            node.widgets.forEach(widget => {
+
+                // Создаём контейнер для виджета (div с классом "widget-prop")
+                const div = document.createElement('div');
+                div.className = 'widget-prop';
+                // Создаём метку (label) для виджета
+                const label = document.createElement('label');
+                label.className = 'widget-label';
+                label.textContent = widget.name;// Название виджета (например, "Яркость")
+                div.appendChild(label);// Добавляем label в контейнер
+
+
+                // --- ЛОГИКА ДЛЯ РАЗНЫХ ТИПов ВИДЖЕТОВ ---
+                let input;// Переменная для элемента управления
+                // 1. Виджет типа "ползунок" (slider)
+                if (widget.type === 'slider') {
+                    input = document.createElement('input');
+                    input.type = 'range'; // HTML-разметка для ползунка
+                    // Устанавливаем параметры ползунка (по умолчанию 0-100 с шагом 1)
+                    input.min = widget.min ?? 0; // nullish coalescing: если min не задан — 0
+                    input.max = widget.max ?? 100;
+
+
+                    input.step = widget.step?? 1;
+                    input.value = widget.value; // Текущее значение виджета
+                    
+                    // Обработчик изменения значения
+                    input.oninput = () => {
+                        // Обновляем значения в объекте виджета и свойств узла
+                        widget.value = +input.value; // Унарный плюс преобразует строку в число
+                        node.properties[widget.name] = +input.value;
+                        // Вызываем метод выполнения узла (если есть)
+                        node.onExecute?.();
+                        // Помечаем граф как "грязный" для перерендеринга
+                        graphCanvas.setDirty(true, true);
+                    };
+                }
+                
+                // 2. Виджет типа "числовое поле" (number)
+                else if (widget.type === 'number') {
+
+                    input = document.createElement('input');
+                    input.type = 'number'; // HTML-разметка для числового ввода
+
+                    // console.log(node);
+                    // console.log(widget.options.min);
+
+                    if(node.title == "Порог" && widget.name == "Минимум"){
+                        input.min = widget.options.min;
+                    }
+                    else {
+                        input.min = widget.min || 0; // Если min не задан — 0 (или 0 при falsy)
+                    }     
+                            
+
+                    
+                    input.value = widget.value; // Инициализация значением виджета
+                    var temp =  widget.options.step/10;
+                    input.step = temp || 0.01;  // По умолчанию 0.01 (для дробей)
+                
+
+                    // Обработчик изменения (срабатывает при потере фокуса)
+                    input.onchange = () => {
+
+                        // Обновляем значения и перезапускаем узел
+                        widget.value = +input.value;
+                        //const myNodes = graph.findNodesByProperty("title", node.title);
+                        //console.log(myNodes);
+
+                        node.properties[widget.name] = input.value;
+                        if(widget.name == "Ширина")
+                            node.setProperty("node_width", input.value);
+                        if(widget.name == "Высота")
+                            node.setProperty("node_height", input.value);
+
+                        // console.log(node.properties[widget.name].value);
+                        // console.log(input.value);
+                        // console.log(node.properties.node_width);
+                        // console.log(node.properties.node_height);
+                        //node.onExecute?.();
+                        graphCanvas.setDirty(true, true);
+                    };
+                }
+                
+                // 3. Виджет типа "флажок" (checkbox)
+                else if (widget.type === 'checkbox') {
+                    input = document.createElement('input');
+                    input.type = 'checkbox'; // HTML-разметка для чекбокса
+                    input.checked = !!widget.value; // Приводим значение к булевому
+                    
+                    // Обработчик изменения состояния
+                    input.onchange = () => {
+                        // Обновляем флажок и свойства узла
+                        widget.value = input.checked;
+                        node.properties[widget.name] = input.checked;
+                        node.onExecute?.();
+                        graphCanvas.setDirty(true, true);
+                    };
+                }
+                else if (widget.type === 'toggle') {
+                    input = document.createElement('input');
+                    input.type = 'checkbox'; // HTML-разметка для чекбокса
+                    input.checked = !!widget.value; // Приводим значение к булевому
+                    
+                    // Обработчик изменения состояния
+                    input.onchange = () => {
+                        // Обновляем флажок и свойства узла
+                        widget.value = input.checked;
+                        node.properties[widget.name] = input.checked;
+                        node.onExecute?.();
+                        graphCanvas.setDirty(true, true);
+                    };
+                }
+                
+                // 4. Виджет типа "кнопка" (button)
+                else if (widget.type === 'button') {
+                    input = document.createElement('button');
+                    input.textContent = widget.value; // Текст кнопки берётся из значения виджета
+                    // Обработчик клика (вызов callback-функции виджета)
+                    input.onclick = () => widget.callback?.();
+                }
+
+                // Если элемент управления создан (input или button) — добавляем его
+                if (input) div.appendChild(input);
+                // Добавляем готовый блок (label + input) в панель управления
+                controls.appendChild(div);
+            });
+        }
+        }
+        window.updateInspectorIfSelected = (node) => {
+        if (graphCanvas.selected_nodes && Object.values(graphCanvas.selected_nodes)[0] === node) {
+            updateInspector(node);
+        }
+        };
+        graphCanvas.onNodeSelected = (node) => updateInspector(node);
+        graphCanvas.onNodeDeselected = () => updateInspector(null);
+
+
+        // ===================================================================
+        // === 7. tooltip ===
+        // ===================================================================
+
+        // Показать информацию о локации
+        function showLocationInfo(location) {
+            const tooltipX = parseFloat(location.x);
+            const tooltipY = parseFloat(location.y);
+
+            previewTooltip.innerHTML = `
+            <div class="tooltip-header">
+            <div class="tooltip-icon">📍</div>
+            <div>
+            <div class="tooltip-title">${location.name}</div>
+            <div class="tooltip-subtitle">${location.address}</div>
+            </div>
+            </div>
+            <div style="color: #475569; font-size: 0.9rem; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span>⭐ ${location.rating}/5</span>
+            <span>📞 ${location.phone}</span>
+            </div>
+            <div style="background: #f1f5f9; padding: 10px; border-radius: 8px;">
+            </div>
+            </div>
+            <button style="
+            width: 100%;
+            padding: 10px;
+            background: ${location.color};
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            " onclick="navigateToLocation(${location.id})">
+            Проложить маршрут
+            </button>
+            `;
+
+            // Позиционируем тултип
+            const viewportWidth = 150;
+            const viewportHeight = 350;
+
+            // let left = (tooltipX / 100) * viewportWidth;
+            // let top = (tooltipY / 100) * viewportHeight;
+            let left = 100;
+            let top = 100;
+            console.log(left);
+            console.log(top);
+            // Проверяем, чтобы тултип не выходил за границы
+            const tooltipWidth = 300;
+            const tooltipHeight = 200;
+
+            if (left + tooltipWidth > viewportWidth) {
+                left = viewportWidth - tooltipWidth - 20;
+            }
+
+            if (top - tooltipHeight < 0) {
+                top = tooltipHeight + 20;
+            }
+            console.log(left);
+            console.log(top);
+            previewTooltip.style.left = `${left}px`;    
+            previewTooltip.style.top = `${top}px`;
+            previewTooltip.classList.add('show');
+        }
+
+        // Задержка для корректного рендеринга
+        setTimeout(() => {
+            resizeGraphCanvas();
+            updateLayout();
+        }, 500);
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+    const saveBtn = document.getElementById("save-idb");
+    const loadBtn = document.getElementById("load-idb");
+    const deleteBtn = document.getElementById("delete-idb");
+
+    if (saveBtn) {
+        saveBtn.addEventListener("click", async () => {
+            try {
+                await saveGraphToIndexedDB();
+                console.log("Граф сохранён в IndexedDB");
+            } catch (err) {
+                alert("Ошибка сохранения в IndexedDB: " + (err.message || err));
+            }
+        });
+    }
+
+    if (loadBtn) {
+        loadBtn.addEventListener("click", async () => {
+            if (!confirm("Загрузить сохранённый граф? Текущий граф будет заменён.")) {
+                return;
+            }
+
+            try {
+                const data = await loadGraphFromIndexedDB();
+
+                if (!data) {
+                    alert("Сохранённый граф не найден.");
+                    return;
+                }
+
+                graph.clear();
+                graph.configure(data);
+                graphCanvas.draw(true, true);
+            } catch (err) {
+                alert("Ошибка загрузки из IndexedDB: " + (err.message || err));
+            }
+        });
+    }
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", async () => {
+            if (!confirm("Удалить сохранённый граф из IndexedDB?")) {
+                return;
+            }
+
+            try {
+                await deleteGraphFromIndexedDB();
+                console.log("Сохранённый граф удалён из IndexedDB");
+            } catch (err) {
+                alert("Ошибка удаления: " + (err.message || err));
+            }
+        });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+    <!-- Чистые математические ядра (общие для workflow и редактора) -->
+    <script src="src/imageOps/kernels/index.js"></script>
+    <script src="src/imageOps/kernels/common.js"></script>
+    <script src="src/imageOps/kernels/threshold.js"></script>
+    <script src="src/imageOps/kernels/normalisation.js"></script>
+    <script src="src/imageOps/kernels/logarithm.js"></script>
+    <script src="src/imageOps/kernels/median.js"></script>
+    <script src="src/imageOps/kernels/division.js"></script>
+    <script src="src/imageOps/kernels/rotate.js"></script>
+    <script src="src/imageOps/kernels/polar.js"></script>
+    <script src="src/imageOps/kernels/approximation.js"></script>
+    <script src="src/imageOps/kernels/sobel.js"></script>
+    <script src="src/imageOps/kernels/crop.js"></script>
+    <script src="src/imageOps/kernels/shift.js"></script>
+
+    <script src="components/worflow/preview_util.js"></script>
+
+    <script src="components/worflow/TransformNode/Shift.js"></script>
+    <script src="components/worflow/trasing.js"></script>
+    <script src="components/filters/tracingFilter.js"></script>
+
+    <script src="components/worflow/roi/roi_files.js"></script>
+    <script src="components/worflow/load.js"></script>
+    <script src="components/worflow/save.js"></script>
+
+    <script src="components/worflow/filtres/sobel.js"></script>
+    <script src="components/worflow/filtres/median.js"></script>
+    <script src="components/worflow/filtres/Normalisation.js"></script>
+    <script src="components/worflow/filtres/Approximation.js"></script>
+    <script src="components/worflow/filtres/Logarithm.js"></script>
+
+    <script src="components/worflow/TransformNode/Rotate.js"></script>
+    <script src="components/worflow/TransformNode/Crop.js"></script>
+    <script src="components/worflow/TransformNode/Threshold.js"></script>
+    <script src="components/worflow/TransformNode/Polar.js"></script>
+
+    <script src="components/worflow/CalculationNode/Difference.js"></script>
+
+
+    <script src="src/imageOps/t.js"></script>
+
+    <script src="components/worflow/drawing_plotly.js"></script>
+    <script src="components/worflow/roi/roi_lasso.js"></script>
+    <script src="components/worflow/roi/roi_rectanle.js"></script>
+    <script src="components/worflow/roi/roi_view.js"></script>
+    <script src="components/worflow/roi/roi_merge_points.js"></script>
+    <script src="components/worflow/style_litegraph.js"></script>
+    <script src="components/worflow/Search/search_circle.js"></script>
+    <script src="components/worflow/Search/search_line.js"></script>
+    <script src="components/worflow/filtres/gause.js"></script>
+    <script src="components/worflow/filtres/1.js"></script>
+    <script src="components/worflow/node_preview.js"></script>
+
+    <script>
+    (async () => {
+        try {
+            const data = await loadGraphFromIndexedDB();
+            if (data && data.nodes && data.nodes.length) {
+                _isRestoring = true;
+                graph.configure(data);
+                graphCanvas.draw(true, true);
+                _isRestoring = false;
+                console.log("Граф восстановлен из IndexedDB");
+            }
+        } catch (err) {
+            _isRestoring = false;
+            console.warn("Не удалось загрузить сохранённый граф:", err);
+        }
+    })();
+    </script>
+
+</body>

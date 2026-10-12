@@ -1,0 +1,335 @@
+/* Стили для двухпанельного менеджера  */
+
+.panel-content  {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px;
+    max-height: 100%;
+}
+
+/* #region [server-files-table] */
+
+.server-files-table {
+    width: 100%;
+    border-collapse: collapse;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+
+.server-files-table th  {
+    background: #f0f0f0;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+}
+
+.server-files-table td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #eee;
+    cursor: default;
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.server-files-table tr:hover {
+    background-color: #f5f5f5;
+    background-color: #f9f9f9;
+    cursor: pointer;
+}
+
+
+.server-files-table .selected-row {
+    border: 2px solid #00a708;
+}
+
+.server-files-table .folder-row  {
+    font-weight: bold;
+    /* color: #0066cc; */
+}
+
+/* .folder-row td:first-child  {
+    font-weight: bold;
+    color: #0066cc;
+} */
+
+
+
+
+
+
+/* #endregion */
+
+
+
+
+
+
+
+.server-files-table .file-size  {
+    text-align: right;
+
+}
+
+.server-files-table .file-date  {
+
+    font-size: 12px;
+}
+
+.server-files-table .load-btn  {
+    padding: 4px 8px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.server-files-table .load-btn:hover  {
+    background: #45a049;
+}
+
+.move-btn  {
+    padding: 4px 8px;
+    background: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+.move-btn:hover  {
+    background: #f57c00;
+}
+
+
+
+.load-btn, .move-btn  {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    margin: 0 2px;
+}
+
+.load-btn  {
+    background: #4CAF50;
+    color: white;
+}
+
+.load-btn:hover  {
+    background: #45a049;
+}
+
+.move-btn  {
+    background: #ff9800;
+    color: white;
+}
+
+.delete-btn  {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.delete-btn:hover  {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* Контент панели */
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background:  var(--background-primary);
+}
+
+/* Таблица файлов */
+.server-files-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    
+}
+
+.server-files-table th,
+.server-files-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.server-files-table th {
+    background-color: #ecf0f1;
+    font-weight: bold;
+    color: var(--text-secondary);
+    background:  var(--background-primary);
+}
+
+.server-files-table tr:hover {
+    background:  var(--background-secondary);
+}
+
+/* .server-files-table tr:nth-child(even) {
+    background:  var(---background-primary);
+} */
+
+/* Стили для строк таблицы (можно добавить классы для разных типов файлов) */
+
+.server-files-table .folder-row:hover{
+    background:  var(--background-secondary);
+}
+
+
+
+
+.server-files-table .file-row {
+    cursor: pointer;
+}
+
+.server-files-table .file-row:hover {
+    background:  var(--background-secondary);
+}
+
+
+
+/* Адаптивность для маленьких экранов */
+@media (max-width: 600px) {
+    .path-container {
+        flex-direction: column;
+    }
+    
+    .path-field {
+        margin-bottom: 8px;
+    }
+}
+/* #region [Модальное окно для управления сервером (две панели)] */
+/* Стили для контейнера путей */
+.path-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+/* Стили для каждого поля ввода пути */
+.path-field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Стили для меток (Левая, Правая) */
+.path-label {
+    white-space: nowrap; /* Предотвращает перенос текста */
+}
+
+/* Дополнительные стили для улучшения внешнего вида */
+.path-container > div {
+    color: var(--text-secondary);
+    background: var(--background-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+
+
+
+
+
+
+
+/* #endregion */
+
+
+/* Стили для контейнера с двумя панелями */
+.dual-panel-container {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    overflow: hidden;
+    height: 100%;
+}
+
+
+
+
+/* Общие стили для панелей */
+
+.server-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    /* background: #ff00f7;  */
+    /* background-color: #ff00f7;  */
+
+    border: 1px solid var(--border-color);
+
+    border-radius: var(--radius-md);
+    box-shadow: var(--modal-shadow);
+}
+
+
+ /* Активная панель */
+.server-panel.active-panel  {
+    border: 2px solid var(--primary-color);
+
+}
+
+
+/* Для неактивной панели заголовок остаётся серым  */
+/* .panel-header  {
+    background: #e0e0e0;
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid #ccc;
+    background-color: #3498db;
+    transition: background 0.2s, color 0.2s;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+} */
+
+
+
+
+
+
+
+/* Заголовок активной панели – тёмно-синий фон, белый текст/
+.panel-header.active-header  {
+    /* background: #0078d7 !important;
+    background-color: #3498db;
+    color: white !important;
+    font-weight: bold; 
+} 
+*/

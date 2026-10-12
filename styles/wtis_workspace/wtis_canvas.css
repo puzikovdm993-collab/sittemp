@@ -1,0 +1,54 @@
+/* Область холста для рисования */
+
+
+
+.canvas-area  {
+    flex: 1;
+    background: var(--background-tertiary);
+    border-right: 3px solid var(--border-color);
+    border-bottom: 3px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas-wrapper  {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background-secondary);
+}
+
+#overlayCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#canvasHost {
+    position: relative;
+    display: block;
+    z-index: 1;
+}
+
+
+#imageCanvas  {
+    background: #1e1e1e;
+    border: 1px solid var(--color-border);
+    image-rendering: pixelated;
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+

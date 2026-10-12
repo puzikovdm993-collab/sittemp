@@ -1,0 +1,63 @@
+/* --- ШАПКА (HEADER) --- */
+.header {
+    height: 48px;
+    background-color: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    user-select: none;
+    position: relative;
+    z-index: 2000;
+}
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.project-path {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.project-path span {
+    color: var(--text-2);
+}
+.current-flow {
+    background-color: var(--border);
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+}
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.btn {
+    background-color: var(--border);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--text-2);
+}
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    background-color: var(--text);
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    margin-left: 8px;
+}

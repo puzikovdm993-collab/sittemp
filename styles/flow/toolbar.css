@@ -1,0 +1,116 @@
+/* Базовые стили группы (без изменений) */
+.toolbar-group {
+    position: absolute;
+    z-index: 2000;
+    top: 5vh;
+    left: 91vw;
+    display: inline-flex;
+    flex-direction: column;
+    background-color: var(--border); /* Добавил дефолт для примера */
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 6px;
+    min-width: 100px;
+    user-select: none; 
+    background: var(--panel);
+
+}
+
+/* Верхняя часть: Кнопка + Стрелка */
+
+.toolbar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    justify-content: center;
+}
+
+.btn-run {
+    background: transparent;
+    background-color: var(--run-bg);
+    border: none;
+    color: var(--text-gray);
+    border-radius: var(--radius);
+    padding: 8px 20px;
+    font-size: var(--font-size);
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    /* color: var(--text);
+    background: transparent; */
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+}
+
+.btn-run:hover {
+    /* opacity: 0.9; */
+    background: var(--background-hover);
+    border-color: var(--border-color-hover);
+}
+
+
+
+.dropdown-arrow {
+    font-size: 10px;
+    color: #888;
+    transition: transform 0.4s ease; /* Добавил ease для плавности */
+}
+
+
+
+/* Выпадающее меню */
+.toolbar-menu {
+    display: flex; 
+    flex-direction: column;
+    margin-top: 0; 
+    max-height: 0; 
+    opacity: 0;
+    overflow: hidden; 
+    transition: max-height 0.4s ease, opacity 0.4s ease, margin-top 0.4s ease;
+}
+
+.toolbar-menu button {
+    
+    border: none;
+    color: var(--text-gray);
+    padding: 10px;
+    font-size:var(--font-size);
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.4s, color 0.4s;
+
+
+    color: var(--text);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+}
+
+.toolbar-menu button:hover {
+    /* background-color: #f0f0f0;
+    color: #000; */
+    background: var(--background-hover);
+    border-color: var(--border-color-hover);
+
+}
+
+/* Состояние при открытии */
+.toolbar-group.open .toolbar-menu {
+    max-height: min(60vh, 420px); /* адаптивно по высоте экрана, потолок ~420px */
+    overflow-y: auto;             /* если не влезло — скролл, а не обрез */
+    opacity: 1;
+    margin-top: 8px;
+}
+
+/* Разворот вверх: меню над кнопкой, если вниз не хватает места */
+.toolbar-group.open.up .toolbar-menu {
+    margin-top: 0;
+    margin-bottom: 8px;
+    order: -1; /* .toolbar-group — column: меню рисуется над .toolbar-header */
+}
+
+.toolbar-group.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
