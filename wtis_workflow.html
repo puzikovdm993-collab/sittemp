@@ -104,153 +104,176 @@
                             <svg><use href="#icon-upload"></use></svg>
                             <div class="node-text-container">
                                 <div>Сохранить</div>
+                            <small>Сохраняет изображение в файл</small>
                             </div>
                         </div>
                     </div>
 
                     <div class="node-tab-panel" id="tab-filters">
                         <div class="node-card" draggable="true" data-node-type="filter/Sobel">
-                            <svg><use href="#lucide-eye"></use></svg>
+                            <svg><use href="#wf-edge"></use></svg>
                             <div class="node-text-container">
                                 <div>Фильтр собель</div>
+                            <small>Детекция границ (градиент)</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="filter/Median">
-                            <svg><use href="#lucide-invert"></use></svg>
+                            <svg><use href="#wf-blur"></use></svg>
                             <div class="node-text-container">
                                 <div>Медианный фильтр</div>
+                            <small>Подавление шума, окно 3×3</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="filter/Normalisation">
-                            <svg><use href="#lucide-sliders-horizontal"></use></svg>
+                            <svg><use href="#wf-normalize"></use></svg>
                             <div class="node-text-container">
                                 <div>Нормализация</div>
+                            <small>Линейное масштабирование диапазона</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="filter/BackgroundCorrectionPolynomialNode">
-                            <svg><use href="#lucide-sliders-horizontal"></use></svg>
+                            <svg><use href="#wf-surface"></use></svg>
                             <div class="node-text-container">
                                 <div>Апроксимация</div>
+                            <small>Полиномиальная коррекция фона</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="filter/Logarithm">
-                            <svg><use href="#lucide-sliders-horizontal"></use></svg>
+                            <svg><use href="#wf-log"></use></svg>
                             <div class="node-text-container">
                                 <div>Логарифмирование</div>
+                            <small>Натуральный логарифм пикселей</small>
                             </div>
                         </div>
                     </div>
 
                     <div class="node-tab-panel" id="tab-transform">
                         <div class="node-card" draggable="true" data-node-type="transform/Rotate">
-                            <svg><use href="#lucide-download"></use></svg>
+                            <svg><use href="#wf-rotate"></use></svg>
                             <div class="node-text-container">
                                 <div>Поворот</div>
+                            <small>Поворот с билинейной интерполяцией</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="transform/Shift">
-                            <svg><use href="#lucide-download"></use></svg>
+                            <svg><use href="#wf-move"></use></svg>
                             <div class="node-text-container">
                                 <div>Сместить</div>
+                            <small>Смещение матрицы по X/Y</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="transform/ShiftCenter">
-                            <svg><use href="#lucide-download"></use></svg>
+                            <svg><use href="#wf-center"></use></svg>
                             <div class="node-text-container">
                                 <div>Сместить в центр</div>
+                            <small>Центрирование по маске точек</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="transform/Crop">
-                            <svg><use href="#lucide-download"></use></svg>
+                            <svg><use href="#wf-crop"></use></svg>
                             <div class="node-text-container">
                                 <div>Обрезка</div>
+                            <small>Прямоугольная обрезка</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="transform/Threshold">
-                            <svg><use href="#lucide-download"></use></svg>
+                            <svg><use href="#wf-threshold"></use></svg>
                             <div class="node-text-container">
                                 <div>Порог</div>
+                            <small>Отсечка значений по минимуму/максимуму</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="transform/Polar">
-                            <svg><use href="#lucide-download"></use></svg>
+                            <svg><use href="#wf-polar"></use></svg>
                             <div class="node-text-container">
                                 <div>Полярные координаты</div>
+                            <small>Декартовы ⇄ полярные координаты</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="transform/TracingFilter">
-                            <svg><use href="#lucide-download"></use></svg>
+                            <svg><use href="#wf-trass"></use></svg>
                             <div class="node-text-container">
                                 <div>Трассировка</div>
+                            <small>Построение трассы по профилю</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="transform/SaveTrassNode">
-                            <svg><use href="#lucide-download"></use></svg>
+                            <svg><use href="#icon-save"></use></svg>
                             <div class="node-text-container">
                                 <div>сохранение трассы</div>
+                            <small>Экспорт трассы в файл</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="plot/plotly">
-                            <svg><use href="#lucide-download"></use></svg>
+                            <svg><use href="#wf-chart"></use></svg>
                             <div class="node-text-container">
                                 <div>рисовалка</div>
+                            <small>График Plotly по трассе</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="plot/data">
-                            <svg><use href="#lucide-download"></use></svg>
+                            <svg><use href="#wf-table"></use></svg>
                             <div class="node-text-container">
                                 <div>data from рисовалка</div>
+                            <small>Извлечение данных c графика</small>
                             </div>
                         </div>
                     </div>
 
                     <div class="node-tab-panel" id="tab-search">
                         <div class="node-card" draggable="true" data-node-type="search/CircleSearch">
-                            <svg><use href="#lucide-eye"></use></svg>
+                            <svg><use href="#wf-circle-search"></use></svg>
                             <div class="node-text-container">
                                 <div>Поиск окружности</div>
+                            <small>Поиск центра и радиуса окружности</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="search/LineSearch">
-                            <svg><use href="#lucide-eye"></use></svg>
+                            <svg><use href="#wf-line-search"></use></svg>
                             <div class="node-text-container">
                                 <div>Поиск прямой</div>
+                            <small>Поиск прямой по точкам</small>
                             </div>
                         </div>
                     </div>
 
                     <div class="node-tab-panel" id="tab-calc">
                         <div class="node-card" draggable="true" data-node-type="Calculation/Difference">
-                            <svg><use href="#lucide-eye"></use></svg>
+                            <svg><use href="#wf-divide"></use></svg>
                             <div class="node-text-container">
                                 <div>Деление</div>
+                            <small>Image1 ÷ Image2, поэлементно</small>
                             </div>
                         </div>
                     </div>
 
                     <div class="node-tab-panel" id="tab-roi">
                         <div class="node-card" draggable="true" data-node-type="roi/mask_store">
-                            <svg><use href="#lucide-eye"></use></svg>
+                            <svg><use href="#wf-mask-store"></use></svg>
                             <div class="node-text-container">
                                 <div>ROI Контейнер</div>
+                            <small>Хранение маски/точек ROI</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="roi/merge_points">
-                            <svg><use href="#lucide-eye"></use></svg>
+                            <svg><use href="#wf-merge"></use></svg>
                             <div class="node-text-container">
                                 <div>merge points</div>
+                            <small>Объединение наборов точек</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="roi/lasso">
-                            <svg><use href="#lucide-eye"></use></svg>
+                            <svg><use href="#wf-lasso"></use></svg>
                             <div class="node-text-container">
                                 <div>Лассо</div>
+                            <small>Выделение области «лассо»</small>
                             </div>
                         </div>
                         <div class="node-card" draggable="true" data-node-type="roi/rectangle">
-                            <svg><use href="#lucide-eye"></use></svg>
+                            <svg><use href="#wf-rectangle"></use></svg>
                             <div class="node-text-container">
                                 <div>Прямоугольник</div>
+                            <small>Прямоугольное выделение</small>
                             </div>
                         </div>
                     </div>
@@ -403,6 +426,29 @@
         <symbol id="lucide-sliders-horizontal" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/><circle cx="6" cy="6" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
         <symbol id="lucide-droplet" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 1-7-7c0-4 7-11 7-11s7 7 7 11a7 7 0 0 1-7 7z"/><path d="M12 2v4"/></symbol>
         <symbol id="lucide-invert" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 12h20"/></symbol>
+
+        <!-- ===== Иконки палитры узлов (по смыслу каждого узла) ===== -->
+        <symbol id="wf-edge" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 17c2-6 5-9 10-10"/><circle cx="7" cy="17" r="1.2"/><circle cx="17" cy="7" r="1.2"/></symbol>
+        <symbol id="wf-blur" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2.5"/><circle cx="12" cy="12" r="5" stroke-dasharray="2.5 2"/><circle cx="12" cy="12" r="1.5"/></symbol>
+        <symbol id="wf-normalize" viewBox="0 0 24 24"><polyline points="3 19 9 13 13 17 21 7"/><polyline points="15 7 21 7 21 13"/></symbol>
+        <symbol id="wf-surface" viewBox="0 0 24 24"><path d="M3 17c3.5 0 5.5-9 9-9s5.5 9 9 9"/><path d="M3 21h18"/><path d="M3 7c3.5 0 5.5 5 9 5s5.5-5 9-5"/></symbol>
+        <symbol id="wf-log" viewBox="0 0 24 24"><path d="M3 20C8 20 12 16 14 10 15 7 16 4 21 4"/><circle cx="3" cy="20" r="1"/></symbol>
+        <symbol id="wf-rotate" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></symbol>
+        <symbol id="wf-move" viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></symbol>
+        <symbol id="wf-center" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></symbol>
+        <symbol id="wf-crop" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></symbol>
+        <symbol id="wf-threshold" viewBox="0 0 24 24"><line x1="4" y1="4" x2="4" y2="20"/><path d="M8 20h5l3-6 3 6h1"/><path d="M8 10h4l2-4 2 4h2"/></symbol>
+        <symbol id="wf-polar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/><line x1="18.4" y1="5.6" x2="5.6" y2="18.4"/></symbol>
+        <symbol id="wf-trass" viewBox="0 0 24 24"><path d="M3 17c2-6 4-9 6-9s2 4 4 4 3-6 5-8"/><circle cx="3" cy="17" r="1"/><circle cx="18" cy="4" r="1.5"/></symbol>
+        <symbol id="wf-chart" viewBox="0 0 24 24"><line x1="3" y1="3" x2="3" y2="21"/><line x1="3" y1="21" x2="21" y2="21"/><path d="M7 15l4-5 3 3 5-7"/></symbol>
+        <symbol id="wf-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/></symbol>
+        <symbol id="wf-circle-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="2.5"/></symbol>
+        <symbol id="wf-line-search" viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="4"/><circle cx="4" cy="20" r="1.5"/><circle cx="20" cy="4" r="1.5"/><circle cx="10" cy="14" r="1"/><circle cx="15" cy="9" r="1"/></symbol>
+        <symbol id="wf-divide" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><circle cx="12" cy="6" r="1.3"/><circle cx="12" cy="18" r="1.3"/></symbol>
+        <symbol id="wf-mask-store" viewBox="0 0 24 24"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></symbol>
+        <symbol id="wf-merge" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/><path d="M8 6c5 0 3 6 8 6"/><path d="M8 18c5 0 3-6 8-6"/></symbol>
+        <symbol id="wf-lasso" viewBox="0 0 24 24"><path d="M7 22a5 5 0 0 1-2-4 5 5 0 0 1 5-5h.5a5 5 0 0 1 0 10H7a3 3 0 0 1-3-3"/><circle cx="12" cy="8" r="6"/><line x1="12" y1="14" x2="12" y2="16"/></symbol>
+        <symbol id="wf-rectangle" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1" stroke-dasharray="4 3"/><circle cx="3" cy="5" r="1.4"/><circle cx="21" cy="5" r="1.4"/><circle cx="3" cy="19" r="1.4"/><circle cx="21" cy="19" r="1.4"/></symbol>
     </svg>
 
 
@@ -2330,6 +2376,7 @@ graphContainer.addEventListener("drop", e => {
     <script src="components/worflow/filtres/gause.js"></script>
     <script src="components/worflow/filtres/1.js"></script>
     <script src="components/worflow/node_preview.js"></script>
+    <script src="components/worflow/node_icons.js"></script>
 
     <script>
     (async () => {
