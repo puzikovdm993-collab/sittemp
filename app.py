@@ -2020,6 +2020,269 @@ def get_data(project_id):
             return jsonify({"error": "Проект не найден"}), 404
         return jsonify({"error": str(e)}), 500
 
+# ==================== Админ-панель: Дашборд анализа ====================
+
+# Список логинов администраторов (можно дополнить/заменить на запрос к БД)
+ADMIN_LOGINS = {"ganeevam", "galinovivik", "pavloviv", "PavlovIV"}
+
+
+def is_admin_request():
+    """Проверяет по заголовку Authorization (Basic), является ли пользователь администратором."""
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return False
+    try:
+        auth_data = auth_header.split()[1]
+        decoded_auth = base64.b64decode(auth_data).decode('utf-8')
+        aut_login = decoded_auth.split(":")[0]
+        return aut_login in ADMIN_LOGINS
+    except (IndexError, UnicodeDecodeError, base64.binascii.Error):
+        return False
+
+
+def require_admin(f):
+    """Декоратор: доступ только для администраторов."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_admin_request():
+            app_logger.warning(f"Попытка доступа к админ-ресурсу {request.path} без прав администратора")
+            return jsonify({'error': 'Доступ запрещён. Требуются права администратора.'}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def _collect_minio_stats():
+    """Собирает статистику по объектам в бакете MinIO (количество, размер, распределение по проектам)."""
+    # Если клиент ещё не инициализирован — инициализируем из .env
+    if minio_client is None:
+        set_minio_client()
+    client = get_minio_client()
+    stats = {
+        "total_objects": 0,
+        "total_size_bytes": 0,
+        "projects_count": 0,
+        "project_sizes": {},       # project_id -> размер в байтах
+        "project_object_counts": {},  # project_id -> число объектов
+        "file_type_sizes": {},     # расширение -> суммарный размер
+        "file_type_counts": {},    # расширение -> количество
+        "newest_object": None,
+        "oldest_object": None,
+    }
+
+    for obj in client.list_objects(MINIO_BUCKET, recursive=True):
+        if obj.object_name.endswith('/'):
+            continue
+
+        size = obj.length or 0
+        stats["total_objects"] += 1
+        stats["total_size_bytes"] += size
+
+        # Распределение по проектам (путь вида projects/{project_id}/...)
+        if obj.object_name.startswith(MINIO_PROJECTS_PREFIX):
+            rel = obj.object_name[len(MINIO_PROJECTS_PREFIX):]
+            parts = rel.split('/')
+            if len(parts) >= 2 and parts[0]:
+                pid = parts[0]
+                stats["project_sizes"][pid] = stats["project_sizes"].get(pid, 0) + size
+                stats["project_object_counts"][pid] = stats["project_object_counts"].get(pid, 0) + 1
+
+        # Распределение по расширениям файлов
+        name = obj.object_name.rsplit('/', 1)[-1]
+        ext = name.rsplit('.', 1)[-1].lower() if '.' in name else 'без расширения'
+        stats["file_type_sizes"][ext] = stats["file_type_sizes"].get(ext, 0) + size
+        stats["file_type_counts"][ext] = stats["file_type_counts"].get(ext, 0) + 1
+
+        # Самый новый / самый старый объект
+        if obj.last_modified:
+            lm_iso = obj.last_modified.isoformat()
+            if stats["newest_object"] is None or obj.last_modified > stats["newest_object"]["last_modified"]:
+                stats["newest_object"] = {"name": obj.object_name, "last_modified": obj.last_modified, "iso": lm_iso}
+            if stats["oldest_object"] is None or obj.last_modified < stats["oldest_object"]["last_modified"]:
+                stats["oldest_object"] = {"name": obj.object_name, "last_modified": obj.last_modified, "iso": lm_iso}
+
+    stats["projects_count"] = len(stats["project_sizes"])
+    return stats
+
+
+def _parse_log_line(line):
+    """Разбирает строку лога формата: [дд.мм.гггг чч:мм:сс] УРОВЕНЬ : сообщение ..."""
+    m = re.match(r'^\[([\d.\s:]+)\]\s+(?:\[(\w+)\])?\s*(\w+)\s*:?(.*)$', line.strip())
+    if not m:
+        return None
+    ts_raw, tag, level, message = m.groups()
+    try:
+        ts = datetime.strptime(ts_raw.strip(), '%d.%m.%Y %H:%M:%S')
+    except ValueError:
+        return None
+    return {"timestamp": ts, "tag": tag, "level": level.upper(), "message": (message or '').strip()}
+
+
+def _analyze_logs(filename, tail_lines=5000):
+    """Анализирует файл логов: уровни, активность по часам, топ ошибок, частые эндпоинты."""
+    path = os.path.join('logs', filename)
+    result = {
+        "exists": os.path.exists(path),
+        "file": filename,
+        "lines_total": 0,
+        "levels": {},
+        "hourly_activity": {},   # 'дд.мм чч' -> количество записей
+        "top_errors": [],
+        "endpoints": {},         # путь запроса -> количество упоминаний
+        "last_entry": None,
+    }
+    if not result["exists"]:
+        return result
+
+    try:
+        with open(path, 'r', encoding='utf-8', errors='replace') as fh:
+            all_lines = fh.readlines()
+    except Exception as e:
+        app_logger.error(f"Ошибка чтения лога {filename}: {e}")
+        return result
+
+    result["lines_total"] = len(all_lines)
+    lines = all_lines[-tail_lines:]  # анализируем только хвост файла
+
+    error_counter = {}
+    endpoint_re = re.compile(r'(?:для|URL|path)[:\s]+(/[^\s,"\']+)', re.IGNORECASE)
+
+    for line in lines:
+        parsed = _parse_log_line(line)
+        if not parsed:
+            continue
+        level = parsed["level"]
+        result["levels"][level] = result["levels"].get(level, 0) + 1
+
+        hour_key = parsed["timestamp"].strftime('%d.%m %H:00')
+        result["hourly_activity"][hour_key] = result["hourly_activity"].get(hour_key, 0) + 1
+
+        if level in ("ERROR", "CRITICAL"):
+            # Нормализуем сообщение для подсчёта повторов
+            key = re.sub(r'\d+', 'N', parsed["message"])[:200]
+            error_counter[key] = error_counter.get(key, 0) + 1
+
+        m_ep = endpoint_re.search(parsed["message"])
+        if m_ep:
+            ep = m_ep.group(1)
+            result["endpoints"][ep] = result["endpoints"].get(ep, 0) + 1
+
+        if result.get("_last_dt") is None or parsed["timestamp"] > result["_last_dt"]:
+            result["_last_dt"] = parsed["timestamp"]
+            result["last_entry"] = {"timestamp": parsed["timestamp"].strftime('%d.%m.%Y %H:%M:%S'),
+                                    "level": level, "message": parsed["message"][:300]}
+
+    result.pop("_last_dt", None)  # служебное поле не отдаём клиенту
+    result["top_errors"] = sorted(error_counter.items(), key=lambda kv: kv[1], reverse=True)[:10]
+    result["endpoints"] = dict(sorted(result["endpoints"].items(), key=lambda kv: kv[1], reverse=True)[:20])
+    return result
+
+
+@app.route('/admin/dashboard')
+@require_admin
+def admin_dashboard_page():
+    """Страница административного дашборда анализа."""
+    html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'wtis_admin_dashboard.html')
+    if not os.path.exists(html_path):
+        app_logger.error("Файл wtis_admin_dashboard.html не найден")
+        abort(404)
+    response = make_response(send_from_directory('.', 'wtis_admin_dashboard.html'))
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
+
+
+@app.route('/api/admin/stats', methods=['GET'])
+@require_admin
+def admin_stats():
+    """Сводная аналитика для администратора: состояние сервера, статистика MinIO, анализ логов."""
+    try:
+        minio_ok = True
+        minio_error = None
+        minio_stats = {}
+        try:
+            minio_stats = _collect_minio_stats()
+        except Exception as e:
+            minio_ok = False
+            minio_error = str(e)
+            app_logger.error(f"Админ-статистика: ошибка сбора данных MinIO: {e}", exc_info=True)
+
+        logs_dir = 'logs'
+        log_files = []
+        if os.path.isdir(logs_dir):
+            for fn in os.listdir(logs_dir):
+                fp = os.path.join(logs_dir, fn)
+                if os.path.isfile(fp):
+                    log_files.append({
+                        "name": fn,
+                        "size_bytes": os.path.getsize(fp),
+                        "modified": datetime.fromtimestamp(os.path.getmtime(fp)).isoformat(),
+                    })
+
+        app_log_analysis = _analyze_logs('app.log')
+        requests_log_analysis = _analyze_logs('requests.log')
+
+        # Топ проектов по размеру
+        top_projects = sorted(minio_stats.get("project_sizes", {}).items(),
+                              key=lambda kv: kv[1], reverse=True)[:10]
+
+        payload = {
+            "success": True,
+            "generated_at": datetime.now().isoformat(),
+            "server": {
+                "status": "healthy" if minio_ok else "degraded",
+                "minio": "ok" if minio_ok else "error",
+                "minio_error": minio_error,
+                "bucket": MINIO_BUCKET,
+                "endpoint": MINIO_ENDPOINT,
+                "python_version": sys.version.split()[0],
+            },
+            "storage": {
+                "total_objects": minio_stats.get("total_objects", 0),
+                "total_size_bytes": minio_stats.get("total_size_bytes", 0),
+                "projects_count": minio_stats.get("projects_count", 0),
+                "file_type_sizes": minio_stats.get("file_type_sizes", {}),
+                "file_type_counts": minio_stats.get("file_type_counts", {}),
+                "top_projects_by_size": [{"id": pid, "size_bytes": sz} for pid, sz in top_projects],
+                "project_object_counts": minio_stats.get("project_object_counts", {}),
+                "newest_object": minio_stats.get("newest_object", {}).get("iso") if minio_stats.get("newest_object") else None,
+                "oldest_object": minio_stats.get("oldest_object", {}).get("iso") if minio_stats.get("oldest_object") else None,
+            },
+            "logs": {
+                "files": log_files,
+                "app": app_log_analysis,
+                "requests": requests_log_analysis,
+            }
+        }
+        return jsonify(payload), 200
+    except Exception as e:
+        app_logger.error(f"Ошибка формирования админ-статистики: {e}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/admin/logs/<filename>', methods=['GET'])
+@require_admin
+def admin_logs_tail(filename):
+    """Возвращает последние N строк указанного файла логов."""
+    allowed = {'app.log', 'requests.log'}
+    if filename not in allowed:
+        return jsonify({"error": "Недопустимое имя файла логов"}), 400
+
+    n = min(int(request.args.get('lines', 200)), 5000)
+    path = os.path.join('logs', filename)
+    if not os.path.exists(path):
+        return jsonify({"error": "Файл логов не найден"}), 404
+
+    try:
+        with open(path, 'r', encoding='utf-8', errors='replace') as fh:
+            lines = fh.readlines()
+        return jsonify({
+            "success": True,
+            "file": filename,
+            "lines": [ln.rstrip('\n') for ln in lines[-n:]]
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == '__main__':
 
     # Запускаем сервер
