@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WTIS — Панель администратора</title>
+<style>
+    :root {
+        --bg: #0f1420;
+        --panel: #171e2e;
+        --panel-2: #1d2639;
+        --border: #2a3550;
+        --text: #dbe3f0;
+        --muted: #8b98b3;
+        --accent: #4da3ff;
+        --accent-2: #7ddba3;
+        --warn: #ffb454;
+        --danger: #ff6b6b;
+        --radius: 12px;
+        font-size: 15px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        min-height: 100vh;
+    }
+    header {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; flex-wrap: wrap;
+        padding: 14px 22px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        position: sticky; top: 0; z-index: 10;
+    }
+    header h1 { font-size: 1.15rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    header h1 .logo {
+        width: 30px; height: 30px; border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), #8a6bff);
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 15px; color: #fff;
+    }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .badge {
+        padding: 4px 10px; border-radius: 20px; font-size: .8rem;
+        background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+    }
+    .badge.ok { color: var(--accent-2); border-color: var(--accent-2); }
+    .badge.err { color: var(--danger); border-color: var(--danger); }
+    button, select, input[type="text"] {
+        background: var(--panel-2); color: var(--text);
+        border: 1px solid var(--border); border-radius: 8px;
+        padding: 8px 14px; font-size: .9rem; cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    input[type="text"] { cursor: text; min-width: 220px; }
+    main { max-width: 1280px; margin: 0 auto; padding: 22px; }
+
+    /* Карточки KPI */
+    .kpi-grid {
+        display: grid; gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        margin-bottom: 22px;
+    }
+    .kpi {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 16px 18px;
+    }
+    .kpi .label { color: var(--muted); font-size: .82rem; margin-bottom: 6px; }
+    .kpi .value { font-size: 1.7rem; font-weight: 700; }
+    .kpi .sub { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+    .kpi.accent .value { color: var(--accent); }
+    .kpi.green .value { color: var(--accent-2); }
+    .kpi.warn .value { color: var(--warn); }
+
+    /* Секции */
+    .section {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 18px 20px; margin-bottom: 22px;
+    }
+    .section h2 {
+        font-size: 1rem; font-weight: 600; margin-bottom: 14px;
+        display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    }
+    .charts-grid { display: grid; gap: 22px; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+
+    /* Горизонтальные бары (без внешних библиотек) */
+    .bar-row { display: grid; grid-template-columns: 170px 1fr 60px; gap: 10px; align-items: center; margin-bottom: 9px; font-size: .85rem; }
+    .bar-row .name { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { background: var(--panel-2); border-radius: 6px; height: 20px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--accent), #8a6bff); transition: width .5s ease; }
+    .bar-fill.green { background: linear-gradient(90deg, #37b26c, var(--accent-2)); }
+    .bar-val { text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
+
+    /* Дневная активность */
+    .day-chart { display: flex; align-items: flex-end; gap: 6px; height: 140px; padding-top: 10px; }
+    .day-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+    .day-col .col {
+        width: 100%; max-width: 34px; border-radius: 5px 5px 0 0;
+        background: linear-gradient(180deg, var(--accent), #2d6fd1);
+        min-height: 2px; position: relative;
+    }
+    .day-col .col span {
+        position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+        font-size: .7rem; color: var(--muted);
+    }
+    .day-col .dl { font-size: .68rem; color: var(--muted); white-space: nowrap; }
+
+    /* Таблицы */
+    table { width: 100%; border-collapse: collapse; font-size: .87rem; }
+    th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
+    tbody tr:hover { background: var(--panel-2); }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .tag { padding: 2px 8px; border-radius: 12px; font-size: .75rem; background: var(--panel-2); border: 1px solid var(--border); }
+    .table-wrap { overflow-x: auto; }
+
+    /* Пульс запросов */
+    .sparkline { display: flex; align-items: flex-end; gap: 2px; height: 60px; margin-top: 8px; }
+    .sparkline i { flex: 1; background: var(--accent-2); border-radius: 2px 2px 0 0; opacity: .8; min-height: 2px; }
+
+    .empty { color: var(--muted); font-style: italic; padding: 14px 0; text-align: center; }
+    footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 18px; }
+    .error-banner {
+        display: none; background: rgba(255,107,107,.12); border: 1px solid var(--danger);
+        color: var(--danger); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 18px;
+    }
+    .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--muted);
+        border-top-color: var(--accent); border-radius: 50%; animation: r 0.8s linear infinite; vertical-align: middle;}
+    @keyframes r { to { transform: rotate(360deg);} }
+</style>
+</head>
+<body>
+<header>
+    <h1><span class="logo">⚙</span> Панель администратора — аналитика WTIS</h1>
+    <div class="header-actions">
+        <span id="statusBadge" class="badge">загрузка…</span>
+        <select id="periodSelect" title="Период анализа">
+            <option value="7">7 дней</option>
+            <option value="30" selected>30 дней</option>
+            <option value="90">90 дней</option>
+        </select>
+        <button id="refreshBtn" title="Обновить данные">⟳ Обновить</button>
+        <a href="/projects"><button title="К списку проектов">← В приложение</button></a>
+    </div>
+</header>
+
+<main>
+    <div id="errorBanner" class="error-banner"></div>
+
+    <!-- KPI -->
+    <div class="kpi-grid">
+        <div class="kpi accent"><div class="label">Проектов</div><div class="value" id="kpiProjects">—</div><div class="sub" id="kpiProjectsSub"></div></div>
+        <div class="kpi"><div class="label">Файлов в хранилище</div><div class="value" id="kpiFiles">—</div><div class="sub" id="kpiFilesSub"></div></div>
+        <div class="kpi green"><div class="label">Занято в MinIO</div><div class="value" id="kpiStorage">—</div><div class="sub" id="kpiStorageSub"></div></div>
+        <div class="kpi"><div class="label">Активных пользователей</div><div class="value" id="kpiUsers">—</div><div class="sub">за выбранный период</div></div>
+        <div class="kpi warn"><div class="label">Запросов за сутки</div><div class="value" id="kpiReq24">—</div><div class="sub" id="kpiReqTotal"></div></div>
+        <div class="kpi"><div class="label">Ошибок за сутки</div><div class="value" id="kpiErr24">—</div><div class="sub" id="kpiLogSize"></div></div>
+    </div>
+
+    <!-- Графики -->
+    <div class="charts-grid">
+        <div class="section">
+            <h2>Новые проекты по дням <span class="badge" id="daysBadge"></span></h2>
+            <div class="day-chart" id="projectsByDay"><div class="empty">нет данных</div></div>
+        </div>
+        <div class="section">
+            <h2>Типы проектов</h2>
+            <div id="projectTypes"><div class="empty">нет данных</div></div>
+        </div>
+        <div class="section">
+            <h2>Топ пользователей по активности</h2>
+            <div id="topUsers"><div class="empty">нет данных</div></div>
+        </div>
+        <div class="section">
+            <h2>Распределение файлов по типам</h2>
+            <div id="fileTypes"><div class="empty">нет данных</div></div>
+        </div>
+    </div>
+
+    <!-- Пульс запросов -->
+    <div class="section">
+        <h2>
+            <span>Пульс API-запросов <span class="badge" id="liveBadge">live · каждые 5 с</span></span>
+            <span style="display:flex;gap:8px;align-items:center;">
+                <input type="text" id="userFilter" placeholder="Фильтр по пользователю (логин)">
+                <select id="methodFilter">
+                    <option value="">Все методы</option>
+                    <option>GET</option><option>POST</option><option>DELETE</option><option>PATCH</option>
+                </select>
+            </span>
+        </h2>
+        <div class="sparkline" id="sparkline"></div>
+        <div class="table-wrap" style="margin-top:14px;">
+            <table>
+                <thead><tr>
+                    <th>Маршрут</th><th>Метод</th><th class="num">Всего</th><th class="num">Успешных</th>
+                    <th class="num">Ошибок</th><th class="num">% ошибок</th><th class="num">Ср. время, мс</th>
+                </tr></thead>
+                <tbody id="endpointRows"><tr><td colspan="7" class="empty">сбор данных…</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Таблица пользователей -->
+    <div class="section">
+        <h2>Пользователи</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Логин</th><th>Имя</th><th class="num">Запросов</th><th class="num">Ошибок</th>
+                    <th class="num">Проектов создано</th><th>Последняя активность</th>
+                </tr></thead>
+                <tbody id="userRows"><tr><td colspan="6" class="empty">…</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Проекты -->
+    <div class="section">
+        <h2>Проекты <span class="badge" id="projCountBadge"></span></h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>ID</th><th>Название</th><th>Тип</th><th>Владелец</th>
+                    <th class="num">Размер</th><th class="num">Файлов</th><th>Создан</th><th>Обновлён</th>
+                </tr></thead>
+                <tbody id="projectRows"><tr><td colspan="8" class="empty">…</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Последние операции -->
+    <div class="section">
+        <h2>Последние операции <span class="badge" id="recentCountBadge"></span></h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Время</th><th>Пользователь</th><th>Действие</th><th>Объект</th><th>Статус</th></tr></thead>
+                <tbody id="recentOpsRows"><tr><td colspan="5" class="empty">…</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<footer>WTIS Admin Dashboard · данные: /api/admin/analytics, /api/admin/stats, логи requests.log · MinIO: <span id="bucketName"></span></footer>
+
+<script>
+(function () {
+    const $ = id => document.getElementById(id);
+    let sparkHistory = [];       // пульс запросов (последние интервалы)
+    let lastTotal = null;        // для вычисления дельты live-счётчика
+    let firstLoad = true;
+
+    function fmtBytes(n) {
+        if (n == null) return '—';
+        const u = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ'];
+        let i = 0; n = Number(n);
+        while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+        return n.toFixed(n < 10 && i > 0 ? 1 : 0) + ' ' + u[i];
+    }
+    function fmtDate(s) {
+        if (!s) return '—';
+        try { return new Date(s).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }); }
+        catch (e) { return s; }
+    }
+    function esc(s) {
+        return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+    function showError(msg) {
+        const b = $('errorBanner');
+        if (msg) { b.textContent = '⚠ ' + msg; b.style.display = 'block'; }
+        else b.style.display = 'none';
+    }
+
+    async function fetchJSON(url) {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(url + ' → HTTP ' + r.status);
+        return r.json();
+    }
+
+    function renderBars(el, items, valFmt, green) {
+        if (!items.length) { el.innerHTML = '<div class="empty">нет данных</div>'; return; }
+        const max = Math.max(...items.map(i => i.value), 1);
+        el.innerHTML = items.map(i => `
+            <div class="bar-row">
+                <div class="name" title="${esc(i.name)}">${esc(i.name)}</div>
+                <div class="bar-track"><div class="bar-fill ${green ? 'green' : ''}" style="width:${(i.value / max * 100).toFixed(1)}%"></div></div>
+                <div class="bar-val">${valFmt ? valFmt(i.value) : i.value}</div>
+            </div>`).join('');
+    }
+
+    function renderDayChart(el, days) {
+        if (!days.length) { el.innerHTML = '<div class="empty">нет данных</div>'; return; }
+        const max = Math.max(...days.map(d => d.count), 1);
+        el.innerHTML = days.map(d => `
+            <div class="day-col" title="${esc(d.date)}: ${d.count}">
+                <div class="col" style="height:${Math.max(2, d.count / max * 120)}px"><span>${d.count || ''}</span></div>
+                <div class="dl">${esc(d.date.slice(5))}</div>
+            </div>`).join('');
+    }
+
+    function applyFilters(rows) {
+        const u = $('userFilter').value.trim().toLowerCase();
+        const m = $('methodFilter').value;
+        return rows.filter(r => (!u || (r.user || '').toLowerCase().includes(u)) && (!m || r.method === m));
+    }
+
+    function renderEndpoints(rows) {
+        const filtered = applyFilters(rows);
+        const tb = $('endpointRows');
+        if (!filtered.length) { tb.innerHTML = '<tr><td colspan="7" class="empty">нет данных за период</td></tr>'; return; }
+        const sorted = [...filtered].sort((a, b) => b.total - a.total).slice(0, 25);
+        tb.innerHTML = sorted.map(r => `
+            <tr>
+                <td title="${esc(r.route)}">${esc(r.route)}</td>
+                <td><span class="tag">${esc(r.method)}</span></td>
+                <td class="num">${r.total}</td>
+                <td class="num">${r.success}</td>
+                <td class="num" style="color:${r.errors ? 'var(--danger)' : 'inherit'}">${r.errors}</td>
+                <td class="num">${r.total ? (r.errors / r.total * 100).toFixed(1) : '0.0'}%</td>
+                <td class="num">${r.avg_ms != null ? r.avg_ms.toFixed(0) : '—'}</td>
+            </tr>`).join('');
+    }
+
+    function renderAnalytics(a) {
+        // KPI
+        $('kpiProjects').textContent = a.projects.total;
+        $('kpiProjectsSub').textContent = 'создано за период: ' + a.projects.created_in_period;
+        $('kpiFiles').textContent = a.files.total;
+        $('kpiFilesSub').textContent = 'историй: ' + a.files.history_objects;
+        $('kpiStorage').textContent = fmtBytes(a.storage.total_bytes);
+        $('kpiStorageSub').textContent = a.storage.bucket ? 'бакет ' + a.storage.bucket : '';
+        $('kpiUsers').textContent = a.users.active_count;
+        $('bucketName').textContent = a.storage.bucket || '—';
+
+        renderDayChart($('projectsByDay'), a.projects.by_day);
+        $('daysBadge').textContent = a.projects.by_day.length + ' дн.';
+        renderBars($('projectTypes'), a.projects.by_type.map(t => ({ name: t.type, value: t.count })));
+        renderBars($('topUsers'), a.users.top_by_requests.map(u => ({ name: u.login + (u.name !== u.login ? ' (' + u.name + ')' : ''), value: u.requests })), null, true);
+        renderBars($('fileTypes'), a.files.by_extension.map(e => ({ name: e.ext || '(без расширения)', value: e.count })));
+
+        // Пользователи
+        const ur = $('userRows');
+        ur.innerHTML = a.users.list.length
+            ? a.users.list.map(u => `<tr>
+                <td>${esc(u.login)}</td><td>${esc(u.name)}</td>
+                <td class="num">${u.requests}</td>
+                <td class="num" style="color:${u.errors ? 'var(--danger)' : 'inherit'}">${u.errors}</td>
+                <td class="num">${u.projects_created}</td>
+                <td>${fmtDate(u.last_seen)}</td></tr>`).join('')
+            : '<tr><td colspan="6" class="empty">нет активности за период</td></tr>';
+
+        // Проекты
+        const pr = $('projectRows');
+        $('projCountBadge').textContent = a.projects.list.length + ' шт.';
+        pr.innerHTML = a.projects.list.length
+            ? a.projects.list.map(p => `<tr>
+                <td>${esc(p.id)}</td><td>${esc(p.name)}</td>
+                <td><span class="tag">${esc(p.type || '—')}</span></td>
+                <td>${esc(p.owner || '—')}</td>
+                <td class="num">${fmtBytes(p.size_bytes)}</td>
+                <td class="num">${p.files_count}</td>
+                <td>${fmtDate(p.created_at)}</td><td>${fmtDate(p.updated_at)}</td></tr>`).join('')
+            : '<tr><td colspan="8" class="empty">проектов нет</td></tr>';
+
+        // Последние операции
+        const ro = $('recentOpsRows');
+        $('recentCountBadge').textContent = a.recent_operations.length;
+        ro.innerHTML = a.recent_operations.length
+            ? a.recent_operations.map(o => `<tr>
+                <td>${fmtDate(o.timestamp)}</td><td>${esc(o.user)}</td>
+                <td><span class="tag">${esc(o.action)}</span></td>
+                <td>${esc(o.object)}</td>
+                <td style="color:${o.status >= 400 ? 'var(--danger)' : 'var(--accent-2)'}">${o.status}</td></tr>`).join('')
+            : '<tr><td colspan="5" class="empty">нет операций</td></tr>';
+    }
+
+    async function loadAnalytics() {
+        const days = $('periodSelect').value;
+        const a = await fetchJSON('/api/admin/analytics?days=' + days);
+        renderAnalytics(a);
+        renderEndpoints(a.endpoints);
+    }
+
+    async function loadLiveStats() {
+        const s = await fetchJSON('/api/admin/stats');
+        const badge = $('statusBadge');
+        badge.textContent = s.health.minio_ok ? 'MinIO: OK' : 'MinIO: недоступен';
+        badge.className = 'badge ' + (s.health.minio_ok ? 'ok' : 'err');
+        $('kpiReq24').textContent = s.requests_24h.total;
+        $('kpiErr24').textContent = s.requests_24h.errors;
+        $('kpiReqTotal').textContent = 'всего в логе: ' + s.requests_total;
+        $('kpiLogSize').textContent = 'requests.log: ' + fmtBytes(s.log_size_bytes);
+
+        // пульс
+        if (lastTotal !== null && !firstLoad) {
+            const delta = Math.max(0, s.requests_total - lastTotal);
+            sparkHistory.push(delta);
+            if (sparkHistory.length > 60) sparkHistory.shift();
+        }
+        lastTotal = s.requests_total;
+        firstLoad = false;
+        const max = Math.max(...sparkHistory, 1);
+        $('sparkline').innerHTML = sparkHistory.map(v =>
+            `<i style="height:${Math.max(2, v / max * 58)}px" title="${v} зап."></i>`).join('');
+    }
+
+    async function refresh() {
+        $('refreshBtn').disabled = true;
+        try {
+            await Promise.all([loadAnalytics(), loadLiveStats()]);
+            showError(null);
+        } catch (e) {
+            console.error(e);
+            showError('Не удалось загрузить данные: ' + e.message +
+                      '. Проверьте, что сервер и MinIO запущены.');
+        } finally {
+            $('refreshBtn').disabled = false;
+        }
+    }
+
+    $('refreshBtn').addEventListener('click', refresh);
+    $('periodSelect').addEventListener('change', () => loadAnalytics().catch(e => showError(e.message)));
+    $('userFilter').addEventListener('input', () => loadAnalytics().catch(() => {}));
+    $('methodFilter').addEventListener('change', () => loadAnalytics().catch(() => {}));
+
+    refresh();
+    setInterval(loadLiveStats, 5000);   // live-пульс каждые 5 секунд
+})();
+</script>
+</body>
+</html>
