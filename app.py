@@ -263,14 +263,30 @@ MINIO_BUCKET = 'mybucket'
 MINIO_PROJECTS_PREFIX = 'projects/'  # Префикс для хранения проектов
 
 def get_minio_client():
-    global minio_client
+    global minio_client, MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_REGION, MINIO_SECURE, MINIO_BUCKET
     if minio_client is None:
+        # Параметры могли не загрузиться (сервер стартовал без .env / до set_minio_client) — подтянем из окружения
+        load_dotenv()
+        endpoint = MINIO_ENDPOINT or os.getenv("MINIO_ENDPOINT", "localhost:9000")
+        access_key = MINIO_ACCESS_KEY or os.getenv("MINIO_ACCESS_KEY", "minioadmin")
+        secret_key = MINIO_SECRET_KEY or os.getenv("MINIO_SECRET_KEY", "minioadmin")
+        region = MINIO_REGION or os.getenv("MINIO_REGION", "us-east-1")
+        secure = MINIO_SECURE if MINIO_SECURE is not None else os.getenv("MINIO_SECURE", "False").lower() == "true"
+        bucket = MINIO_BUCKET or os.getenv("MINIO_BUCKET", "mybucket")
+
+        MINIO_ENDPOINT = endpoint
+        MINIO_ACCESS_KEY = access_key
+        MINIO_SECRET_KEY = secret_key
+        MINIO_REGION = region
+        MINIO_SECURE = secure
+        MINIO_BUCKET = bucket
+
         minio_client = Minio(
-            MINIO_ENDPOINT,
-            access_key=MINIO_ACCESS_KEY,
-            secret_key=MINIO_SECRET_KEY,
-            region = MINIO_REGION,
-            secure=MINIO_SECURE
+            endpoint=endpoint,
+            access_key=access_key,
+            secret_key=secret_key,
+            region=region,
+            secure=secure
         )
     return minio_client
 
@@ -330,8 +346,15 @@ def set_minio_client():
         minio_client.list_buckets()
         print("✅ MinIO клиент успешно инициализирован из .env!")
     except Exception as e:
-        raise ConnectionError(f"❌ Ошибка подключения к MinIO: {e}") from e
-    
+        print(
+            f"⚠️  MinIO недоступен ({endpoint}): {e}\n"
+            f"    Сервер запустится без подключения к MinIO. "
+            f"Проверьте, что MinIO запущен и параметры в .env корректны.\n"
+            f"    После запуска MinIO переподключится автоматически "
+            f"или принудительно: GET /api/minio/reconnect"
+        )
+        app_logger.error(f"MinIO connection check failed: {e}")
+
     return minio_client
 
 # ------------------- Декоратор для обработки ошибок MinIO -------------------
@@ -490,7 +513,7 @@ def move_object():
 
     # Проверка существования исходного объекта
     try:
-        minio_client.stat_object(MINIO_BUCKET, source)
+        get_minio_client().stat_object(MINIO_BUCKET, source)
     except Exception as e:
         app_logger.error(f"Исходный объект не найден.: {source} - {e}")
         return jsonify({'error': f'Исходный объект не найден.: {str(e)}'}), 404
@@ -507,7 +530,7 @@ def move_object():
         print(f"MINIO_BUCKET: {MINIO_BUCKET}")
         print(f"destination: {destination}")
         print(f"copy_source: {copy_source}")
-        minio_client.copy_object(MINIO_BUCKET, destination, copy_source)
+        get_minio_client().copy_object(MINIO_BUCKET, destination, copy_source)
         app_logger.info(f"Успешное выполнение: Объект скопирован. {source} в {destination}")
     except Exception as e:
         app_logger.error(f"Ошибка копирования: {source} -> {destination} - {e}")
@@ -515,7 +538,7 @@ def move_object():
 
     # Удаление исходного объекта
     try:
-        minio_client.remove_object(MINIO_BUCKET, source)
+        get_minio_client().remove_object(MINIO_BUCKET, source)
         app_logger.info(f"Исходный объект удалён {source}")
     except Exception as e:
         app_logger.error(f"Не удалось удалить исходный объект {source} после копирования: {e}")
@@ -548,7 +571,7 @@ def mkdir_minio():
 
     try:
         # Создаём пустой объект
-        minio_client.put_object(
+        get_minio_client().put_object(
             bucket_name=MINIO_BUCKET,
             object_name=prefix,
             data=io.BytesIO(b''),
@@ -578,7 +601,7 @@ def delete_minio():
     try:
         if path.endswith('/'):
             # Удаление папки (все объекты с префиксом)
-            objects_to_delete = list(minio_client.list_objects(
+            objects_to_delete = list(get_minio_client().list_objects(
                 MINIO_BUCKET, prefix=path, recursive=True
             ))
             if not objects_to_delete:
@@ -586,7 +609,7 @@ def delete_minio():
 
             # Формируем список имён для массового удаления
             delete_object_list = [obj.object_name for obj in objects_to_delete]
-            errors = minio_client.remove_objects(
+            errors = get_minio_client().remove_objects(
                 MINIO_BUCKET,
                 delete_object_list,
                 bypass_governance_mode=True
@@ -608,7 +631,7 @@ def delete_minio():
             })
         else:
             # Удаление одного файла
-            minio_client.remove_object(MINIO_BUCKET, path)
+            get_minio_client().remove_object(MINIO_BUCKET, path)
             return jsonify({
                 'success': True,
                 'deleted_count': 1,
@@ -617,6 +640,35 @@ def delete_minio():
     except S3Error as e:
         app.logger.error(f"Error deleting {path}: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/minio/reconnect', methods=['GET', 'POST'])
+def minio_reconnect():
+    """
+    Принудительная переподключение к MinIO (например, после того как
+    сервер был запущен без доступного MinIO).
+    """
+    try:
+        set_minio_client()
+        # Проверяем, что подключение действительно установлено
+        if minio_client is not None:
+            minio_client.list_buckets()
+            return jsonify({
+                'success': True,
+                'message': 'MinIO reconnect successful',
+                'endpoint': MINIO_ENDPOINT,
+                'bucket': MINIO_BUCKET,
+            }), 200
+        return jsonify({
+            'success': False,
+            'error': 'MinIO client was not created. Check .env parameters.',
+        }), 503
+    except Exception as e:
+        app_logger.error(f"MinIO reconnect failed: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'MinIO reconnect failed: {e}',
+        }), 503
 
 
 @app.route('/health', methods=['GET'])
@@ -632,12 +684,23 @@ def health_check():
     
     minio_status = "ok"
     
-    # Проверка подключения к MinIO
-    if minio_client is not None:
+    # Проверка подключения к MinIO (если клиента ещё нет — пробуем создать)
+    client = minio_client
+    if client is None:
+        try:
+            client = get_minio_client()
+        except Exception as e:
+            health_status["status"] = "unhealthy"
+            health_status["minio"] = "error"
+            health_status["error"] = str(e)
+            minio_status = "error"
+            app_logger.error(f"Health check failed: MinIO client init error: {e}")
+
+    if client is not None and health_status["status"] == "healthy":
         try:
             # Легковесная проверка: попытка получить список бакетов или проверить соединение
             # list_buckets() обычно быстрая, если нет больших объемов данных
-            minio_client.list_buckets()
+            client.list_buckets()
         except Exception as e:
             health_status["status"] = "unhealthy"
             health_status["minio"] = "error"
@@ -673,7 +736,7 @@ def list_projects_api():
     try:
         # Получаем список всех объектов с префиксом проектов
         # recursive=True необходим, так как файлы находятся в подпапках
-        objects = minio_client.list_objects(MINIO_BUCKET, prefix=MINIO_PROJECTS_PREFIX, recursive=True)
+        objects = get_minio_client().list_objects(MINIO_BUCKET, prefix=MINIO_PROJECTS_PREFIX, recursive=True)
         
         for obj in objects:
             # Пропускаем "папки" (объекты, заканчивающиеся на /)
@@ -727,7 +790,7 @@ def list_projects_api():
             # Загружаем данные
             try:
                
-                response = minio_client.get_object(MINIO_BUCKET, obj.object_name)
+                response = get_minio_client().get_object(MINIO_BUCKET, obj.object_name)
                 json_data = response.read().decode('utf-8')
                 project_data = json.loads(json_data)
                 
@@ -810,7 +873,7 @@ def save_project():
     
     # Загружаем в MinIO
     try:
-        minio_client.put_object(
+        get_minio_client().put_object(
             bucket_name=MINIO_BUCKET,
             object_name=object_name,
             data=io.BytesIO(json_bytes),
@@ -848,7 +911,7 @@ def get_project_metadata_with_matrices(project_id):
     response = None
     try:
         # Получаем JSON метаданных
-        response = minio_client.get_object(MINIO_BUCKET, object_name)
+        response = get_minio_client().get_object(MINIO_BUCKET, object_name)
         json_str = response.read().decode('utf-8')
         full_data = json.loads(json_str)
 
@@ -889,7 +952,7 @@ def delete_project(project_id):
     object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}/{project_id}.json"
     
     try:
-        minio_client.remove_object(MINIO_BUCKET, object_name)
+        get_minio_client().remove_object(MINIO_BUCKET, object_name)
         app_logger.info(f"Проект {project_id} успешно удалён из MinIO")
         
         return jsonify({
@@ -920,7 +983,7 @@ def get_project_files(project_id):
 
     try:
         # 2. Загружаем объект из MinIO
-        response = minio_client.get_object(
+        response = get_minio_client().get_object(
             bucket_name=MINIO_BUCKET,
             object_name=object_name
         )
@@ -979,7 +1042,7 @@ def load_file_matrix(project_id, file_id):
     project_object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}/{project_id}.json"
     
     try:
-        response = minio_client.get_object(
+        response = get_minio_client().get_object(
             bucket_name=MINIO_BUCKET,
             object_name=project_object_name
         )
@@ -1028,7 +1091,7 @@ def load_file_matrix(project_id, file_id):
 
     # 4. Загружаем бинарные данные из MinIO
     try:
-        binary_response = minio_client.get_object(
+        binary_response = get_minio_client().get_object(
             bucket_name=MINIO_BUCKET,
             object_name=object_name
         )
@@ -1083,7 +1146,7 @@ def create_or_update_project_file(project_id, file_id):
 
     # 1. Проверка бакета
     try:
-        if not minio_client.bucket_exists(MINIO_BUCKET):
+        if not get_minio_client().bucket_exists(MINIO_BUCKET):
             return jsonify({'error': f'Bucket "{MINIO_BUCKET}" does not exist'}), 404
         app_logger.debug(f"Бакет '{MINIO_BUCKET}' успешно проверен и существует")
     except S3Error as e:
@@ -1123,7 +1186,7 @@ def create_or_update_project_file(project_id, file_id):
     file_size = len(file_data)
     try:
         # Загрузка в MinIO
-        minio_client.put_object(
+        get_minio_client().put_object(
             MINIO_BUCKET,
             hist_key,
             data=BytesIO(file_data),
@@ -1138,7 +1201,7 @@ def create_or_update_project_file(project_id, file_id):
 
     # Загружаем данные проекта из MinIO
     try:
-        response = minio_client.get_object(MINIO_BUCKET, project_key)
+        response = get_minio_client().get_object(MINIO_BUCKET, project_key)
         json_data = response.read().decode('utf-8')
         project_data1 = json.loads(json_data)
         project_data = project_data1.get('project')
@@ -1184,7 +1247,7 @@ def create_or_update_project_file(project_id, file_id):
                     
         ensure_bucket(minio_client, MINIO_BUCKET)
         
-        minio_client.put_object(
+        get_minio_client().put_object(
             bucket_name=MINIO_BUCKET,
             object_name=project_key,
             data=io.BytesIO(json_bytes),
@@ -1219,7 +1282,7 @@ def delete_project_file(project_id, file_id):
     # 1. Получаем текущий проект из MinIO
     project_object_name = f"{MINIO_PROJECTS_PREFIX}{project_id}/{project_id}.json"
     try:
-        response = minio_client.get_object(
+        response = get_minio_client().get_object(
             bucket_name=MINIO_BUCKET, 
             object_name=project_object_name
         )
@@ -1248,7 +1311,7 @@ def delete_project_file(project_id, file_id):
     matrix_ref = target_file.get('matrix_ref')
     if matrix_ref:
         try:
-            minio_client.remove_object(
+            get_minio_client().remove_object(
                 bucket_name=MINIO_BUCKET,
                 object_name=matrix_ref
             )
@@ -1268,7 +1331,7 @@ def delete_project_file(project_id, file_id):
         
         ensure_bucket(minio_client, MINIO_BUCKET)
         
-        minio_client.put_object(
+        get_minio_client().put_object(
             bucket_name=MINIO_BUCKET,
             object_name=project_object_name,
             data=io.BytesIO(json_bytes),
@@ -1310,7 +1373,7 @@ def replace_file_history(project_id, file_id):
         
         # 2. Загружаем данные проекта из MinIO
         try:
-            response = minio_client.get_object(MINIO_BUCKET, project_key)
+            response = get_minio_client().get_object(MINIO_BUCKET, project_key)
             json_data = response.read().decode('utf-8')
             project_data = json.loads(json_data)
             app_logger.debug(f"Данные проекта {project_id} успешко загружены.")
@@ -1373,7 +1436,7 @@ def replace_file_history(project_id, file_id):
                     # app_logger.debug(f"hist_idx {hist_idx} ")
                     hist_key = f"projects/{project_id}/{file_id}_step_{hist_idx}.npy"
                     
-                    minio_client.put_object(
+                    get_minio_client().put_object(
                         MINIO_BUCKET,
                         hist_key,
                         io.BytesIO(hist_npy_bytes),
@@ -1403,7 +1466,7 @@ def replace_file_history(project_id, file_id):
         new_json_data = json.dumps(project_data, ensure_ascii=False, indent=2)
         data_bytes = new_json_data.encode('utf-8')
         
-        minio_client.put_object(
+        get_minio_client().put_object(
             bucket_name=MINIO_BUCKET,
             object_name=project_key, 
             data=io.BytesIO(data_bytes),
@@ -1464,7 +1527,7 @@ def replace_file_historyfdfdf(project_id, file_id):
         file_size = len(file_data)
         try:
             # Загрузка в MinIO
-            minio_client.put_object(
+            get_minio_client().put_object(
                 MINIO_BUCKET,
                 hist_key,
                 data=BytesIO(file_data),
@@ -1483,7 +1546,7 @@ def replace_file_historyfdfdf(project_id, file_id):
 
         # Загружаем данные проекта из MinIO
         try:
-            response = minio_client.get_object(MINIO_BUCKET, project_key)
+            response = get_minio_client().get_object(MINIO_BUCKET, project_key)
             json_data = response.read().decode('utf-8')
             project_data1 = json.loads(json_data)
             project_data = project_data1.get('project')
@@ -1540,7 +1603,7 @@ def replace_file_historyfdfdf(project_id, file_id):
                        
             ensure_bucket(minio_client, MINIO_BUCKET)
             
-            minio_client.put_object(
+            get_minio_client().put_object(
                 bucket_name=MINIO_BUCKET,
                 object_name=project_key,
                 data=io.BytesIO(json_bytes),
@@ -1580,7 +1643,7 @@ def download_file_from_minio123():
     app_logger.debug(f"full_path: {full_path}")
     # 1. Проверка существования объекта
     try:
-        stat = minio_client.stat_object(MINIO_BUCKET, full_path)
+        stat = get_minio_client().stat_object(MINIO_BUCKET, full_path)
     except S3Error as e:
         if e.code == 'NoSuchKey':
             return jsonify({'error': 'Файл не найден'}), 404
@@ -1592,7 +1655,7 @@ def download_file_from_minio123():
     # Вариант А: Для небольших файлов (до ~100-200 МБ)
     # Можно прочитать напрямую в память
     try:
-        file_data = minio_client.get_object(MINIO_BUCKET, full_path).read()
+        file_data = get_minio_client().get_object(MINIO_BUCKET, full_path).read()
     except S3Error as e:
         app.logger.error(f'Ошибка чтения из MinIO: {str(e)}')
         return jsonify({'error': 'Ошибка чтения файла'}), 500
@@ -1636,7 +1699,7 @@ def get_recent_files():
     object_name = "ui_state/recent_files.json"
     
     try:
-        response = minio_client.get_object(MINIO_BUCKET, object_name)
+        response = get_minio_client().get_object(MINIO_BUCKET, object_name)
         json_str = response.read().decode('utf-8')
         response.close()
         response.release_conn()
@@ -1674,7 +1737,7 @@ def save_recent_files():
         json_str = json.dumps(data, ensure_ascii=False, indent=2)
         json_bytes = json_str.encode('utf-8')
         
-        minio_client.put_object(
+        get_minio_client().put_object(
             bucket_name=MINIO_BUCKET,
             object_name=object_name,
             data=io.BytesIO(json_bytes),
@@ -1700,7 +1763,7 @@ def get_modal_states():
     object_name = "ui_state/modal_states.json"
     
     try:
-        response = minio_client.get_object(MINIO_BUCKET, object_name)
+        response = get_minio_client().get_object(MINIO_BUCKET, object_name)
         json_str = response.read().decode('utf-8')
         response.close()
         response.release_conn()
@@ -1738,7 +1801,7 @@ def save_modal_states():
         json_str = json.dumps(data, ensure_ascii=False, indent=2)
         json_bytes = json_str.encode('utf-8')
         
-        minio_client.put_object(
+        get_minio_client().put_object(
             bucket_name=MINIO_BUCKET,
             object_name=object_name,
             data=io.BytesIO(json_bytes),
@@ -1784,7 +1847,7 @@ def list_objects():
     
     # Проверяем существование бакета
     try:
-        bucket_exists = minio_client.bucket_exists(MINIO_BUCKET)
+        bucket_exists = get_minio_client().bucket_exists(MINIO_BUCKET)
         app_logger.debug(f"Проверка бакета '{MINIO_BUCKET}': существует={bucket_exists}")
         
         if not bucket_exists:
@@ -1796,7 +1859,7 @@ def list_objects():
     
     # Получаем список объектов
     try:
-        objects = minio_client.list_objects(MINIO_BUCKET, recursive=True)
+        objects = get_minio_client().list_objects(MINIO_BUCKET, recursive=True)
         result = [
             {
                 'name': obj.object_name,
@@ -1970,7 +2033,7 @@ def download_file_minio(object_name):
 
     # Проверяем существование бакета
     try:
-        bucket_exists = minio_client.bucket_exists(MINIO_BUCKET)
+        bucket_exists = get_minio_client().bucket_exists(MINIO_BUCKET)
         app_logger.debug(f"Проверка бакета '{MINIO_BUCKET}': существует={bucket_exists}")
         
         if not bucket_exists:
@@ -1983,7 +2046,7 @@ def download_file_minio(object_name):
 
     try:
         # Получаем объект как поток
-        response = minio_client.get_object(MINIO_BUCKET, object_name)
+        response = get_minio_client().get_object(MINIO_BUCKET, object_name)
         app_logger.debug(f"Объект '{object_name}' загружен")
     
         # Декодируем и парсим JSON
@@ -2085,7 +2148,7 @@ def upload_data(project_id):
         json_str = json.dumps(data, ensure_ascii=False, indent=2)
         json_bytes = json_str.encode('utf-8')
         
-        minio_client.put_object(
+        get_minio_client().put_object(
             bucket_name=MINIO_BUCKET,
             object_name=project_object_name, 
             data=io.BytesIO(json_bytes),
@@ -2111,7 +2174,7 @@ def get_data(project_id):
     
     try:
         # Получаем объект из MinIO
-        response = minio_client.get_object(
+        response = get_minio_client().get_object(
             bucket_name=MINIO_BUCKET,
             object_name=project_object_name
         )
@@ -2179,10 +2242,13 @@ def _load_all_projects():
     """Читает все .project-файлы из MinIO и возвращает список словарей с метаданными проектов."""
     projects = []
     if minio_client is None:
-        app_logger.warning("MinIO клиент не инициализирован — аналитика по проектам недоступна")
-        return projects, []
+        try:
+            get_minio_client().list_buckets()
+        except Exception as e:
+            app_logger.warning(f"MinIO недоступен — аналитика по проектам пуста: {e}")
+            return projects, []
     try:
-        objects = list(minio_client.list_objects(MINIO_BUCKET, prefix=MINIO_PROJECTS_PREFIX, recursive=True))
+        objects = list(get_minio_client().list_objects(MINIO_BUCKET, prefix=MINIO_PROJECTS_PREFIX, recursive=True))
     except S3Error as e:
         app_logger.error(f"Ошибка листинга объектов при сборе аналитики: {e}")
         return projects, []
@@ -2202,7 +2268,7 @@ def _load_all_projects():
                     lm = lm.astimezone(tz=None).replace(tzinfo=None)
                 info['last_modified'] = lm.isoformat(timespec='seconds')
             try:
-                resp = minio_client.get_object(MINIO_BUCKET, name)
+                resp = get_minio_client().get_object(MINIO_BUCKET, name)
                 raw = resp.read()
                 resp.close()
                 resp.release_conn()
@@ -2422,7 +2488,7 @@ def admin_live_stats():
     minio_ok = False
     try:
         if minio_client is not None:
-            minio_client.bucket_exists(MINIO_BUCKET)
+            get_minio_client().bucket_exists(MINIO_BUCKET)
             minio_ok = True
     except Exception:
         minio_ok = False
