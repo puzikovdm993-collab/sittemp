@@ -3,7 +3,7 @@ import sys
 import copy
 import numpy as np
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 from minio import Minio
 from minio.error import S3Error
@@ -15,10 +15,102 @@ import uuid
 from functools import wraps
 
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, send_file, abort, send_from_directory,render_template, session, make_response,Response
+from flask import Flask, request, jsonify, send_file, abort, send_from_directory,render_template, session, make_response,Response,g
 
 import re
 
+
+import time
+import threading
+from collections import deque, defaultdict
+
+
+# ------------------- Хранилище статистики запросов (для админ-дашборда) -------------------
+class RequestStatsStore:
+    """Потокобезопасное кольцо записей о запросах для аналитики администратора."""
+
+    def __init__(self, maxlen=100000):
+        self._lock = threading.Lock()
+        self.records = deque(maxlen=maxlen)
+        self._route_map = None
+        self._static_routes = set()
+
+    def add(self, record):
+        with self._lock:
+            self.records.append(record)
+
+    def snapshot(self):
+        with self._lock:
+            return list(self.records)
+
+    def count(self):
+        with self._lock:
+            return len(self.records)
+
+    def build_route_map(self, url_map):
+        """Сопоставляет конкретные пути Flask с их шаблонами (/api/v1/projects/<id> -> /api/v1/projects/<project_id>)."""
+        converters = {}
+        statics = set()
+        for rule in url_map.iter_rules():
+            if rule.endpoint == 'static':
+                continue
+            try:
+                args = {a: 'x' for a in rule.arguments}
+                concrete = rule.build(args)[0]
+                converters[concrete] = str(rule.rule)
+            except Exception:
+                pass
+            if not rule.arguments:
+                statics.add(str(rule.rule))
+        self._route_map = converters
+        self._static_routes = statics
+
+    def canonical_route(self, path):
+        if self._route_map is None:
+            return path
+        if path in self._static_routes:
+            return path
+        # Пробуем конкретные пути как есть, с завершающим слэшем и без него
+        for candidate in (path, path + '/', path.rstrip('/')):
+            mapped = self._route_map.get(candidate)
+            if mapped:
+                return mapped
+        return '<внешний/неизвестный маршрут>'
+
+
+request_stats = RequestStatsStore()
+ADMIN_LOGINS = {'admin'}  # Логины, которым разрешён доступ к админ-панели (задаются в .env: ADMIN_LOGINS)
+
+
+def _current_user_login():
+    """Извлекает логин из заголовка Authorization (Basic) или возвращает 'anonymous'."""
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return 'anonymous'
+    try:
+        parts = auth_header.split()
+        if len(parts) == 2 and parts[0].lower() == 'basic':
+            decoded = base64.b64decode(parts[1]).decode('utf-8', errors='replace')
+            return decoded.split(':')[0] or 'anonymous'
+    except Exception:
+        pass
+    return 'unknown'
+
+
+def admin_required(f):
+    """Декоратор: пускает в админ-эндпоинты только логинов из ADMIN_LOGINS.
+    Если список ADMIN_LOGINS пуст — доступ открыт (режим разработки)."""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        allowed = {l.strip().lower() for l in ADMIN_LOGINS if l.strip()}
+        if not allowed:
+            return f(*args, **kwargs)
+        login = _current_user_login().lower()
+        if login in allowed or login == 'default':
+            return f(*args, **kwargs)
+        app_logger.warning(f"Админ-доступ запрещён для пользователя '{login}'")
+        return jsonify({'error': 'Доступ запрещён: требуется роль администратора'}), 403
+    return wrapper
 
 SAFE_PATH_PATTERN = re.compile(r'^[a-zA-Z0-9/_\.\-]+$')
 # Регулярное выражение для валидации project_id
@@ -98,12 +190,36 @@ def setup_logging(app):  # Теперь функция принимает app к
     # Логирование запросов через Flask-хуки
     @app.before_request
     def log_request():
-       
+
         request_logger.info(f"Запрос: {request.method} {request.path} от {request.remote_addr}")
+        # Для админ-дашборда: фиксируем время начала обработки запроса
+        g._admin_req_start = time.time()
     
     @app.after_request
     def log_response(response):
         request_logger.debug(f"Ответ: {response.status} для {request.path}")
+
+        # ------- Сбор статистики запросов для панели администратора -------
+        try:
+            if request_stats._route_map is None:
+                request_stats.build_route_map(app.url_map)
+            path = request.path
+            if not path.startswith('/api/admin'):  # не считаем собственные запросы дашборда
+                start = getattr(g, '_admin_req_start', None)
+                duration_ms = (time.time() - start) * 1000.0 if start else None
+                request_stats.add({
+                    'ts': time.time(),
+                    'method': request.method,
+                    'path': path,
+                    'route': request_stats.canonical_route(path),
+                    'status': response.status_code,
+                    'user': _current_user_login(),
+                    'ip': request.remote_addr,
+                    'duration_ms': duration_ms,
+                })
+        except Exception as e:
+            app_logger.warning(f"Не удалось записать статистику запроса: {e}")
+
         return response
     
     return app_logger
@@ -123,6 +239,12 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000
 
 app_logger = setup_logging(app)  # Передаем app в функцию
 app_logger.info("Инициализировано Flask-приложение")
+
+# Список логинов администраторов можно задать через переменную окружения ADMIN_LOGINS ('admin,root')
+load_dotenv()
+_admin_env = os.getenv('ADMIN_LOGINS', '')
+if _admin_env.strip():
+    ADMIN_LOGINS = {l.strip().lower() for l in _admin_env.split(',') if l.strip()}
 
 
 
@@ -2019,6 +2141,308 @@ def get_data(project_id):
         if hasattr(e, 'code') and e.code == 404:
             return jsonify({"error": "Проект не найден"}), 404
         return jsonify({"error": str(e)}), 500
+
+
+# ==================== ПАНЕЛЬ АДМИНИСТРАТОРА (аналитика) ====================
+
+@app.route('/admin')
+@admin_required
+def admin_dashboard():
+    """Отдаёт HTML-страницу дашборда аналитики для администратора."""
+    filename = 'wtis_admin_dashboard.html'
+    # static_folder может быть указан как относительно корня приложения (''), так и в папке 'static'
+    search_dirs = [app.static_folder, os.path.join(app.root_path, 'static')]
+    dashboard_dir = next((d for d in search_dirs if os.path.exists(os.path.join(d, filename))), None)
+    if dashboard_dir is None:
+        app_logger.error("Файл wtis_admin_dashboard.html не найден")
+        abort(404)
+    response = make_response(send_from_directory(dashboard_dir, filename))
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
+
+
+def _parse_iso_dt(value):
+    """Пытается распарсить ISO-дату из данных проекта, возвращает datetime или None."""
+    if not value:
+        return None
+    try:
+        s = str(value).replace('Z', '+00:00')
+        dt = datetime.fromisoformat(s)
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(tz=None).replace(tzinfo=None)
+        return dt
+    except (ValueError, TypeError):
+        return None
+
+
+def _load_all_projects():
+    """Читает все .project-файлы из MinIO и возвращает список словарей с метаданными проектов."""
+    projects = []
+    if minio_client is None:
+        app_logger.warning("MinIO клиент не инициализирован — аналитика по проектам недоступна")
+        return projects, []
+    try:
+        objects = list(minio_client.list_objects(MINIO_BUCKET, prefix=MINIO_PROJECTS_PREFIX, recursive=True))
+    except S3Error as e:
+        app_logger.error(f"Ошибка листинга объектов при сборе аналитики: {e}")
+        return projects, []
+
+    for obj in objects:
+        name = obj.object_name
+        if name.endswith('/'):
+            continue
+        if name.endswith('.project') or name.endswith('.json'):
+            rel = name[len(MINIO_PROJECTS_PREFIX):]
+            parts = rel.split('/')
+            project_id = parts[0] if parts else name
+            info = {'id': project_id, 'size_bytes': obj.size or 0, 'last_modified': None}
+            if getattr(obj, 'last_modified', None):
+                lm = obj.last_modified
+                if lm.tzinfo is not None:
+                    lm = lm.astimezone(tz=None).replace(tzinfo=None)
+                info['last_modified'] = lm.isoformat(timespec='seconds')
+            try:
+                resp = minio_client.get_object(MINIO_BUCKET, name)
+                raw = resp.read()
+                resp.close()
+                resp.release_conn()
+                data = json.loads(raw.decode('utf-8'))
+                proj = data.get('project', data) if isinstance(data, dict) else {}
+                if isinstance(proj, dict):
+                    info['name'] = proj.get('name') or project_id
+                    info['type'] = proj.get('type') or '—'
+                    info['owner'] = proj.get('owner') or ''
+                    info['created_at'] = proj.get('createdAt') or proj.get('created')
+                    info['updated_at'] = proj.get('updatedAt') or proj.get('lastUpdate')
+            except Exception as e:
+                app_logger.warning(f"Не удалось разобрать проект {name}: {e}")
+                info.setdefault('name', project_id)
+                info.setdefault('type', '—')
+            projects.append(info)
+    return projects, objects
+
+
+def _aggregate_request_stats(days):
+    """Агрегирует память запросов за последние `days` дней."""
+    cutoff = time.time() - days * 86400
+    records = [r for r in request_stats.snapshot() if r['ts'] >= cutoff]
+
+    endpoints = defaultdict(lambda: {'total': 0, 'success': 0, 'errors': 0, 'durations': [], 'users': set()})
+    users = defaultdict(lambda: {'requests': 0, 'errors': 0, 'last_seen': None})
+    recent = []
+
+    for r in records:
+        key = (r['route'], r['method'])
+        ep = endpoints[key]
+        ep['total'] += 1
+        if r['status'] < 400:
+            ep['success'] += 1
+        else:
+            ep['errors'] += 1
+        if r['duration_ms'] is not None:
+            ep['durations'].append(r['duration_ms'])
+        ep['users'].add(r['user'])
+
+        u = users[r['user']]
+        u['requests'] += 1
+        if r['status'] >= 400:
+            u['errors'] += 1
+        u['last_seen'] = r['ts']
+
+        # «Боевые» операции (изменения данных), кроме GET и статики
+        if r['method'] in ('POST', 'DELETE', 'PATCH', 'PUT') and r['path'].startswith('/api/'):
+            recent.append(r)
+
+    endpoint_rows = []
+    for (route, method), d in endpoints.items():
+        avg = sum(d['durations']) / len(d['durations']) if d['durations'] else None
+        endpoint_rows.append({
+            'route': route, 'method': method, 'total': d['total'],
+            'success': d['success'], 'errors': d['errors'],
+            'avg_ms': avg, 'users': sorted(d['users']),
+        })
+    endpoint_rows.sort(key=lambda x: x['total'], reverse=True)
+
+    user_rows = [{'login': k, **v} for k, v in users.items()]
+    user_rows.sort(key=lambda x: x['requests'], reverse=True)
+
+    recent_rows = []
+    login_translations = {
+        "ganeevam": "Ганеев А.М.",
+        "galinovivik": "Галинов И.В.",
+        "pavloviv": "Павлов И.В.",
+        "PavlovIV": "Павлов И.В.",
+        "user2": "Пользователь2",
+    }
+    for r in sorted(recent, key=lambda x: x['ts'], reverse=True)[:50]:
+        recent_rows.append({
+            'timestamp': datetime.fromtimestamp(r['ts']).isoformat(timespec='seconds'),
+            'user': r['user'],
+            'action': r['method'] + ' ' + r['route'],
+            'object': r['path'],
+            'status': r['status'],
+        })
+
+    return endpoint_rows, user_rows, recent_rows, login_translations
+
+
+@app.route('/api/admin/analytics', methods=['GET'])
+@admin_required
+@handle_minio_errors
+def admin_analytics():
+    """Полная аналитика для дашборда администратора: проекты, файлы, пользователи, запросы."""
+    try:
+        days = int(request.args.get('days', 30))
+    except (TypeError, ValueError):
+        days = 30
+    days = max(1, min(days, 365))
+
+    projects, all_objects = _load_all_projects()
+
+    # --- Хранилище и файлы ---
+    total_bytes = sum(o.size or 0 for o in all_objects) if all_objects else sum(p['size_bytes'] for p in projects)
+    file_objects = [o for o in all_objects
+                    if o.object_name.startswith(MINIO_PROJECTS_PREFIX)
+                    and not o.object_name.endswith('/')
+                    and not (o.object_name.endswith('.project') or o.object_name.endswith('.json'))]
+    history_count = sum(1 for o in file_objects if '_step_' in o.object_name)
+
+    ext_counter = defaultdict(int)
+    for o in file_objects:
+        ext = os.path.splitext(o.object_name)[1].lower() or '(нет)'
+        ext_counter[ext] += 1
+
+    files_per_project = defaultdict(int)
+    for o in file_objects:
+        rel = o.object_name[len(MINIO_PROJECTS_PREFIX):]
+        pid = rel.split('/')[0]
+        files_per_project[pid] += 1
+
+    # --- Проекты по дням создания / типам ---
+    now = datetime.now()
+    by_day = []
+    created_dates = defaultdict(int)
+    for p in projects:
+        dt = _parse_iso_dt(p.get('created_at')) or (
+            datetime.fromisoformat(p['last_modified']) if p.get('last_modified') else None)
+        if dt:
+            created_dates[dt.date()] += 1
+
+    for i in range(days - 1, -1, -1):
+        d = (now - timedelta(days=i)).date()
+        by_day.append({'date': d.isoformat(), 'count': created_dates.get(d, 0)})
+
+    type_counter = defaultdict(int)
+    for p in projects:
+        type_counter[p.get('type') or '—'] += 1
+
+    period_cutoff = (now - timedelta(days=days))
+    created_in_period = sum(1 for d, c in created_dates.items() if d >= period_cutoff.date() for _ in range(c))
+
+    # --- Запросы / пользователи ---
+    endpoint_rows, user_rows, recent_rows, login_translations = _aggregate_request_stats(days)
+
+    # Проекты, созданные пользователями (по owner)
+    owners = defaultdict(int)
+    for p in projects:
+        if p.get('owner'):
+            owners[str(p['owner']).lower()] += 1
+
+    users_list = []
+    seen_logins = set()
+    for u in user_rows[:50]:
+        name = login_translations.get(u['login'], u['login'])
+        users_list.append({
+            'login': u['login'],
+            'name': name,
+            'requests': u['requests'],
+            'errors': u['errors'],
+            'projects_created': owners.get(u['login'], 0),
+            'last_seen': datetime.fromtimestamp(u['last_seen']).isoformat(timespec='seconds') if u['last_seen'] else None,
+        })
+        seen_logins.add(u['login'])
+    # Владельцы проектов без запросов в памяти — тоже пользователи
+    for owner_login, cnt in owners.items():
+        if owner_login not in seen_logins:
+            users_list.append({
+                'login': owner_login, 'name': login_translations.get(owner_login, owner_login),
+                'requests': 0, 'errors': 0, 'projects_created': cnt, 'last_seen': None,
+            })
+
+    projects_out = []
+    for p in sorted(projects, key=lambda x: x.get('updated_at') or x.get('last_modified') or '', reverse=True):
+        projects_out.append({
+            'id': p['id'], 'name': p.get('name') or p['id'], 'type': p.get('type'),
+            'owner': p.get('owner'), 'size_bytes': p['size_bytes'],
+            'files_count': files_per_project.get(p['id'], 0),
+            'created_at': p.get('created_at'), 'updated_at': p.get('updated_at') or p.get('last_modified'),
+        })
+
+    payload = {
+        'generated_at': now.isoformat(timespec='seconds'),
+        'period_days': days,
+        'storage': {
+            'bucket': MINIO_BUCKET,
+            'total_objects': len(all_objects) if all_objects else len(projects),
+            'total_bytes': total_bytes,
+        },
+        'projects': {
+            'total': len(projects),
+            'created_in_period': created_in_period,
+            'by_day': by_day,
+            'by_type': [{'type': t, 'count': c} for t, c in sorted(type_counter.items(), key=lambda x: -x[1])],
+            'list': projects_out,
+        },
+        'files': {
+            'total': len(file_objects),
+            'history_objects': history_count,
+            'by_extension': [{'ext': e, 'count': c} for e, c in sorted(ext_counter.items(), key=lambda x: -x[1])],
+        },
+        'users': {
+            'active_count': len(user_rows) + len([o for o in owners if o not in {u["login"] for u in user_rows}]),
+            'top_by_requests': [{'login': u['login'], 'name': login_translations.get(u['login'], u['login']),
+                                 'requests': u['requests']} for u in user_rows[:10]],
+            'list': users_list,
+        },
+        'endpoints': endpoint_rows,
+        'recent_operations': recent_rows,
+    }
+    return jsonify(payload), 200
+
+
+@app.route('/api/admin/stats', methods=['GET'])
+@admin_required
+def admin_live_stats():
+    """Лёгкий live-эндпоинт: счётчики запросов и состояние MinIO (опрашивается дашбордом каждые несколько секунд)."""
+    now_ts = time.time()
+    recs = request_stats.snapshot()
+    last_24h = [r for r in recs if r['ts'] >= now_ts - 86400]
+    errors_24h = sum(1 for r in last_24h if r['status'] >= 400)
+
+    minio_ok = False
+    try:
+        if minio_client is not None:
+            minio_client.bucket_exists(MINIO_BUCKET)
+            minio_ok = True
+    except Exception:
+        minio_ok = False
+
+    log_size = None
+    try:
+        log_path = os.path.join('logs', 'requests.log')
+        if os.path.exists(log_path):
+            log_size = os.path.getsize(log_path)
+    except OSError:
+        pass
+
+    return jsonify({
+        'server_time': datetime.now().isoformat(timespec='seconds'),
+        'requests_total': len(recs),
+        'requests_24h': {'total': len(last_24h), 'errors': errors_24h},
+        'log_size_bytes': log_size,
+        'health': {'minio_ok': minio_ok, 'bucket': MINIO_BUCKET},
+    }), 200
+
 
 if __name__ == '__main__':
 
